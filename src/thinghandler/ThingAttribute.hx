@@ -1,0 +1,58 @@
+package thinghandler;
+
+enum abstract ThingAttribute(UInt) from UInt to UInt {
+	var isClonable = 1;
+	var isHoldable = 2;
+	var remainsHeld = 3;
+	var isClimbable = 4;
+	var isPassable = 6;
+	var isUnwalkable = 5;
+	var doSnapAngles = 7;
+	var isBouncy = 9;
+	var currentlyUnused1 = 10;
+	var doShowDirection = 12;
+	var keepPreciseCollider = 13;
+	var doesFloat = 14;
+	var doesShatter = 15;
+	var isSticky = 16;
+	var isSlidy = 17;
+	var doSnapPosition = 18;
+	var amplifySpeech = 19;
+	var benefitsFromShowingAtDistance = 20;
+	var scaleAllParts = 21;
+	var doSoftSnapAngles = 22;
+	var doAlwaysMergeParts = 23;
+	var addBodyWhenAttached = 24;
+	var hasSurroundSound = 25;
+	var canGetEventsWhenStateChanging = 26;
+	var replacesHandsWhenAttached = 27;
+	var mergeParticleSystems = 28;
+	var isSittable = 29;
+	var smallEditMovements = 30;
+	var scaleEachPartUniformly = 31;
+	var snapAllPartsToGrid = 32;
+	var invisibleToUsWhenAttached = 33;
+	var replaceInstancesInArea = 34;
+	var addBodyWhenAttachedNonClearing = 35;
+	var avoidCastShadow = 36;
+	var avoidReceiveShadow = 37;
+	var omitAutoSounds = 38;
+	var omitAutoHapticFeedback = 39;
+	var keepSizeInInventory = 40;
+	var autoAddReflectionPartsSideways = 41;
+	var autoAddReflectionPartsVertical = 42;
+	var autoAddReflectionPartsDepth = 43;
+	var activeEvenInInventory = 44;
+	var stricterPhysicsSyncing = 45;
+	var removeOriginalWhenGrabbed = 46;
+	var persistWhenThrownOrEmitted = 47;
+	var invisible = 48;
+	var uncollidable = 49;
+	var movableByEveryone = 50;
+	var isNeverClonable = 51;
+	var floatsOnLiquid = 52;
+	var invisibleToDesktopCamera = 53;
+	var personalExperience = 54;
+
+	var hideEffectShapes_deprecated = 8;
+}
