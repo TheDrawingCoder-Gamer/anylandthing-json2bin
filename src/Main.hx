@@ -9,5 +9,6 @@ function main() {
 	var thing = ThingHandler.importJson(File.getContent("input.json"));
 
     File.saveBytes("output.bin", ThingHandler.exportBytes(thing));
-    trace(ThingHandler.generateMeshFromThing(thing));
+    var mesh = ThingHandler.generateMeshFromThing(thing);
+    trace(mesh);
 }

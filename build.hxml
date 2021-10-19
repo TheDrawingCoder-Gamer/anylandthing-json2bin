@@ -1,4 +1,4 @@
 -cp src
 -main Main
 -L cloner
---cpp bin
+--hl run.hl

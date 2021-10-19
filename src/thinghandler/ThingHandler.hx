@@ -1,5 +1,6 @@
 package thinghandler;
 
+import sys.FileSystem;
 import objhandler.Martix.Matrix4;
 import sys.io.File;
 import objhandler.ObjImporter.objParser;
@@ -346,11 +347,14 @@ class ThingHandler {
     public static function generateMeshFromThing(thing:Thing):Mesh {
         var fullMesh = new Mesh([]);
         for (part in thing.parts) {
-            var mesh = objParser(File.getContent("res/BaseShapes/" + Std.string(part.baseType) + ".obj"));
-            mesh.translation = Matrix4.translation(part.states[0].position.x, part.states[0].position.y, part.states[0].position.z);
-            mesh.rotation = Matrix4.rotation(part.states[0].rotation.x, part.states[0].rotation.y, part.states[0].rotation.z);
-            mesh.scale = Matrix4.scale(part.states[0].scale.x, part.states[0].scale.y, part.states[0].scale.z);
-            fullMesh = fullMesh.merge(mesh);
+			if (FileSystem.exists("./res/BaseShapes/" + Std.string(part.baseType) + ".obj")) {
+				var mesh = objParser(File.getContent("./res/BaseShapes/" + Std.string(part.baseType) + ".obj"));
+				mesh.translation = Matrix4.translation(part.states[0].position.x, part.states[0].position.y, part.states[0].position.z);
+				mesh.rotation = Matrix4.rotation(part.states[0].rotation.x, part.states[0].rotation.y, part.states[0].rotation.z);
+				mesh.scale = Matrix4.scale(part.states[0].scale.x, part.states[0].scale.y, part.states[0].scale.z);
+				fullMesh = fullMesh.merge(mesh);
+            }
+            
         }
         return fullMesh;
     }
