@@ -12,6 +12,9 @@ abstract Triplet<T>(TripletRaw<T>) from TripletRaw<T> to TripletRaw<T> {
     @:op(A == B) public function eq(b) {
         return (this.x == b.x && this.y == b.y && this.z == b.z);
     }
+    @:op(A * B) static public function times(a:Triplet<Float>, b:Triplet<Float>) {
+        return new Triplet<Float>(a.x * b.x, a.y * b.y, a.z * b.z);
+    }
     public function asJsonArrayNoBrackets():String {
         return '${this.x},${this.y},${this.z}';
     }

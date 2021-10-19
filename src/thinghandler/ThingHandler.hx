@@ -1,5 +1,9 @@
 package thinghandler;
 
+import objhandler.Martix.Matrix4;
+import sys.io.File;
+import objhandler.ObjImporter.objParser;
+import objhandler.Mesh;
 import thinghandler.Thing.Axises;
 import thinghandler.TextureTypes;
 import thinghandler.ParticleSystemType;
@@ -251,7 +255,7 @@ class ThingHandler {
                 final state = jsonpart.s[statesI];
                 thingpart.states[statesI].position = state.p;
                 thingpart.states[statesI].rotation = state.r;
-                thingpart.states[statesI].scale = state.s.x != null ? state.s : [1, 1, 1];
+                thingpart.states[statesI].scale = state.s;
                 thingpart.states[statesI].color = state.c;
                 
                 if (state.b != null) {
@@ -333,6 +337,22 @@ class ThingHandler {
                 thing.includedThingIds.set(nameId[0], nameId[1]);
             }
         }
+    }
+    /**
+     * Generates an Obj File from a Thing. Returns Mesh
+     * @param thing 
+     * @return Mesh
+     */
+    public static function generateMeshFromThing(thing:Thing):Mesh {
+        var fullMesh = new Mesh([]);
+        for (part in thing.parts) {
+            var mesh = objParser(File.getContent("res/BaseShapes/" + Std.string(part.baseType) + ".obj"));
+            mesh.translation = Matrix4.translation(part.states[0].position.x, part.states[0].position.y, part.states[0].position.z);
+            mesh.rotation = Matrix4.rotation(part.states[0].rotation.x, part.states[0].rotation.y, part.states[0].rotation.z);
+            mesh.scale = Matrix4.scale(part.states[0].scale.x, part.states[0].scale.y, part.states[0].scale.z);
+            fullMesh = fullMesh.merge(mesh);
+        }
+        return fullMesh;
     }
     static function expandThingAttributeFromJson(thing:Thing, attributes:Array<Int>) {
         if (attributes != null) {

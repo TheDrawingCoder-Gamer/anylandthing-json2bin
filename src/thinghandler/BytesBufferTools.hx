@@ -9,9 +9,9 @@ class BytesBufferTools {
     public static function addFloatTriplet(buf:BytesBuffer, triplet:Triplet<Float>) {
 		trace(triplet);
         if (buf != null && triplet != null) {
-			buf.addFloat(triplet.x != null ? triplet.x : 0);
-			buf.addFloat(triplet.y != null ? triplet.y : 0);
-			buf.addFloat(triplet.z != null ? triplet.z : 0);
+			buf.addFloat(triplet.x);
+			buf.addFloat(triplet.y);
+			buf.addFloat(triplet.z);
         } else {
             buf.addFloat(0);
             buf.addFloat(0);
