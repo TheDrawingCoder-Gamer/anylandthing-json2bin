@@ -1,6 +1,5 @@
 package objhandler;
 
-import objhandler.Mesh.Vector3;
 
 @:structInit
 class Vertex {

@@ -6,21 +6,21 @@ import bulby.cloner.Cloner;
 import thinghandler.Thing.Triplet;
 typedef Vector3 = Triplet<Float>;
 class Mesh implements INode {
-    public function new(faces:Array<Face>, ?children:Array<INode>) {
-        _originalFaces = faces;
-        this.faces = faces;
+    public function new(points:Array<Vertex>, faces:Array<Face>, ?idx:Array<Int>, ?children:Array<Mesh>) {
+        _originalPoints = points;
+        this.points = points;
         this.children = children == null ? [] : children;
+        this.idx = idx != null ? idx : [for (i in 0...points.length) i];
+        this.faces = faces;
     }
     function applyTransformations() {
-        var facesToEdit = Cloner.clone(_originalFaces);
-        for (face in facesToEdit) {
-            for (vert in face.vertices) {
-                vert.position = scale * vert.position;
-                vert.position = rotation * vert.position;
-                vert.position = translation * vert.position;
-            }
+        var pointsToEdit = Cloner.clone(_originalPoints);
+        for (point in pointsToEdit) {
+            point.position = scale * point.position;
+            point.position = rotation * point.position;
+            point.position = translation * point.position;
         }
-        faces = facesToEdit;
+        points = pointsToEdit;
     }
     public function set_scale(newScale:Matrix4) {
 		scale = newScale;
@@ -37,20 +37,12 @@ class Mesh implements INode {
 		applyTransformations();
 		return rotation;
 	}
-    public static function mergeMeshes(a:Mesh, b:Mesh) {
-        // Deep Copy Meshes
-        var mesh = Cloner.clone(a);
-        var mesh2 = Cloner.clone(b);
-        var retMesh = new Mesh(mesh.faces.concat(mesh2.faces));
-        return retMesh;
-    }
-    public function merge(b:Mesh) {
-        return Mesh.mergeMeshes(this, b);
-    }
-    var _originalFaces:Array<Face>;
+    var _originalPoints:Array<Vertex>;
     public var scale(default, set):Matrix4 = Matrix4.identity();
     public var translation(default, set):Matrix4 = Matrix4.identity();
     public var rotation(default, set):Matrix4 = Matrix4.identity();
+    public var points:Array<Vertex>;
+    public var idx:Array<Int>;
+    public var children:Array<Mesh>;
     public var faces:Array<Face>;
-    public var children:Array<INode>;
 }

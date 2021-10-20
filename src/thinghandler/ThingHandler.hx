@@ -133,9 +133,9 @@ typedef BodyAttachment = {
     var i:String;
 }
 typedef AnylandStateJson = {
-    var p:Triplet<Float>;
-    var r:Triplet<Float>;
-    var s:Triplet<Float>;
+    var p:Triplet<Null<Float>>;
+    var r:Triplet<Null<Float>>;
+    var s:Triplet<Null<Float>>;
     var c:Color;
     var b:Array<String>;
 }
@@ -255,9 +255,9 @@ class ThingHandler {
             for (statesI in 0...(maxStates)) {
                 thingpart.states[statesI] = new ThingPartState();
                 final state = jsonpart.s[statesI];
-                thingpart.states[statesI].position = state.p;
-                thingpart.states[statesI].rotation = state.r;
-                thingpart.states[statesI].scale = state.s;
+                thingpart.states[statesI].position = Triplet.unnullfloat(state.p, 0);
+                thingpart.states[statesI].rotation = Triplet.unnullfloat(state.r, 0);
+                thingpart.states[statesI].scale = Triplet.unnullfloat(state.s, 1);
                 thingpart.states[statesI].color = state.c;
                 
                 if (state.b != null) {

@@ -36,6 +36,9 @@ abstract Triplet<T>(TripletRaw<T>) from TripletRaw<T> to TripletRaw<T> {
     public function toString() {
         return asJsonArrayNoBrackets();
     }
+    static public function unnullfloat(trip:Triplet<Null<Float>>, ?fallback:Float = 0):Triplet<Float> {
+       return new Triplet<Float>(trip.x != null ? trip.x : fallback, trip.y != null ? trip.y : fallback, trip.z != null ? trip.z : fallback);
+    }
 }
 
 
@@ -349,7 +352,7 @@ class ThingPart {
 class ThingPartState {
     public var position:Triplet<Float> = {x: 0, y: 0, z: 0};
     public var rotation:Triplet<Float> = {x: 0, y: 0, z:0};
-    public var scale:Triplet<Float> = {x: 0, y:0 , z: 0};
+    public var scale:Triplet<Float> = {x: 1, y:1 , z: 1};
     public var scriptLines:Array<String> = [];
     public var textureProperties:Vector<TexturePropertyMap<Float>> = Vector.fromArrayCopy([new Map(), new Map()]);
     public var particleSystemProperty:Map<ParticleSystemProperty, Int> = [];

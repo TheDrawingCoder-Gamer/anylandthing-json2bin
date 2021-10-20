@@ -10,5 +10,5 @@ function main() {
 
     File.saveBytes("output.bin", ThingHandler.exportBytes(thing));
     var mesh = ThingHandler.generateMeshFromThing(thing);
-    trace(mesh);
+    trace(mesh.children[0].scale.a);
 }
