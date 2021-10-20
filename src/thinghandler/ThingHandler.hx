@@ -1,5 +1,6 @@
 package thinghandler;
 
+import objhandler.Node;
 import sys.FileSystem;
 import objhandler.Martix.Matrix4;
 import sys.io.File;
@@ -340,23 +341,23 @@ class ThingHandler {
         }
     }
     /**
-     * Generates an Obj File from a Thing. Returns Mesh
+     * Generates an Obj File from a Thing. Returns Node, that contains all meshes
      * @param thing 
-     * @return Mesh
+     * @return Node
      */
-    public static function generateMeshFromThing(thing:Thing):Mesh {
-        var fullMesh = new Mesh([]);
+    public static function generateMeshFromThing(thing:Thing):Node {
+        var node = new Node([]);
         for (part in thing.parts) {
 			if (FileSystem.exists("./res/BaseShapes/" + Std.string(part.baseType) + ".obj")) {
 				var mesh = objParser(File.getContent("./res/BaseShapes/" + Std.string(part.baseType) + ".obj"));
 				mesh.translation = Matrix4.translation(part.states[0].position.x, part.states[0].position.y, part.states[0].position.z);
 				mesh.rotation = Matrix4.rotation(part.states[0].rotation.x, part.states[0].rotation.y, part.states[0].rotation.z);
 				mesh.scale = Matrix4.scale(part.states[0].scale.x, part.states[0].scale.y, part.states[0].scale.z);
-				fullMesh = fullMesh.merge(mesh);
+				node.children.push(mesh);
             }
             
         }
-        return fullMesh;
+        return node;
     }
     static function expandThingAttributeFromJson(thing:Thing, attributes:Array<Int>) {
         if (attributes != null) {

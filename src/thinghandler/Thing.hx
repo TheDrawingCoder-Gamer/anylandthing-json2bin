@@ -199,7 +199,7 @@ class Thing {
 
 
     public function copy() {
-        return new cloner.Cloner().clone(this);
+        return bulby.cloner.Cloner.clone(this);
     }
 }
 enum abstract LowerThingPartAttribute(UInt) from UInt to UInt{
@@ -343,7 +343,7 @@ class ThingPart {
 	public var showDirectionalArrowsWhenEditing = false;
     public function new() {}
 	public function copy() {
-		return new cloner.Cloner().clone(this);
+		return bulby.cloner.Cloner.clone(this);
 	}
 }
 class ThingPartState {
@@ -359,7 +359,7 @@ class ThingPartState {
     public function new() {}
 
 	public function copy() {
-		return new cloner.Cloner().clone(this);
+		return bulby.cloner.Cloner.clone(this);
 	}
 }
 enum abstract SubThingAttr(UInt) to UInt from UInt{
