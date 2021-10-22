@@ -1,5 +1,6 @@
 package thinghandler;
 
+import objhandler.Vector4;
 import objhandler.Node;
 import sys.FileSystem;
 import objhandler.Martix.Matrix4;
@@ -255,9 +256,10 @@ class ThingHandler {
             for (statesI in 0...(maxStates)) {
                 thingpart.states[statesI] = new ThingPartState();
                 final state = jsonpart.s[statesI];
-                thingpart.states[statesI].position = Triplet.unnullfloat(state.p, 0);
-                thingpart.states[statesI].rotation = Triplet.unnullfloat(state.r, 0);
-                thingpart.states[statesI].scale = Triplet.unnullfloat(state.s, 1);
+
+                thingpart.states[statesI].position = state.p;
+                thingpart.states[statesI].rotation = state.r;
+                thingpart.states[statesI].scale = state.s;
                 thingpart.states[statesI].color = state.c;
                 
                 if (state.b != null) {
@@ -307,7 +309,7 @@ class ThingHandler {
                 // Pain
                 part.changedVerticies = new Map<Int, Triplet<Float>>();
                 for (item in partNode.c) {
-                    var vector:Triplet<Float> = item;
+                    var vector:Triplet<Float> = cast item;
                     var previousVertexIndex = 0;
                     for (relVertexIndex in item.indexes) {
                         var vertexIndex = previousVertexIndex + relVertexIndex;
@@ -350,9 +352,14 @@ class ThingHandler {
         for (part in thing.parts) {
 			if (FileSystem.exists("./res/BaseShapes/" + Std.string(part.baseType) + ".obj")) {
 				var mesh = objParser(File.getContent("./res/BaseShapes/" + Std.string(part.baseType) + ".obj"));
+                for (index => pos in part.changedVerticies) {
+                    mesh.getOriginalVert(index).position = new Vector4(pos.x, pos.y, pos.z, 1);
+                    // We don't have to apply transformations because we do that later
+                }   
 				mesh.translation = Matrix4.translation(part.states[0].position.x, part.states[0].position.y, part.states[0].position.z);
 				mesh.rotation = Matrix4.rotation(part.states[0].rotation.x, part.states[0].rotation.y, part.states[0].rotation.z);
 				mesh.scale = Matrix4.scale(part.states[0].scale.x, part.states[0].scale.y, part.states[0].scale.z);
+                mesh.applyTransformations();
 				node.children.push(mesh);
             }
             

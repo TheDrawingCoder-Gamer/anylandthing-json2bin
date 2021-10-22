@@ -13,34 +13,33 @@ class Mesh implements INode {
         this.idx = idx != null ? idx : [for (i in 0...points.length) i];
         this.faces = faces;
     }
-    function applyTransformations() {
+    public function applyTransformations() {
         var pointsToEdit = Cloner.clone(_originalPoints);
         for (point in pointsToEdit) {
-            point.position = scale * point.position;
-            point.position = rotation * point.position;
-            point.position = translation * point.position;
+            point.position = translation * rotation * scale * point.position;
         }
         points = pointsToEdit;
     }
-    public function set_scale(newScale:Matrix4) {
-		scale = newScale;
-        applyTransformations();
-        return scale;
+    public function getOriginalVert(i:Int) {
+        return _originalPoints[idx[i]];
     }
-	public function set_translation(newTranslation:Matrix4) {
-		translation = newTranslation;
-		applyTransformations();
-		return translation;
-	}
-	public function set_rotation(newRotation:Matrix4) {
-		rotation = newRotation;
-		applyTransformations();
-		return rotation;
-	}
+    public function getVert(i:Int) {
+        return points[idx[i]];
+    }
+    public function setOGVertAndRescale(i:Int, vert:Vertex) {
+        _originalPoints[idx[i]] = vert;
+        applyTransformations();
+
+    }
+    public function set_scale(v:Matrix4) {
+        scale = v;
+        trace("set scale to " + v);
+        return v;
+    }
     var _originalPoints:Array<Vertex>;
     public var scale(default, set):Matrix4 = Matrix4.identity();
-    public var translation(default, set):Matrix4 = Matrix4.identity();
-    public var rotation(default, set):Matrix4 = Matrix4.identity();
+    public var translation:Matrix4 = Matrix4.identity();
+    public var rotation:Matrix4 = Matrix4.identity();
     public var points:Array<Vertex>;
     public var idx:Array<Int>;
     public var children:Array<Mesh>;

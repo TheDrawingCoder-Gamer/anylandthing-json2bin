@@ -7,12 +7,14 @@ typedef Vector4Raw = {
     var w:Float;
 };
 
-@:forward(x, y, z, w)
+@:forward
 abstract Vector4(Vector4Raw) from Vector4Raw to Vector4Raw {
 	@:op(A == B) public function eq(b) {
 		return (this.x == b.x && this.y == b.y && this.z == b.z && this.w == b.w);
 	}
-
+	public inline function dot(b:Vector4) {
+		return this.x * b.x + this.y * b.y + this.z * b.z + this.w * b.w;
+	}
 	public function asJsonArrayNoBrackets():String {
 		return '${this.x},${this.y},${this.z},${this.w}';
 	}
