@@ -87,6 +87,6 @@ function objExporter(node:Node) {
     return file;
 }
 
-private function roundf(f:Float, to:Int) {
+function roundf(f:Float, to:Int) {
     return Math.round(f * (Math.pow(10, to))) / Math.pow(10, to);
 }
