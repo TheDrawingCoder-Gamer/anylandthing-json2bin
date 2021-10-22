@@ -1,51 +1,12 @@
 package thinghandler;
 
+import objhandler.Vector3;
 import thinghandler.TextureProperty.TexturePropertyMap;
 import haxe.ds.Vector;
-typedef TripletRaw<T> = {
-    var x:T;
-    var y:T;
-    var z:T;
-}
-@:forward(x, y,z)
-abstract Triplet<T>(TripletRaw<T>) from TripletRaw<T> to TripletRaw<T> {
-    @:op(A == B) public function eq(b) {
-        return (this.x == b.x && this.y == b.y && this.z == b.z);
-    }
-    @:op(A * B) static public function times(a:Triplet<Float>, b:Triplet<Float>) {
-        return new Triplet<Float>(a.x * b.x, a.y * b.y, a.z * b.z);
-    }
-    public function asJsonArrayNoBrackets():String {
-        return '${this.x},${this.y},${this.z}';
-    }
-    public function asJsonArray():String {
-        return '[${asJsonArrayNoBrackets()}]';
-    }
-    public function new(x:T, y:T, z:T) {
-        this = {x: x, y: y, z: z};
-    }
-    @:from
-    static public function fromArray<T>(arr:Array<T>) {
-        return new Triplet<T>(arr[0], arr[1], arr[2]);
-    }
-    @:to
-    public function asArray() {
-        return [this.x, this.y, this.z];
-    }
-    @:to
-    public function toString() {
-        return asJsonArrayNoBrackets();
-    }
-    static public function unnullfloat(trip:Triplet<Null<Float>>, ?fallback:Float = 0):Triplet<Float> {
-       return new Triplet<Float>(trip.x != null ? trip.x : fallback, trip.y != null ? trip.y : fallback, trip.z != null ? trip.z : fallback);
-    }
-}
 
 
-typedef Quadlet<T> = {
-    > TripletRaw<T>,
-    var w:T;
-}
+
+
 
 enum abstract Axises(UInt) from UInt to UInt {
     var x = 1;
@@ -266,7 +227,7 @@ class ThingPart {
     // I could really use a tuple right now, tuple right now, tuple right now
     public var textureTypes:Vector<TextureTypes> = Vector.fromArrayCopy([TextureTypes.None, TextureTypes.None]);
     public var autoContinuation:Null<ThingPartAutocomplete>;
-    public var changedVerticies:Map<Int, Triplet<Float>> = [];
+    public var changedVerticies:Map<Int, Vector3> = [];
     public var imageType:ImageType = NotPng;
     public static var smoothingAngles:Map<ThingPartBase, Int> = [
 		ThingPartBase.Bowl1 =>  80, ThingPartBase.Bowl2 =>  80, ThingPartBase.Bowl3 =>  80, ThingPartBase.Bowl4 =>  80, ThingPartBase.Bowl5 =>  80,
@@ -350,9 +311,9 @@ class ThingPart {
 	}
 }
 class ThingPartState {
-    public var position:Triplet<Float> = {x: 0, y: 0, z: 0};
-    public var rotation:Triplet<Float> = {x: 0, y: 0, z:0};
-    public var scale:Triplet<Float> = {x: 1, y:1 , z: 1};
+    public var position:Vector3 = Vector3.empty();
+    public var rotation:Vector3 = Vector3.empty();
+    public var scale:Vector3 = new Vector3(1, 1, 1);
     public var scriptLines:Array<String> = [];
     public var textureProperties:Vector<TexturePropertyMap<Float>> = Vector.fromArrayCopy([new Map(), new Map()]);
     public var particleSystemProperty:Map<ParticleSystemProperty, Int> = [];
@@ -376,8 +337,8 @@ enum abstract ImageType(UInt) to UInt from UInt {
 }
 class SubThingInfo {
     public var thingId:String = "";
-    public var pos:Triplet<Float> = {x: 0, y: 0, z: 0};
-    public var rot:Triplet<Float> = {x: 0, y: 0, z: 0};
+    public var pos:Vector3 = Vector3.empty();
+    public var rot:Vector3 = Vector3.empty();
     public var invertIsHoldable = false;
     public var invertInvisible = false;
     public var invertUncollidable = false;

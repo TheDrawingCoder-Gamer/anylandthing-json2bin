@@ -1,6 +1,8 @@
 package objhandler;
 
-typedef Vector4Raw = {
+import objhandler.ObjImporter.roundf;
+
+private typedef Vector4Raw = {
 	var x:Float;
 	var y:Float;
     var z:Float;
@@ -14,13 +16,6 @@ abstract Vector4(Vector4Raw) from Vector4Raw to Vector4Raw {
 	}
 	public inline function dot(b:Vector4) {
 		return this.x * b.x + this.y * b.y + this.z * b.z + this.w * b.w;
-	}
-	public function asJsonArrayNoBrackets():String {
-		return '${this.x},${this.y},${this.z},${this.w}';
-	}
-
-	public function asJsonArray():String {
-		return '[${asJsonArrayNoBrackets()}]';
 	}
 
 	public function new(x:Float, y:Float, z:Float, w:Float) {
@@ -39,7 +34,11 @@ abstract Vector4(Vector4Raw) from Vector4Raw to Vector4Raw {
 
 	@:to
 	public function toString() {
-		return asJsonArrayNoBrackets();
+		return 'Vector4 {${this.x} ${this.y} ${this.z} ${this.w}}';
+	}
+
+	public static function nearlyequals(a:Vector4, b:Vector4) {
+		return roundf(a.x, 7) == roundf(b.x, 7) && roundf(a.y, 7) == roundf(b.y, 7) && roundf(a.z, 7) == roundf(b.z, 7) && roundf(b.w, 7) == roundf(a.w, 7);
 	}
 
 }

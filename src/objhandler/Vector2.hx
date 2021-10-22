@@ -1,6 +1,8 @@
 package objhandler;
 
-typedef Vector2Raw = {
+import objhandler.ObjImporter.roundf;
+
+private typedef Vector2Raw = {
     var x:Float;
     var y:Float;
 };
@@ -11,13 +13,6 @@ abstract Vector2(Vector2Raw) from Vector2Raw to Vector2Raw {
 		return (this.x == b.x && this.y == b.y);
 	}
 
-	public function asJsonArrayNoBrackets():String {
-		return '${this.x},${this.y}';
-	}
-
-	public function asJsonArray():String {
-		return '[${asJsonArrayNoBrackets()}]';
-	}
 
 	public function new(x:Float, y:Float) {
 		this = {x: x, y: y};
@@ -27,7 +22,9 @@ abstract Vector2(Vector2Raw) from Vector2Raw to Vector2Raw {
 	static public function fromArray(arr:Array<Float>) {
 		return new Vector2(arr[0], arr[1]);
 	}
-
+	public static function nearlyequals(a:Vector2, b:Vector2) {
+		return roundf(a.x, 7) == roundf(b.x, 7) && roundf(a.y, 7) == roundf(b.y, 7);
+	}
 	@:to
 	public function asArray() {
 		return [this.x, this.y];
@@ -35,6 +32,6 @@ abstract Vector2(Vector2Raw) from Vector2Raw to Vector2Raw {
 
 	@:to
 	public function toString() {
-		return asJsonArrayNoBrackets();
+		return 'Vector2 {${this.x} ${this.y}}';
 	}
 }

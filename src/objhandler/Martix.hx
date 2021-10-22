@@ -1,6 +1,5 @@
 package objhandler;
 
-import objhandler.Mesh.Vector3;
 
 typedef MatrixRaw = {
     var a:Float;
@@ -32,7 +31,8 @@ typedef Matrix3Raw = {
     var h:Float;
     var i:Float;
 }
-@:forward(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p)
+@:forward
+@:nullSafety(Strict)
 abstract Matrix4(MatrixRaw) from MatrixRaw to MatrixRaw{
 	@:op(A == B) inline static function equal(a:Matrix4, b:Matrix4) {
 		return a.a == b.a && a.b == b.b && a.c == b.c && a.d == b.d && a.e == b.e && a.f == b.f && a.g == b.g && a.h == b.h

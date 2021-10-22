@@ -1,5 +1,6 @@
 package thinghandler;
 
+import objhandler.Vector3;
 import objhandler.Vector4;
 import objhandler.Node;
 import sys.FileSystem;
@@ -15,7 +16,6 @@ import thinghandler.MaterialTypes;
 import thinghandler.ThingPartBase;
 import haxe.Json;
 import thinghandler.Thing.ThingPartState;
-import thinghandler.Thing.Triplet;
 import thinghandler.Thing.SubThingAttr;
 import thinghandler.Thing.SubThingInfo;
 import thinghandler.Thing.ThingPart;
@@ -62,8 +62,8 @@ abstract ChangedVerticies(Array<Dynamic>) from Array<Dynamic> to Array<Dynamic> 
         return cast this;
     }
     @:to
-    function toTripletFloat() {
-        return new Triplet<Float>(x, y, z);
+    public function toVector3() {
+        return new Vector3(x, y, z);
     }
 }
 typedef AnylandThingJson = {
@@ -126,40 +126,40 @@ typedef IncludedBody = {
     var ?ar:BodyAttachment;
 };
 typedef NoScaleTransformJson = {
-    var p:Triplet<Float>;
-    var r:Triplet<Float>;
+    var p:Array<Float>;
+    var r:Array<Float>;
 }
 typedef BodyAttachment = {
     > NoScaleTransformJson,
     var i:String;
 }
 typedef AnylandStateJson = {
-    var p:Triplet<Null<Float>>;
-    var r:Triplet<Null<Float>>;
-    var s:Triplet<Null<Float>>;
-    var c:Color;
+    var p:Array<Float>;
+    var r:Array<Float>;
+    var s:Array<Float>;
+    var c:Array<Float>;
     var b:Array<String>;
 }
 typedef AnylandAC = {
     var id:String;
     var c:Int;
     var ?w:Int;
-    var ?rp:Triplet<Float>;
-    var ?rr:Triplet<Float>;
-    var ?rs:Triplet<Float>;
+    var ?rp:Array<Float>;
+    var ?rr:Array<Float>;
+    var ?rs:Array<Float>;
 }
 typedef IncludedSubthingJson = {
     var t:String;
-    var p:Triplet<Float>;
-    var r:Triplet<Float>;
+    var p:Array<Float>;
+    var r:Array<Float>;
     var ?n:String;
     var ?a:Array<Int>;
 }
 typedef PlacedSubthingJson = {
     var i:String;
     var t:String;
-    var p:Triplet<Float>;
-    var r:Triplet<Float>;
+    var p:Array<Float>;
+    var r:Array<Float>;
 }
 class ThingHandler {
     public static function importJson(json:String, keepPartsSeperate:Bool = false, isForPlacement:Bool = false) {
@@ -307,9 +307,9 @@ class ThingHandler {
 
             if (partNode.c != null) {
                 // Pain
-                part.changedVerticies = new Map<Int, Triplet<Float>>();
+                part.changedVerticies = new Map<Int, Vector3>();
                 for (item in partNode.c) {
-                    var vector:Triplet<Float> = cast item;
+                    var vector:Vector3 = item.toVector3();
                     var previousVertexIndex = 0;
                     for (relVertexIndex in item.indexes) {
                         var vertexIndex = previousVertexIndex + relVertexIndex;
@@ -350,12 +350,15 @@ class ThingHandler {
     public static function generateMeshFromThing(thing:Thing):Node {
         var node = new Node([]);
         for (part in thing.parts) {
+            if (part.materialType == InvisibleWhenDone || part.partInvisible) 
+                continue;
 			if (FileSystem.exists("./res/BaseShapes/" + Std.string(part.baseType) + ".obj")) {
 				var mesh = objParser(File.getContent("./res/BaseShapes/" + Std.string(part.baseType) + ".obj"));
                 for (index => pos in part.changedVerticies) {
                     mesh.getOriginalVert(index).position = new Vector4(pos.x, pos.y, pos.z, 1);
                     // We don't have to apply transformations because we do that later
                 }   
+                trace(part.states[0].position.x);
 				mesh.translation = Matrix4.translation(part.states[0].position.x, part.states[0].position.y, part.states[0].position.z);
 				mesh.rotation = Matrix4.rotation(part.states[0].rotation.x, part.states[0].rotation.y, part.states[0].rotation.z);
 				mesh.scale = Matrix4.scale(part.states[0].scale.x, part.states[0].scale.y, part.states[0].scale.z);
@@ -621,7 +624,7 @@ class ThingHandler {
         
     }
     static function writeChangedVertices(buf:BytesBuffer, part:ThingPart, changedVertsIndexRef:Map<String, Int>, indexWithinThing:Int) {
-        var indicesByPosition:Map<Triplet<Float>, Array<Int>> = [];
+        var indicesByPosition:Map<Vector3, Array<Int>> = [];
         var addedThings:Array<String> = [];
         for (index => pos in part.changedVerticies) {
             // I think this is only made by us so we will have the references??? Busted

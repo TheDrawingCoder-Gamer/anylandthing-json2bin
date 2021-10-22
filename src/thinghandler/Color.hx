@@ -1,9 +1,8 @@
 package thinghandler;
-
-import thinghandler.Thing.Triplet;
+import objhandler.Vector3;
 @:build(thinghandler.AbstractHelper.buildForwardFields())
 @:build(thinghandler.AbstractHelper.buildProduceNewInstFromVar())
-abstract Color(Triplet<Float>) from Triplet<Float> to Triplet<Float> {
+abstract Color(Vector3) from Vector3 to Vector3 {
 	@:forwardfield(x)
 	public var r:Float;
 	@:forwardfield(y)
@@ -12,7 +11,7 @@ abstract Color(Triplet<Float>) from Triplet<Float> to Triplet<Float> {
 	public var b:Float;
 
 	public function new(r:Float, g:Float, b:Float) {
-		this = {x: r, y: g, z: b};
+		this = new Vector3(r, g, b);
 	}
 
 	@:createinstonread(thinghandler.Color, 1, 1, 1)

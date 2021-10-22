@@ -1,6 +1,7 @@
 package objhandler;
 
 
+import objhandler.Node.INode;
 using Lambda;
 import Std.parseFloat as pFloat;
 var position:EReg = ~/^v\s+([\d\.\+\-eE]+)\s+([\d\.\+\-eE]+)\s+([\d\.\+\-eE]+)/;
@@ -30,7 +31,7 @@ function objParser(src:String) {
                 var p0 = Std.parseInt(face.matched(i));
                 var p1 = Std.parseInt(face.matched(i + 1));
                 var p2 = Std.parseInt(face.matched(i + 2));
-                var ref:IndexRef = {point: p0 - 1, uv: p1 - 1};
+                var ref:IndexRef = {point: p0 - 1, uv: p1 - 1, normal: p2 - 1};
                 
                 
                 indexRef.push(ref);
@@ -44,7 +45,48 @@ function objParser(src:String) {
 
     }
     for (i in 0...positions.length) {
-        verticies.push(new Vertex(positions[i], uvs[i]));
+        verticies.push(new Vertex(positions[i], uvs[i], normals[i]));
     }
     return new Mesh(verticies, faces);
+}
+
+function objExporter(node:Node) {
+    // We stitch together all the meshes here because it saves on painfulness of scaling things
+    var file = "# Export of Bulby's Anyland converter \nmtllib export.mtl\ng ALThing\n";
+    for (mesh in node.children) {
+        for (i in 0...mesh.idx.length) {
+			var pos = mesh.getVert(i).position;
+            file += 'v ${roundf(pos.x, 7)} ${roundf(pos.y, 7)} ${roundf(pos.z, 7)}\n';
+        }
+    }
+    for (mesh in node.children) {
+        for (i in 0...mesh.idx.length) {
+            var normal = mesh.getVert(i).normal;
+            file += 'vn ${roundf(normal.x, 7)} ${roundf(normal.y, 7)} ${roundf(normal.z, 7)}\n';
+        }
+    }
+    for (mesh in node.children) {
+        for (i in 0...mesh.idx.length) {
+            var uv = mesh.getVert(i).uv;
+            file += 'vt ${roundf(uv.x, 7)} ${roundf(uv.y, 7)}\n';
+        }
+    }
+    file += "usemtl None\n";
+    var total = 0;
+    for (mesh in node.children) {
+        for (face in mesh.faces) {
+            final v1 = face.vertices[0];
+            final v2 = face.vertices[1];
+            final v3 = face.vertices[2];
+            file += 'f ${v1.point + 1 + total}/${v1.uv + 1 + total}/${v1.normal + 1 + total} ${v2.point + 1 + total}/${v2.uv + 1 + total}/${v2.normal + 1 + total} ${v3.point + 1 + total}/${v3.uv + 1 + total}/${v3.normal + 1 + total}\n';
+            
+        }
+		total += mesh.idx.length;
+        trace(total);
+    }
+    return file;
+}
+
+private function roundf(f:Float, to:Int) {
+    return Math.round(f * (Math.pow(10, to))) / Math.pow(10, to);
 }

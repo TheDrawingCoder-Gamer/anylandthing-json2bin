@@ -9,7 +9,6 @@ enum abstract MaterialTypes(UInt) from UInt to UInt{
     var Particles;
     var ParticlesBig;
     var Transparent;
-    @:deprecated
     var InvisibleWhenDone;
     var Plastic;
     var Unshiny;

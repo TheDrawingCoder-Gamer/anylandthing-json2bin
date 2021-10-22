@@ -33,6 +33,16 @@
                 "args": "active configuration"
             }
         },
+        {
+            "name": "Node (launch)",
+            "request": "launch",
+            "type": "node",
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": {
+                "task": "haxe",
+                "type": "active configuration"
+            }
+        }
 
     ]
 }

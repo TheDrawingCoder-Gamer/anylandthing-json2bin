@@ -3,8 +3,7 @@ package objhandler;
 import objhandler.Node.INode;
 import objhandler.Martix;
 import bulby.cloner.Cloner;
-import thinghandler.Thing.Triplet;
-typedef Vector3 = Triplet<Float>;
+
 class Mesh implements INode {
     public function new(points:Array<Vertex>, faces:Array<Face>, ?idx:Array<Int>, ?children:Array<Mesh>) {
         _originalPoints = points;
@@ -17,6 +16,7 @@ class Mesh implements INode {
         var pointsToEdit = Cloner.clone(_originalPoints);
         for (point in pointsToEdit) {
             point.position = translation * rotation * scale * point.position;
+            point.normal = translation * rotation * scale * point.normal;
         }
         points = pointsToEdit;
     }
@@ -36,7 +36,7 @@ class Mesh implements INode {
         trace("set scale to " + v);
         return v;
     }
-    var _originalPoints:Array<Vertex>;
+    public var _originalPoints:Array<Vertex>;
     public var scale(default, set):Matrix4 = Matrix4.identity();
     public var translation:Matrix4 = Matrix4.identity();
     public var rotation:Matrix4 = Matrix4.identity();

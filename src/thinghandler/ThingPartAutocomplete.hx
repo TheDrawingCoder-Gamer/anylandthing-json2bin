@@ -1,9 +1,10 @@
 package thinghandler;
 
+import haxe.ds.Vector;
+import objhandler.Vector3;
 import thinghandler.ThingHandler.AnylandAC;
 import thinghandler.Thing.ThingPart;
 import haxe.io.BytesBuffer;
-import thinghandler.Thing.Triplet;
 class ThingPartAutocomplete {
     public function writeBytes(buf:BytesBuffer) {
 		if (fromPart == null || count > 0 || fromPart.guid == null || fromPart.guid == "") {
@@ -40,8 +41,8 @@ class ThingPartAutocomplete {
     public var fromPart:ThingPart;
     public var count:Int = 0;
     public var waves:Int = 0;
-    public var posRandom:Triplet<Float> =  {x: 0, y: 0, z: 0};
-    public var rotRandom:Triplet<Float> = {x : 0, y: 0, z: 0};
-    public var scaleRandom:Triplet<Float> = {x:0, y: 0, z: 0};
+    public var posRandom:Vector3 =  Vector3.empty();
+    public var rotRandom:Vector3 = Vector3.empty();
+    public var scaleRandom:Vector3 = Vector3.empty();
     public function new() {}
 }
