@@ -353,13 +353,17 @@ class ThingHandler {
             if (part.materialType == InvisibleWhenDone || part.partInvisible) 
                 continue;
 			if (FileSystem.exists("./res/BaseShapes/" + Std.string(part.baseType) + ".obj")) {
-				var mesh = objParser(File.getContent("./res/BaseShapes/" + Std.string(part.baseType) + ".obj"));
-                /* 
+				var mesh = objParser(File.getContent("./res/BaseShapes/" + Std.string(part.baseType) + ".obj"), false);
+                var swapDownAndForwardMatrix = new Matrix4(
+                    1, 0, 0, 0,
+                    0, 0, -1, 0,
+                    0, -1, 0, 0,
+                    0, 0, 0, 1
+                );
                 for (index => pos in part.changedVerticies) {
                     mesh.positions[index] = new Vector4(pos.x, pos.y, pos.z, 1);
                     // We don't have to apply transformations because we do that later
                 }   
-                */
                 mesh.optimize();
 				mesh.translation = Matrix4.translation(part.states[0].position.x, part.states[0].position.y, part.states[0].position.z);
 				mesh.rotation = Matrix4.rotation(part.states[0].rotation.x, part.states[0].rotation.y, part.states[0].rotation.z);

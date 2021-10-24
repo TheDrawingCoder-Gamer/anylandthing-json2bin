@@ -26,11 +26,11 @@ class Mesh implements INode {
         optimizedPos = [for (index => item in optimizedPos) if (item != null && optimizedPos.indexOfVector4(item) == index) item];
         optimizedNormals = [for (index => item in optimizedNormals) if (optimizedNormals.indexOfVector4(item) == index) item];
         optimizedUvs = [for (index => item in optimizedUvs) if (optimizedUvs.indexOfVector2(item) == index) item];
-
+		this.positions = optimizedPos;
+		this.uvs = optimizedUvs;
+		this.normals = optimizedNormals;
         faces = [for (face in newFaces) face.toFaceForMesh(this)];
-        this.positions = optimizedPos;
-        this.uvs = optimizedUvs;
-        this.normals = optimizedNormals;
+        
     }
     public function applyTransformations() {
         var positionsToEdit = Cloner.clone(positions);

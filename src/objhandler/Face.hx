@@ -1,6 +1,7 @@
 package objhandler;
 
 using Lambda;
+using objhandler.ArrayTools;
 @:structInit
 class Face {
     public var vertices:Array<IndexRef> = [];
@@ -23,11 +24,12 @@ class DirectFace {
         var face:Face = new Face([]);
         for (i in 0...this.positions.length) {
             face.vertices.push({
-                normal :  mesh.normals.indexOf(this.normals[i]),
-                point : mesh.positions.indexOf(this.positions[i]),
-                uv : mesh.uvs.indexOf(this.uvs[i])
+                normal :  mesh.normals.indexOfVector4(this.normals[i]),
+                point : mesh.positions.indexOfVector4(this.positions[i]),
+                uv : mesh.uvs.indexOfVector2(this.uvs[i])
             });
         }
+        trace(face.vertices[0].normal);
         return face;
             
     }

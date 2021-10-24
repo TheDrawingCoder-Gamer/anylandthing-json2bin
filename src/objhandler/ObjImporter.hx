@@ -15,7 +15,6 @@ function objParser(src:String, optimized:Bool = true) {
     var uvs:Array<Vector2> = [];
     var normals:Array<Vector4> = [];
     var faces:Array<Face> = [];
-	var verticies:Array<Vertex> = [];
     var allIndexRef:Array<IndexRef> = [];
     for (line in lines) {
         if (position.match(line)) {
@@ -51,12 +50,12 @@ function objExporter(node:Node) {
     // We stitch together all the meshes here because it saves on painfulness of scaling things
     var file = "# Export of Bulby's Anyland converter \nmtllib export.mtl\ng ALThing\n";
     for (mesh in node.children) {
-        for (pos in mesh.positions) {
+        for (pos in mesh.displayPositions) {
             file += 'v ${roundf(pos.x, 7)} ${roundf(pos.y, 7)} ${roundf(pos.z, 7)}\n';
         }
     }
     for (mesh in node.children) {
-        for (normal in mesh.normals) {
+        for (normal in mesh.displayNormals) {
             file += 'vn ${roundf(normal.x, 7)} ${roundf(normal.y, 7)} ${roundf(normal.z, 7)}\n';
         }
     }
