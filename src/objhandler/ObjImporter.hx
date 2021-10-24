@@ -9,13 +9,12 @@ var normal:EReg = ~/^vn\s+([\d\.\+\-eE]+)\s+([\d\.\+\-eE]+)\s+([\d\.\+\-eE]+)/;
 var uv:EReg = ~/^vt\s+([\d\.\+\-eE]+)\s+([\d\.\+\-eE]+)/;
 var face:EReg = ~/^f\s+(-?\d+)\/(-?\d+)\/(-?\d+)\s+(-?\d+)\/(-?\d+)\/(-?\d+)\s+(-?\d+)\/(-?\d+)\/(-?\d+)(?:\s+(-?\d+)\/(-?\d+)\/(-?\d+))?/;
 
-function objParser(src:String) {
+function objParser(src:String, optimized:Bool = true) {
     var lines = src.split('\n');
     var positions:Array<Vector4> = [];
     var uvs:Array<Vector2> = [];
     var normals:Array<Vector4> = [];
     var faces:Array<Face> = [];
-	var verticies:Array<Vertex> = [];
     var allIndexRef:Array<IndexRef> = [];
     for (line in lines) {
         if (position.match(line)) {
@@ -44,45 +43,42 @@ function objParser(src:String) {
         }
 
     }
-    for (i in 0...positions.length) {
-        verticies.push(new Vertex(positions[i], uvs[i], normals[i]));
-    }
-    return new Mesh(verticies, faces);
+    return new Mesh(positions, normals, uvs, faces, optimized);
 }
 
 function objExporter(node:Node) {
     // We stitch together all the meshes here because it saves on painfulness of scaling things
     var file = "# Export of Bulby's Anyland converter \nmtllib export.mtl\ng ALThing\n";
     for (mesh in node.children) {
-        for (i in 0...mesh.idx.length) {
-			var pos = mesh.getVert(i).position;
+        for (pos in mesh.displayPositions) {
             file += 'v ${roundf(pos.x, 7)} ${roundf(pos.y, 7)} ${roundf(pos.z, 7)}\n';
         }
     }
     for (mesh in node.children) {
-        for (i in 0...mesh.idx.length) {
-            var normal = mesh.getVert(i).normal;
+        for (normal in mesh.displayNormals) {
             file += 'vn ${roundf(normal.x, 7)} ${roundf(normal.y, 7)} ${roundf(normal.z, 7)}\n';
         }
     }
     for (mesh in node.children) {
-        for (i in 0...mesh.idx.length) {
-            var uv = mesh.getVert(i).uv;
+        for (uv in mesh.uvs) {
             file += 'vt ${roundf(uv.x, 7)} ${roundf(uv.y, 7)}\n';
         }
     }
     file += "usemtl None\n";
-    var total = 0;
+    var totalP = 0;
+    var totalU = 0;
+    var totalN = 0;
     for (mesh in node.children) {
         for (face in mesh.faces) {
             final v1 = face.vertices[0];
             final v2 = face.vertices[1];
             final v3 = face.vertices[2];
-            file += 'f ${v1.point + 1 + total}/${v1.uv + 1 + total}/${v1.normal + 1 + total} ${v2.point + 1 + total}/${v2.uv + 1 + total}/${v2.normal + 1 + total} ${v3.point + 1 + total}/${v3.uv + 1 + total}/${v3.normal + 1 + total}\n';
+            file += 'f ${v1.point + 1 + totalP}/${v1.uv + 1 + totalU}/${v1.normal + 1 + totalN} ${v2.point + 1 + totalP}/${v2.uv + 1 + totalU}/${v2.normal + 1 + totalN} ${v3.point + 1 + totalP}/${v3.uv + 1 + totalU}/${v3.normal + 1 + totalN}\n';
             
         }
-		total += mesh.idx.length;
-        trace(total);
+		totalP += mesh.positions.length;
+        totalU += mesh.uvs.length;
+        totalN += mesh.normals.length;
     }
     return file;
 }
