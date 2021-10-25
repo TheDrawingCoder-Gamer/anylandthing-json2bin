@@ -1,5 +1,6 @@
 package thinghandler;
 
+import objhandler.Material;
 import objhandler.Vector3;
 import objhandler.Vector4;
 import objhandler.Node;
@@ -349,6 +350,7 @@ class ThingHandler {
      */
     public static function generateMeshFromThing(thing:Thing):Node {
         var node = new Node([]);
+        var matCache:Map<String, Material> = new Map<String, Material>();
         for (part in thing.parts) {
             if (part.materialType == InvisibleWhenDone || part.partInvisible) 
                 continue;
@@ -365,6 +367,13 @@ class ThingHandler {
                     // We don't have to apply transformations because we do that later
                 }   
                 mesh.optimize();
+				var matKey = '_${Math.round(part.states[0].color.r * 255)}_${Math.round(part.states[0].color.g * 255)}_${Math.round(part.states[0].color.b * 255)}_${Std.string(part.materialType)}_';
+                if (matCache.exists(matKey)) {
+                    mesh.material = matCache.get(matKey);
+                } else {
+                    matCache.set(matKey, new Material(matKey, part.states[0].color, null, null, part.materialType.alpha(), 0, part.materialType.illum()));
+                    mesh.material = matCache.get(matKey);
+                }
 				mesh.translation = Matrix4.translation(part.states[0].position.x, part.states[0].position.y, part.states[0].position.z);
 				mesh.rotation = Matrix4.rotation(part.states[0].rotation.x, part.states[0].rotation.y, part.states[0].rotation.z);
 				mesh.scale = Matrix4.scale(part.states[0].scale.x, part.states[0].scale.y, part.states[0].scale.z);

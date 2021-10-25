@@ -46,9 +46,9 @@ function objParser(src:String, optimized:Bool = true) {
     return new Mesh(positions, normals, uvs, faces, optimized);
 }
 
-function objExporter(node:Node) {
+function objExporter(node:Node):{mtl:String, obj:String} {
     // We stitch together all the meshes here because it saves on painfulness of scaling things
-    var file = "# Export of Bulby's Anyland converter \nmtllib export.mtl\ng ALThing\n";
+    var file = "# Export of Bulby's Anyland converter \nmtllib output.mtl\ng ALThing\n";
     for (mesh in node.children) {
         for (pos in mesh.displayPositions) {
             file += 'v ${roundf(pos.x, 7)} ${roundf(pos.y, 7)} ${roundf(pos.z, 7)}\n';
@@ -64,11 +64,11 @@ function objExporter(node:Node) {
             file += 'vt ${roundf(uv.x, 7)} ${roundf(uv.y, 7)}\n';
         }
     }
-    file += "usemtl None\n";
     var totalP = 0;
     var totalU = 0;
     var totalN = 0;
     for (mesh in node.children) {
+        file += 'usemtl ${mesh.material.name}\n';
         for (face in mesh.faces) {
             final v1 = face.vertices[0];
             final v2 = face.vertices[1];
@@ -80,9 +80,25 @@ function objExporter(node:Node) {
         totalU += mesh.uvs.length;
         totalN += mesh.normals.length;
     }
-    return file;
+    var mtl = "";
+    for (mesh in node.children) {
+        var result = mtlFromMat(mesh.material);
+        if (mtl.indexOf(result) == -1) {
+            mtl += result;
+        }
+    }
+    return {obj: file, mtl: mtl};
 }
-
+function mtlFromMat(mat:Material) {
+    // github copilot basically did this all for me :pog:
+    return 'newmtl ${mat.name}\n' +
+        'Ka ${mat.ambient.r} ${mat.ambient.g} ${mat.ambient.b}\n' +
+        'Kd ${mat.diffuse.r} ${mat.diffuse.g} ${mat.diffuse.b}\n' +
+        'Ks ${mat.specular.r} ${mat.specular.g} ${mat.specular.b}\n' +
+        'Ns ${mat.shinyness}\n' +
+        'd ${mat.alpha}\n' +
+        'illum ${mat.illum}\n';
+}
 function roundf(f:Float, to:Int) {
     return Math.round(f * (Math.pow(10, to))) / Math.pow(10, to);
 }

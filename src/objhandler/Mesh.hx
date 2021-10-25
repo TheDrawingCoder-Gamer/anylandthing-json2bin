@@ -6,7 +6,7 @@ import objhandler.Martix;
 import bulby.cloner.Cloner;
 using objhandler.ArrayTools;
 class Mesh implements INode {
-    public function new(positions:Array<Vector4>, normals:Array<Vector4>, uvs:Array<Vector2>,faces:Array<Face>, dooptimize:Bool = true, ?children:Array<Mesh>) {
+    public function new(positions:Array<Vector4>, normals:Array<Vector4>, uvs:Array<Vector2>,faces:Array<Face>, dooptimize:Bool = true, ?material:Material, ?children:Array<Mesh>) {
         this.positions = positions;
         this.normals = normals;
         this.uvs = uvs;
@@ -14,6 +14,7 @@ class Mesh implements INode {
         this.displayPositions = positions;
         this.children = children == null ? [] : children;
         this.faces = faces;
+        this.material = material != null ? material : new Material("default");
         if (dooptimize)
             optimize();
     }
@@ -55,4 +56,5 @@ class Mesh implements INode {
     public var uvs:Array<Vector2>;
     public var children:Array<Mesh>;
     public var faces:Array<Face>;
+    public var material:Material;
 }

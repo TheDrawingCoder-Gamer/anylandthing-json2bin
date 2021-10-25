@@ -11,5 +11,8 @@ function main() {
 
     File.saveBytes("output.bin", ThingHandler.exportBytes(thing));
     var mesh = ThingHandler.generateMeshFromThing(thing);
-    File.saveContent("output.obj", objExporter(mesh));
+	var export = objExporter(mesh);
+
+    File.saveContent("output.obj", export.obj);
+    File.saveContent("output.mtl", export.mtl);
 }

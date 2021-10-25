@@ -5,6 +5,7 @@
     "version": "0.2.0",
     "configurations": [
 
+
         {
             "name": "HXCPP",
             "type": "hxcpp",
@@ -27,6 +28,17 @@
             "name": "Eval (launch)",
             "request": "launch",
             "type": "haxe-eval",
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": {
+                "type": "haxe",
+                "args": "active configuration"
+            }
+        },
+        {
+            "name": "Python (launch)",
+            "request": "launch",
+            "type": "python",
+            "program": "run.py",
             "cwd": "${workspaceFolder}",
             "preLaunchTask": {
                 "type": "haxe",

@@ -43,6 +43,6 @@ abstract Vector3(Vector3Raw) from Vector3Raw to Vector3Raw {
 	}
 
 	@:to public function toString() {
-		return 'Vector3 {${this.x} ${this.y} ${this.z}';
+		return 'Vector3 {${this.x} ${this.y} ${this.z}}';
 	}
 }
