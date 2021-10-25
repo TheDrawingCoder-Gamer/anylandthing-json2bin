@@ -19,9 +19,9 @@ class Mesh implements INode {
             optimize();
     }
     public function optimize() {
-        var optimizedPos = Cloner.clone(this.positions);
-        var optimizedNormals = Cloner.clone(this.normals);
-        var optimizedUvs = Cloner.clone(this.uvs);
+        var optimizedPos = [for (pos in positions) new Vector4(pos.x, pos.y, pos.z, pos.w)];
+        var optimizedNormals = [for (normal in normals) new Vector4(normal.x, normal.y, normal.z, normal.w)];
+        var optimizedUvs = [for (uv in uvs) new Vector2(uv.x, uv.y)];
         var newFaces = [for (face in this.faces) new DirectFace(this.normals, this.positions, this.uvs, face)];
 
         optimizedPos = [for (index => item in optimizedPos) if (item != null && optimizedPos.indexOfVector4(item) == index) item];
@@ -34,8 +34,8 @@ class Mesh implements INode {
         
     }
     public function applyTransformations() {
-        var positionsToEdit = Cloner.clone(positions);
-        var normalsToEdit = Cloner.clone(normals);
+        var positionsToEdit = [for (pos in positions) new Vector4(pos.x, pos.y, pos.z, pos.w)];
+        var normalsToEdit = [for (normal in normals) new Vector4(normal.x, normal.y, normal.z, normal.w)];
         for (i in 0...positionsToEdit.length) {
             positionsToEdit[i] = translation * rotation * scale * positionsToEdit[i];
            
