@@ -1,5 +1,6 @@
-package thinghandler;
-import objhandler.Vector3;
+package bulby.assets.mat;
+
+import bulby.BulbyMath;
 @:build(thinghandler.AbstractHelper.buildForwardFields())
 @:build(thinghandler.AbstractHelper.buildProduceNewInstFromVar())
 abstract Color(Vector3) from Vector3 to Vector3 {
@@ -14,6 +15,6 @@ abstract Color(Vector3) from Vector3 to Vector3 {
 		this = new Vector3(r, g, b);
 	}
 
-	@:createinstonread(thinghandler.Color, 1, 1, 1)
+	@:createinstonread(bulby.assets.mat.Color, 1, 1, 1)
 	public static var white:Color;
 }

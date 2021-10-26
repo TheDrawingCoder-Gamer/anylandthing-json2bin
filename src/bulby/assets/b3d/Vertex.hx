@@ -1,7 +1,5 @@
-package objhandler;
-
-
-
+package bulby.assets.b3d;
+import bulby.BulbyMath;
 @:structInit
 class Vertex {
     public var position:Vector4;

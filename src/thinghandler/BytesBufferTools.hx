@@ -1,8 +1,7 @@
 package thinghandler;
 
 import haxe.io.Encoding;
-import objhandler.Vector4;
-import objhandler.Vector3;
+import bulby.BulbyMath;
 import haxe.io.BytesBuffer;
 
 class BytesBufferTools {

@@ -1,7 +1,8 @@
 package objhandler;
 
 import haxe.io.BytesBuffer;
-
+import bulby.BulbyMath;
+import bulby.assets.Node;
 typedef TGLTF = {
     @:optional var extensionsUsed:Array<String>;
     @:optional var extensionsRequired:Array<String>;

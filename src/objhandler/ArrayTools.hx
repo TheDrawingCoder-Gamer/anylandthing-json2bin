@@ -1,5 +1,5 @@
 package objhandler;
-
+import bulby.BulbyMath;
 class ArrayTools {
     public static function indexOfVector4(arr:Array<Vector4>, v:Vector4) {
         var i = 0;

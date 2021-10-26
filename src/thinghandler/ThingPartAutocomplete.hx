@@ -1,7 +1,7 @@
 package thinghandler;
 
 import haxe.ds.Vector;
-import objhandler.Vector3;
+import bulby.BulbyMath;
 import thinghandler.ThingHandler.AnylandAC;
 import thinghandler.Thing.ThingPart;
 import haxe.io.BytesBuffer;

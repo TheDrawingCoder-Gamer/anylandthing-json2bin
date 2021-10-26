@@ -1,5 +1,8 @@
 package objhandler;
 
+import bulby.assets.Mesh;
+import bulby.assets.mat.Material;
+import bulby.assets.b3d.*;
 class GLTFCompatMesh {
     public var material:Material;
     public var verticies:Array<Vertex>;
@@ -15,16 +18,16 @@ class GLTFCompatMesh {
         var i = 0;
         for (face in mesh.faces) {
             var faceVerts = [];
-            for (vert in face.vertices) {
+            for (vert in face) {
                 // don't check for normal : )
                 // Ignore uv outright if no texture (probably causes some wonky results)
-                var foundIndex = Lambda.findIndex(verts, (v) -> v.position == mesh.displayPositions[vert.point] && (v.uv == mesh.uvs[vert.uv] || mesh.material.texture == "") );
+                var foundIndex = Lambda.findIndex(verts, (v) -> v.position == mesh.displayPositions[vert.position] && (v.uv == mesh.uvs[vert.uv] || mesh.material.texture == "") );
                 if (foundIndex != -1) {
                     faceVerts.push(foundIndex);
                     // Me when I average the normals
                     verts[foundIndex].normal = (verts[foundIndex].normal + mesh.displayNormals[vert.normal]) / 2;
                 } else {
-					verts.push(new Vertex(mesh.displayPositions[vert.point], mesh.uvs[vert.uv], mesh.displayNormals[vert.normal]));
+					verts.push(new Vertex(mesh.displayPositions[vert.position], mesh.uvs[vert.uv], mesh.displayNormals[vert.normal]));
                     faceVerts.push(i++);
                 }
                     

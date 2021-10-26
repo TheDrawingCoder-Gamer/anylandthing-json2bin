@@ -1,14 +1,12 @@
 package thinghandler;
 
-import objhandler.Material;
-import objhandler.Vector3;
-import objhandler.Vector4;
-import objhandler.Node;
+import bulby.assets.mat.Material;
+import bulby.BulbyMath;
+import bulby.assets.Node;
 import sys.FileSystem;
-import objhandler.Martix.Matrix4;
+import bulby.BulbyMath;
 import sys.io.File;
-import objhandler.ObjImporter.objParser;
-import objhandler.Mesh;
+import bulby.assets.Mesh;
 import thinghandler.Thing.Axises;
 import thinghandler.TextureTypes;
 import thinghandler.ParticleSystemType;
@@ -358,7 +356,7 @@ class ThingHandler {
             if (part.materialType == InvisibleWhenDone || part.partInvisible) 
                 continue;
 			if (FileSystem.exists("./res/BaseShapes/" + Std.string(part.baseType) + ".obj")) {
-				var mesh = objParser(File.getContent("./res/BaseShapes/" + Std.string(part.baseType) + ".obj"), false);
+				var mesh = Mesh.fromObj(File.getContent("./res/BaseShapes/" + Std.string(part.baseType) + ".obj"), false);
                 for (index => pos in part.changedVerticies) {
                     mesh.positions[index] = new Vector4(pos.x, pos.y, pos.z, 1);
                     // We don't have to apply transformations because we do that later
