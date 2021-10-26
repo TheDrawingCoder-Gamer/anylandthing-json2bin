@@ -10,6 +10,7 @@ class Material {
     public var alpha:Float = 1;
     public var shinyness:Float = 0;
     public var illum:Int = 2;
+    public var isUnshaded = false;
     public function new(name:String, ?diffuse:Color, ?ambient:Color, ?specular:Color, alpha:Float = 1, shinyness:Float = 0, illum:Int = 2) {
         this.name = name;
         this.diffuse = diffuse != null ? diffuse : new Color(0.8, 0.8, 0.8);

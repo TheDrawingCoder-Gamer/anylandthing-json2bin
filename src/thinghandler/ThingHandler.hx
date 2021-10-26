@@ -372,6 +372,9 @@ class ThingHandler {
                     mesh.material = matCache.get(matKey);
                 } else {
                     matCache.set(matKey, new Material(matKey, part.states[0].color, null, null, part.materialType.alpha(), 0, part.materialType.illum()));
+                    if (part.materialType == Unshaded) {
+                        matCache.get(matKey).isUnshaded = true;
+                    }
                     mesh.material = matCache.get(matKey);
                 }
 				mesh.translation = Matrix4.translation(part.states[0].position.x, part.states[0].position.y, part.states[0].position.z);

@@ -36,7 +36,14 @@ abstract Vector4(Vector4Raw) from Vector4Raw to Vector4Raw {
 	public function toString() {
 		return 'Vector4 {${this.x} ${this.y} ${this.z} ${this.w}}';
 	}
-
+	@:op(A + B)
+	public function add(b:Vector4) {
+		return new Vector4(this.x + b.x, this.y + b.y, this.z + b.z, this.w + b.w);
+	}
+	@:op(A / B)
+	public function div(b:Float) {
+		return new Vector4(this.x / b, this.y / b, this.z / b, this.w / b);
+	}
 	public static function nearlyequals(a:Vector4, b:Vector4) {
 		return roundf(a.x, 7) == roundf(b.x, 7) && roundf(a.y, 7) == roundf(b.y, 7) && roundf(a.z, 7) == roundf(b.z, 7) && roundf(b.w, 7) == roundf(a.w, 7);
 	}
