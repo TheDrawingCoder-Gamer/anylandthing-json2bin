@@ -20,7 +20,7 @@ function objParser(src:String, optimized:Bool = true) {
         if (position.match(line)) {
             positions.push(new Vector4(pFloat(position.matched(1)), pFloat(position.matched(2)), pFloat(position.matched(3)), 1));
         } else if (normal.match(line)) {
-            normals.push(new Vector4(pFloat(normal.matched(1)), pFloat(normal.matched(2)), pFloat(normal.matched(3)), 0));
+            normals.push(new Vector4(pFloat(normal.matched(1)), pFloat(normal.matched(2)), pFloat(normal.matched(3)), 0).normalize());
         } else if (uv.match(line)) {
             uvs.push(new Vector2(pFloat(uv.matched(1)), pFloat(uv.matched(2))));
         } else if (face.match(line)) {

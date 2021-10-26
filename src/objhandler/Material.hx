@@ -11,7 +11,8 @@ class Material {
     public var shinyness:Float = 0;
     public var illum:Int = 2;
     public var isUnshaded = false;
-    public function new(name:String, ?diffuse:Color, ?ambient:Color, ?specular:Color, alpha:Float = 1, shinyness:Float = 0, illum:Int = 2) {
+    public var texture:String = "";
+    public function new(name:String, ?diffuse:Color, ?ambient:Color, ?specular:Color, alpha:Float = 1, shinyness:Float = 0, illum:Int = 2, texture:String = "") {
         this.name = name;
         this.diffuse = diffuse != null ? diffuse : new Color(0.8, 0.8, 0.8);
         this.ambient = ambient != null ? ambient : new Color(0.2, 0.2, 0.2);

@@ -99,6 +99,9 @@ abstract Matrix4(MatrixRaw) from MatrixRaw to MatrixRaw{
     }
 	/**
 	 * Makes a rotation matrix. Expects degrees.
+     * Screw right hand
+     * Right Handed Y Up
+     * Rotate around Z first, X second, Y third
 	 * @param yaw 
 	 * @param pitch 
 	 * @param roll 
@@ -114,12 +117,25 @@ abstract Matrix4(MatrixRaw) from MatrixRaw to MatrixRaw{
         var cx = Math.cos(pitchr);
         var sz = Math.sin(rollr);
         var cz = Math.cos(rollr);
-        return new Matrix4(
-            cx * cy, cx * sy * sz - sx * cz, cx * sy * cz + sx * sz, 0,
-            sx * cy, sx * sy * sz + cx * cz, sx * sy * cz - cx * sz, 0,
-            -sy, cy * sz, cy * cz, 0,
-            0, 0, 0, 1 
+        var rZ = new Matrix4(
+            cz, -sz, 0, 0,
+            sz, cz, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
         );
+        var rY = new Matrix4(
+            cy, 0, sy, 0,
+            0, 1, 0, 0,
+            -sy, 0, cy, 0,
+            0, 0, 0, 1
+        );
+        var rX = new Matrix4(
+            1, 0, 0, 0,
+            0, cx, -sx, 0,
+            0, sx, cx, 0,
+            0, 0, 0, 1
+        );
+        return rZ * rX * rY;
     }
     public static inline function translation(x:Float, y:Float, z:Float) {
         return new Matrix4(

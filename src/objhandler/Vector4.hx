@@ -40,6 +40,16 @@ abstract Vector4(Vector4Raw) from Vector4Raw to Vector4Raw {
 	public function add(b:Vector4) {
 		return new Vector4(this.x + b.x, this.y + b.y, this.z + b.z, this.w + b.w);
 	}
+	/**
+	 * Normalizes this vector's x, y, and z components. Modifies this in place.
+	 */
+	public function normalize() {
+		var vec3 = new Vector3(this.x, this.y, this.z).normalize();
+		this.x = vec3.x;
+		this.y = vec3.y;
+		this.z = vec3.z;
+		return this;
+	}
 	@:op(A / B)
 	public function div(b:Float) {
 		return new Vector4(this.x / b, this.y / b, this.z / b, this.w / b);

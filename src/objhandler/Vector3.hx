@@ -47,6 +47,23 @@ abstract Vector3(Vector3Raw) from Vector3Raw to Vector3Raw {
 	@:to public function toString() {
 		return 'Vector3 {${this.x} ${this.y} ${this.z}}';
 	}
+    /**
+     * Normalize this vector. Modifies this in place.
+     */
+    public function normalize() {
+        var mag = Math.pow(Math.pow(this.x, 2) + Math.pow(this.y, 2) + Math.pow(this.z, 2), 1/2);
+        this.x /= mag;
+        this.y /= mag;
+        this.z /= mag;
+        return this;
+    }
+    public function abs() {
+        return new Vector3(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z));
+    }
+    /**
+     * Sets this vector's values to another vectors values, correcting for unity's coordinate system
+     * @param unity Unity Vector
+     */
     public function fromUnity(unity:Vector3) {
         this.x = unity.x * -1;
         this.y = unity.y;

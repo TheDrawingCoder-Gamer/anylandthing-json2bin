@@ -17,7 +17,8 @@ class GLTFCompatMesh {
             var faceVerts = [];
             for (vert in face.vertices) {
                 // don't check for normal : )
-                var foundIndex = Lambda.findIndex(verts, (v) -> v.position == mesh.displayPositions[vert.point] && v.uv == mesh.uvs[vert.uv] );
+                // Ignore uv outright if no texture (probably causes some wonky results)
+                var foundIndex = Lambda.findIndex(verts, (v) -> v.position == mesh.displayPositions[vert.point] && (v.uv == mesh.uvs[vert.uv] || mesh.material.texture == "") );
                 if (foundIndex != -1) {
                     faceVerts.push(foundIndex);
                     // Me when I average the normals

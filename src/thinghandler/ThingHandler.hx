@@ -262,6 +262,8 @@ class ThingHandler {
                 
                 thingpart.states[statesI].rotation.fromUnity(state.r);
                 thingpart.states[statesI].scale.fromUnity(state.s);
+                // Ensure no negative scale to prevent : (
+                thingpart.states[statesI].scale = thingpart.states[statesI].scale.abs();
                 thingpart.states[statesI].color = state.c;
                 
                 if (state.b != null) {
@@ -357,12 +359,6 @@ class ThingHandler {
                 continue;
 			if (FileSystem.exists("./res/BaseShapes/" + Std.string(part.baseType) + ".obj")) {
 				var mesh = objParser(File.getContent("./res/BaseShapes/" + Std.string(part.baseType) + ".obj"), false);
-                var swapDownAndForwardMatrix = new Matrix4(
-                    1, 0, 0, 0,
-                    0, 0, -1, 0,
-                    0, -1, 0, 0,
-                    0, 0, 0, 1
-                );
                 for (index => pos in part.changedVerticies) {
                     mesh.positions[index] = new Vector4(pos.x, pos.y, pos.z, 1);
                     // We don't have to apply transformations because we do that later
