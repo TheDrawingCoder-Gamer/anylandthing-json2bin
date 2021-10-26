@@ -17,6 +17,8 @@ private class Vector3Raw {
     }
 }
 @:forward
+// ok so lets define what coord system we're using. 
+// we're going to use a right handed coordinate system, with y up. 
 abstract Vector3(Vector3Raw) from Vector3Raw to Vector3Raw {
     public inline static function empty() {
         return new Vector3(0,0 ,0);
@@ -45,4 +47,14 @@ abstract Vector3(Vector3Raw) from Vector3Raw to Vector3Raw {
 	@:to public function toString() {
 		return 'Vector3 {${this.x} ${this.y} ${this.z}}';
 	}
+    public function fromUnity(unity:Vector3) {
+        this.x = unity.x * -1;
+        this.y = unity.y;
+        this.z = unity.z;
+        return this;
+
+    }  
+    public function toUnity() {
+        return new Vector3(this.x * -1, this.y, this.z);
+    }
 }

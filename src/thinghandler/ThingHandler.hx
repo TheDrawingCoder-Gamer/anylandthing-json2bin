@@ -213,8 +213,8 @@ class ThingHandler {
                 for (subThingNode in jsonpart.i) {
                     var includedSubthing = new SubThingInfo(false);
                     includedSubthing.thingId = subThingNode.t;
-                    includedSubthing.pos = subThingNode.p;
-                    includedSubthing.rot = subThingNode.r;
+                    includedSubthing.pos.fromUnity(subThingNode.p);
+                    includedSubthing.rot.fromUnity(subThingNode.r);
                     if (subThingNode.n != null) includedSubthing.nameOverride = subThingNode.n;
                     expandIncludedSubthingInvertAttribute(includedSubthing, subThingNode.a);
                     thingpart.includedSubThings.push(includedSubthing);
@@ -226,8 +226,8 @@ class ThingHandler {
                     if (pSNode.i != null) {
                         var placedSubthing = new SubThingInfo(true);
                         placedSubthing.thingId = pSNode.t;
-                        placedSubthing.pos = pSNode.p;
-                        placedSubthing.rot = pSNode.r;
+                        placedSubthing.pos.fromUnity(pSNode.p);
+                        placedSubthing.rot.fromUnity(pSNode.r);
                     }
                 }
             }
@@ -258,9 +258,10 @@ class ThingHandler {
                 thingpart.states[statesI] = new ThingPartState();
                 final state = jsonpart.s[statesI];
 
-                thingpart.states[statesI].position = state.p;
-                thingpart.states[statesI].rotation = state.r;
-                thingpart.states[statesI].scale = state.s;
+                thingpart.states[statesI].position.fromUnity(state.p);
+                
+                thingpart.states[statesI].rotation.fromUnity(state.r);
+                thingpart.states[statesI].scale.fromUnity(state.s);
                 thingpart.states[statesI].color = state.c;
                 
                 if (state.b != null) {
@@ -310,7 +311,7 @@ class ThingHandler {
                 // Pain
                 part.changedVerticies = new Map<Int, Vector3>();
                 for (item in partNode.c) {
-                    var vector:Vector3 = item.toVector3();
+                    var vector:Vector3 = Vector3.empty().fromUnity(item.toVector3());
                     var previousVertexIndex = 0;
                     for (relVertexIndex in item.indexes) {
                         var vertexIndex = previousVertexIndex + relVertexIndex;
@@ -580,8 +581,8 @@ class ThingHandler {
         buf.addInt32(part.includedSubThings.length);
         for (iSubThing in part.includedSubThings) {
             writeStringWLength(buf, iSubThing.thingId);
-            buf.addFloatTriplet(iSubThing.pos);
-            buf.addFloatTriplet(iSubThing.rot);
+            buf.addFloatTriplet(iSubThing.pos.toUnity());
+            buf.addFloatTriplet(iSubThing.rot.toUnity());
             writeStringWLength(buf, iSubThing.nameOverride != null ? iSubThing.nameOverride : thing.givenName);
             buf.addByte(getSubthingAttr(iSubThing));
         }
@@ -595,8 +596,8 @@ class ThingHandler {
         for (placementId => pSubThing in part.placedSubThings) {
             buf.addStringWLength(placementId);
             buf.addStringWLength(pSubThing.thingId);
-            buf.addFloatTriplet(pSubThing.pos);
-            buf.addFloatTriplet(pSubThing.rot);
+            buf.addFloatTriplet(pSubThing.pos.toUnity());
+            buf.addFloatTriplet(pSubThing.rot.toUnity());
         }
     }
     static function getSubthingAttr(subthing:SubThingInfo) {
@@ -645,19 +646,20 @@ class ThingHandler {
         var indicesByPosition:Map<Vector3, Array<Int>> = [];
         var addedThings:Array<String> = [];
         for (index => pos in part.changedVerticies) {
+            var unityPos = pos.toUnity();
             // I think this is only made by us so we will have the references??? Busted
-            if (!addedThings.contains(Std.string(pos))) {
+            if (!addedThings.contains(Std.string(unityPos))) {
                 var indices:Array<Int> = [];
                 for (innerIndex => innerPos in part.changedVerticies) {
                     // this is ok because abstracts  : )
                     if (innerPos == pos) { 
-                        // Piss off, fuck you, it's now absolute
+                        // it's now absolute : )
                         // Not like it costs any damn storage space
                         indices.push(innerIndex);
                     }
                 }
-                indicesByPosition.set(pos, indices);
-                addedThings.push(Std.string(pos));
+                indicesByPosition.set(unityPos, indices);
+                addedThings.push(Std.string(unityPos));
             }
         }
         var indLength = Lambda.count(indicesByPosition);
@@ -694,9 +696,9 @@ class ThingHandler {
         buf.addByte(part.states.length);
         for (state in part.states) {
 
-            buf.addFloatTriplet(state.position);
-            buf.addFloatTriplet(state.rotation);
-            buf.addFloatTriplet(state.scale);
+            buf.addFloatTriplet(state.position.toUnity());
+            buf.addFloatTriplet(state.rotation.toUnity());
+            buf.addFloatTriplet(state.scale.toUnity());
             buf.addFloatTriplet(state.color);
             writeStringArray(buf, state.scriptLines);
             if (part.textureTypes[0] != None)

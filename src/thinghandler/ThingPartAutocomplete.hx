@@ -17,15 +17,18 @@ class ThingPartAutocomplete {
         buf.addString(fromPart.guid);
         buf.addByte(count);
         buf.addByte(waves);
-        buf.addFloat(posRandom.x);
-        buf.addFloat(posRandom.y);
-        buf.addFloat(posRandom.z);
-        buf.addFloat(rotRandom.x);
-        buf.addFloat(rotRandom.y);
-        buf.addFloat(rotRandom.z);
-        buf.addFloat(scaleRandom.x);
-        buf.addFloat(scaleRandom.y);
-        buf.addFloat(scaleRandom.z);
+        var unityPR = posRandom.toUnity();
+        var unityRR = rotRandom.toUnity();
+        var unitySR = scaleRandom.toUnity();
+        buf.addFloat(unityPR.x);
+        buf.addFloat(unityPR.y);
+        buf.addFloat(unityPR.z);
+        buf.addFloat(unityRR.x);
+        buf.addFloat(unityRR.y);
+        buf.addFloat(unityRR.z);
+        buf.addFloat(unitySR.x);
+        buf.addFloat(unitySR.y);
+        buf.addFloat(unitySR.z);
 
         
     }
@@ -34,9 +37,9 @@ class ThingPartAutocomplete {
         fromPart.guid = data.id;
         waves = data.w != null ? data.w : 0;
         count = data.c;
-        posRandom = cast data.rp;
-        rotRandom = cast data.rr;
-        scaleRandom = cast data.rs;
+        posRandom.fromUnity(cast data.rp);
+        rotRandom.fromUnity(cast data.rr);
+        scaleRandom.fromUnity(cast data.rs);
     }
     public var fromPart:ThingPart;
     public var count:Int = 0;
