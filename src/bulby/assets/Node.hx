@@ -1,8 +1,13 @@
 package bulby.assets;
 
+import bulby.BulbyMath;
+import haxe.io.BytesBuffer;
+import bulby.assets.mat.Material;
+import bulby.assets.b3d.Vertex;
 import bulby.cloner.Cloner;
 import bulby.assets.Mesh;
 import bulby.BulbyMath.roundf;
+import bulby.assets.gltf.schema.*;
 class Node {
     public var children:Array<Mesh>;
     public function new(children:Array<Mesh>) {
@@ -85,4 +90,232 @@ class Node {
 	public static function filteri<A>(it:Array<A>, f:(item:A, index:Int) -> Bool) {
         return [for (i in 0...Lambda.count(it, (_) -> true )) if (f(it[i], i)) it[i]];
     }
+
+	public function toGltf() {
+		var gltf:TGLTF = {
+			asset: {
+				generator: "Bulby's Anyland Thing Converter",
+				version: "2.0"
+			},
+			extensionsUsed: ["KHR_materials_unlit"]
+		};
+		var buf = new BytesBuffer();
+		var compatMeshes:Array<GLTFMesh> = [for (mesh in this.children) GLTFMesh.fromMesh(mesh)];
+		var usedMats:Map<String, Int> = [];
+		var mats:Array<TMaterial> = [];
+		var bufferViews:Array<TBufferView> = [];
+		var primitives:Array<TPrimitive> = [];
+		var accessors:Array<TAccessor> = [];
+		var b = 0;
+		var m = 0;
+		for (compatMesh in compatMeshes) {
+			if (!usedMats.exists(compatMesh.material.name)) {
+				usedMats.set(compatMesh.material.name, m);
+				var mat:TMaterial = {
+					name: compatMesh.material.name,
+					pbrMetallicRoughness: {
+						baseColorFactor: [
+							compatMesh.material.diffuse.r,
+							compatMesh.material.diffuse.g,
+							compatMesh.material.diffuse.b,
+							compatMesh.material.alpha
+						],
+						metallicFactor: 0
+					},
+					// don't waste time on blending if it's opaque
+					alphaMode: compatMesh.material.alpha == 1 ? OPAQUE : BLEND
+				};
+				if (compatMesh.material.isUnshaded)
+					mat.extensions = {
+						"KHR_materials_unlit": {}
+					};
+				mats.push(mat);
+				m++;
+			}
+			var posView:TBufferView = {
+				buffer: 0,
+				byteLength: 0,
+				target: ELEMENT_ARRAY_BUFFER
+			};
+			var normView:TBufferView = {
+				buffer: 0,
+				byteLength: 0,
+				target: ELEMENT_ARRAY_BUFFER
+			};
+			var uvView:TBufferView = {
+				buffer: 0,
+				byteLength: 0,
+				target: ELEMENT_ARRAY_BUFFER
+			};
+			var curBufPos = buf.length;
+			var min:Vector3 = new Vector3(compatMesh.verticies[0].position.x, compatMesh.verticies[0].position.y, compatMesh.verticies[0].position.z);
+			var max:Vector3 = new Vector3(compatMesh.verticies[0].position.x, compatMesh.verticies[0].position.y, compatMesh.verticies[0].position.z);
+			for (vert in compatMesh.verticies) {
+				buf.addFloat(vert.position.x);
+				buf.addFloat(vert.position.y);
+				buf.addFloat(vert.position.z);
+				if (vert.position.x < min.x)
+					min.x = vert.position.x;
+				if (vert.position.y < min.y)
+					min.y = vert.position.y;
+				if (vert.position.z < min.z)
+					min.z = vert.position.z;
+				if (vert.position.x > max.x)
+					max.x = vert.position.x;
+				if (vert.position.y > max.y)
+					max.y = vert.position.y;
+				if (vert.position.z > max.z)
+					max.z = vert.position.z;
+			}
+			var newBufPos = buf.length;
+			posView.byteLength = newBufPos - curBufPos;
+			posView.byteOffset = curBufPos;
+			curBufPos = newBufPos;
+			for (vert in compatMesh.verticies) {
+				buf.addFloat(vert.normal.x);
+				buf.addFloat(vert.normal.y);
+				buf.addFloat(vert.normal.z);
+			}
+			newBufPos = buf.length;
+			normView.byteLength = newBufPos - curBufPos;
+			normView.byteOffset = curBufPos;
+			curBufPos = newBufPos;
+			for (vert in compatMesh.verticies) {
+				buf.addFloat(vert.uv.x);
+				buf.addFloat(vert.uv.y);
+			}
+			newBufPos = buf.length;
+			uvView.byteLength = newBufPos - curBufPos;
+			uvView.byteOffset = curBufPos;
+			curBufPos = newBufPos;
+			// acts as unsigned even tho it isn't in haxe
+			var vertCount = 0;
+			for (face in compatMesh.faces) {
+				for (i in face) {
+					buf.addInt32(i);
+					vertCount++;
+				}
+			}
+			var newBufPos = buf.length;
+			var indView:TBufferView = {
+				buffer: 0,
+				byteLength: newBufPos - curBufPos,
+				byteOffset: curBufPos
+			};
+
+			bufferViews.push(posView);
+			bufferViews.push(normView);
+			bufferViews.push(uvView);
+			bufferViews.push(indView);
+			// position accessors MUST have min + max
+			accessors.push({
+				bufferView: b,
+				byteOffset: 0,
+				componentType: FLOAT,
+				type: VEC3,
+				count: compatMesh.verticies.length,
+				min: min.toArray(),
+				max: max.toArray()
+			});
+			accessors.push({
+				bufferView: b + 1,
+				byteOffset: 0,
+				componentType: FLOAT,
+				type: VEC3,
+				count: compatMesh.verticies.length
+			});
+			accessors.push({
+				bufferView: b + 2,
+				byteOffset: 0,
+				componentType: FLOAT,
+				type: VEC2,
+				count: compatMesh.verticies.length
+			});
+			accessors.push({
+				bufferView: b + 3,
+				byteOffset: 0,
+				componentType: UNSIGNED_INT,
+				type: SCALAR,
+				count: vertCount
+			});
+			var prim:TPrimitive = {
+				attributes: {
+					POSITION: b,
+					NORMAL: b + 1,
+					TEXCOORD_0: b + 2
+				},
+				indices: b + 3,
+				material: usedMats.get(compatMesh.material.name)
+			};
+			primitives.push(prim);
+			b += 4;
+		}
+		gltf.accessors = accessors;
+		gltf.bufferViews = bufferViews;
+		gltf.materials = mats;
+		gltf.meshes = [
+			{
+				name: "output",
+				primitives: primitives
+			}
+		];
+		gltf.nodes = [
+			{
+				name: "output",
+				mesh: 0
+			}
+		];
+		gltf.scenes = [
+			{
+				name: "Scene",
+				nodes: [0]
+			}
+		];
+		gltf.scene = 0;
+		gltf.buffers = [
+			{
+				byteLength: buf.length,
+				uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(buf.getBytes())
+			}
+		];
+		return gltf;
+	}
+}
+
+class GLTFMesh {
+	public var material:Material;
+	public var verticies:Array<Vertex>;
+	public var faces:Array<Array<Int>>;
+
+	public function new(material:Material, verticies:Array<Vertex>, faces:Array<Array<Int>>):Void {
+		this.material = material;
+		this.verticies = verticies;
+		this.faces = faces;
+	}
+
+	public static function fromMesh(mesh:Mesh) {
+		var verts:Array<Vertex> = [];
+		var faces:Array<Array<Int>> = [];
+		var i = 0;
+		for (face in mesh.faces) {
+			var faceVerts = [];
+			for (vert in face) {
+				// don't check for normal : )
+				// Ignore uv outright if no texture (probably causes some wonky results)
+				var foundIndex = Lambda.findIndex(verts,
+					(v) -> v.position == mesh.displayPositions[vert.position]
+						&& (mesh.material.texture == "" || v.uv == mesh.uvs[vert.uv]));
+				if (foundIndex != -1) {
+					faceVerts.push(foundIndex);
+					// Me when I average the normals
+					verts[foundIndex].normal = (verts[foundIndex].normal + mesh.displayNormals[vert.normal]) / 2;
+				} else {
+					verts.push(new Vertex(mesh.displayPositions[vert.position], mesh.uvs[vert.uv], mesh.displayNormals[vert.normal]));
+					faceVerts.push(i++);
+				}
+			}
+			faces.push(faceVerts);
+		}
+		return new GLTFMesh(mesh.material, verts, faces);
+	}
 }

@@ -1,7 +1,6 @@
 package;
 
 import haxe.Json;
-import objhandler.GlTFExporter;
 import sys.FileSystem;
 import thinghandler.ThingHandler;
 import sys.io.File;
@@ -17,6 +16,6 @@ function main() {
     File.saveContent("output.obj", export.obj);
     File.saveContent("output.mtl", export.mtl);
 
-    var gltf = GlTFExporter.exportMesh(mesh);
+    var gltf = mesh.toGltf();
     File.saveContent("output.gltf", Json.stringify(gltf));
 }

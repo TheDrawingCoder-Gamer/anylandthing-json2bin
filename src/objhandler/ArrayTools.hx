@@ -23,4 +23,16 @@ class ArrayTools {
         }
         return -1;
     }
+	public static function indexOfVector3(arr:Array<Vector3>, v:Vector3) {
+		var i = 0;
+		for (v2 in arr) {
+			if (v2 == null)
+				continue;
+			if (v == v2)
+				return i;
+			i++;
+		}
+		return -1;
+	}
+
 }

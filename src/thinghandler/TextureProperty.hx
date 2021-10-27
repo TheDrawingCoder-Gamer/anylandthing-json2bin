@@ -14,7 +14,7 @@ enum abstract TextureProperty(UInt) from UInt to UInt {
 
 }
 @:forward
-@:build(thinghandler.AbstractHelper.buildMap())
+@:build(bulby.macro.Macro.buildMap())
 abstract TexturePropertyMap<T>(Map<TextureProperty, T>) from Map<TextureProperty, T> to Map<TextureProperty, T> {
     @:key(ScaleY)
     var scaleY:T;

@@ -32,9 +32,9 @@ abstract DirectTri(DirectTriRaw) from DirectTriRaw {
                              new Vertex(mesh.displayPositions[tri.v3.position], mesh.uvs[tri.v3.uv], mesh.displayNormals[tri.v3.normal]));
     }
     public function toTriForMesh(mesh:Mesh) {
-        return new Tri(new VertRef(mesh.displayPositions.indexOfVector4(this.v1.position), mesh.uvs.indexOfVector2(this.v1.uv), mesh.displayNormals.indexOfVector4(this.v1.normal)),
-                       new VertRef(mesh.displayPositions.indexOfVector4(this.v2.position), mesh.uvs.indexOfVector2(this.v2.uv), mesh.displayNormals.indexOfVector4(this.v2.normal)),
-                       new VertRef(mesh.displayPositions.indexOfVector4(this.v3.position), mesh.uvs.indexOfVector2(this.v3.uv), mesh.displayNormals.indexOfVector4(this.v3.normal)));
+        return new Tri(new VertRef(mesh.displayPositions.indexOfVector3(this.v1.position), mesh.uvs.indexOfVector2(this.v1.uv), mesh.displayNormals.indexOfVector3(this.v1.normal)),
+                       new VertRef(mesh.displayPositions.indexOfVector3(this.v2.position), mesh.uvs.indexOfVector2(this.v2.uv), mesh.displayNormals.indexOfVector3(this.v2.normal)),
+                       new VertRef(mesh.displayPositions.indexOfVector3(this.v3.position), mesh.uvs.indexOfVector2(this.v3.uv), mesh.displayNormals.indexOfVector3(this.v3.normal)));
     }
     public function iterator():Iterator<Vertex> {
         return [this.v1, this.v2, this.v3].iterator();

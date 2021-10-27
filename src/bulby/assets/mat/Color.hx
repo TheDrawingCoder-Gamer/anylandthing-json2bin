@@ -1,8 +1,8 @@
 package bulby.assets.mat;
 
 import bulby.BulbyMath;
-@:build(thinghandler.AbstractHelper.buildForwardFields())
-@:build(thinghandler.AbstractHelper.buildProduceNewInstFromVar())
+@:build(bulby.macro.Macro.buildForwardFields())
+@:build(bulby.macro.Macro.buildProduceNewInstFromVar())
 abstract Color(Vector3) from Vector3 to Vector3 {
 	@:forwardfield(x)
 	public var r:Float;

@@ -358,7 +358,7 @@ class ThingHandler {
 			if (FileSystem.exists("./res/BaseShapes/" + Std.string(part.baseType) + ".obj")) {
 				var mesh = Mesh.fromObj(File.getContent("./res/BaseShapes/" + Std.string(part.baseType) + ".obj"), false);
                 for (index => pos in part.changedVerticies) {
-                    mesh.positions[index] = new Vector4(pos.x, pos.y, pos.z, 1);
+                    mesh.positions[index] = pos;
                     // We don't have to apply transformations because we do that later
                 }   
                 mesh.optimize();
@@ -372,9 +372,9 @@ class ThingHandler {
                     }
                     mesh.material = matCache.get(matKey);
                 }
-				mesh.translation = Matrix4.translation(part.states[0].position.x, part.states[0].position.y, part.states[0].position.z);
-				mesh.rotation = Matrix4.rotation(part.states[0].rotation.x, part.states[0].rotation.y, part.states[0].rotation.z);
-				mesh.scale = Matrix4.scale(part.states[0].scale.x, part.states[0].scale.y, part.states[0].scale.z);
+				mesh.translation = part.states[0].position;
+				mesh.rotation = part.states[0].rotation;
+				mesh.scale = part.states[0].scale;
                 mesh.applyTransformations();
 				node.children.push(mesh);
             }
