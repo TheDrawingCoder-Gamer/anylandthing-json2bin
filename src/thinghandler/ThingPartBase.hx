@@ -1,8 +1,8 @@
 package thinghandler;
 
+import bulby.assets.Mesh;
 import sys.FileSystem;
 import sys.io.File;
-import objhandler.ObjImporter.objParser;
 
 enum abstract ThingPartBase(UInt) from UInt to UInt {
     var Cube = 1;
@@ -807,7 +807,7 @@ enum abstract PartTypeVertCount(UInt)  from UInt to UInt {
             ptype = ThingPartBase.Cube5x6deprecated;
         }
         if (FileSystem.exists("./res/BaseShapes/" + cast ptype + ".obj")) {
-            return objParser(File.getContent("./res/BaseShapes/" + cast ptype + ".obj"), false).positions.length;
+            return Mesh.fromObj(File.getContent("./res/BaseShapes/" + cast ptype + ".obj"), false).positions.length;
         }
         return 0;
     }

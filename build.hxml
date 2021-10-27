@@ -1,3 +1,4 @@
 -cp src
 -main Main
+-L format
 --hl run.hl

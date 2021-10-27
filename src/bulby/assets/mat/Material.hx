@@ -1,6 +1,6 @@
-package objhandler;
+package bulby.assets.mat;
 
-import thinghandler.Color;
+
 
 class Material {
     public var name:String;
@@ -20,5 +20,14 @@ class Material {
         this.alpha = alpha;
         this.shinyness = shinyness;
         this.illum = illum;
+    }
+    public function toMtl():String {
+        return 'newmtl ${this.name}\n' +
+            'Ka ${this.ambient.r} ${this.ambient.g} ${this.ambient.b}\n' +
+            'Kd ${this.diffuse.r} ${this.diffuse.g} ${this.diffuse.b}\n' +
+            'Ks ${this.specular.r} ${this.specular.g} ${this.specular.b}\n' +
+            'Ns ${this.shinyness}\n' +
+            'd ${this.alpha}\n' +
+            'illum ${this.illum}\n';
     }
 }

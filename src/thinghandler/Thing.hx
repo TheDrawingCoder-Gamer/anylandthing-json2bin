@@ -1,6 +1,7 @@
 package thinghandler;
 
-import objhandler.Vector3;
+import bulby.BulbyMath;
+import bulby.assets.mat.Color;
 import thinghandler.TextureProperty.TexturePropertyMap;
 import haxe.ds.Vector;
 
