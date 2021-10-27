@@ -36,7 +36,7 @@ class Mesh {
     public function applyTransformations() {
         var positionsToEdit = [for (pos in positions) new Vector3(pos.x, pos.y, pos.z)];
         var normalsToEdit = [for (normal in normals) new Vector3(normal.x, normal.y, normal.z)];
-        var mRot = Matrix4.rotation(this.rotation.x, this.rotation.y, this.rotation.z);
+        var mRot = this.rotation.matrix();
         var mTrans = Matrix4.translation(this.translation.x, this.translation.y, this.translation.z);
         var mScale = Matrix4.scale(this.scale.x, this.scale.y, this.scale.z);
         for (i in 0...positionsToEdit.length) {
@@ -55,7 +55,7 @@ class Mesh {
     }
     public var scale:Vector3 = new Vector3(1, 1, 1);
     public var translation:Vector3 = Vector3.empty();
-    public var rotation:Vector3 = Vector3.empty();
+    public var rotation:Quaternion = Quaternion.identity();
     public var normals:Array<Vector3>;
     public var displayNormals:Array<Vector3>;
     public var positions:Array<Vector3>;

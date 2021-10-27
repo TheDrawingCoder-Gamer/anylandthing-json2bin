@@ -212,7 +212,7 @@ class ThingHandler {
                     var includedSubthing = new SubThingInfo(false);
                     includedSubthing.thingId = subThingNode.t;
                     includedSubthing.pos.fromUnity(subThingNode.p);
-                    includedSubthing.rot.fromUnity(subThingNode.r);
+                    includedSubthing.rot.fromUnityEuler(subThingNode.r);
                     if (subThingNode.n != null) includedSubthing.nameOverride = subThingNode.n;
                     expandIncludedSubthingInvertAttribute(includedSubthing, subThingNode.a);
                     thingpart.includedSubThings.push(includedSubthing);
@@ -225,7 +225,7 @@ class ThingHandler {
                         var placedSubthing = new SubThingInfo(true);
                         placedSubthing.thingId = pSNode.t;
                         placedSubthing.pos.fromUnity(pSNode.p);
-                        placedSubthing.rot.fromUnity(pSNode.r);
+                        placedSubthing.rot.fromUnityEuler(pSNode.r);
                     }
                 }
             }
@@ -258,7 +258,7 @@ class ThingHandler {
 
                 thingpart.states[statesI].position.fromUnity(state.p);
                 
-                thingpart.states[statesI].rotation.fromUnity(state.r);
+                thingpart.states[statesI].rotation.fromUnityEuler(state.r);
                 thingpart.states[statesI].scale.fromUnity(state.s);
                 // Ensure no negative scale to prevent : (
                 thingpart.states[statesI].scale = thingpart.states[statesI].scale.abs();
@@ -372,8 +372,10 @@ class ThingHandler {
                     }
                     mesh.material = matCache.get(matKey);
                 }
+                // var euler = part.states[0].rotation * 1;
+
 				mesh.translation = part.states[0].position;
-				mesh.rotation = part.states[0].rotation;
+				mesh.rotation = Quaternion.fromEuler(part.states[0].rotation);
 				mesh.scale = part.states[0].scale;
                 mesh.applyTransformations();
 				node.children.push(mesh);
@@ -576,7 +578,7 @@ class ThingHandler {
         for (iSubThing in part.includedSubThings) {
             writeStringWLength(buf, iSubThing.thingId);
             buf.addFloatTriplet(iSubThing.pos.toUnity());
-            buf.addFloatTriplet(iSubThing.rot.toUnity());
+            buf.addFloatTriplet(iSubThing.rot.toUnityEuler());
             writeStringWLength(buf, iSubThing.nameOverride != null ? iSubThing.nameOverride : thing.givenName);
             buf.addByte(getSubthingAttr(iSubThing));
         }
@@ -591,7 +593,7 @@ class ThingHandler {
             buf.addStringWLength(placementId);
             buf.addStringWLength(pSubThing.thingId);
             buf.addFloatTriplet(pSubThing.pos.toUnity());
-            buf.addFloatTriplet(pSubThing.rot.toUnity());
+            buf.addFloatTriplet(pSubThing.rot.toUnityEuler());
         }
     }
     static function getSubthingAttr(subthing:SubThingInfo) {
@@ -691,7 +693,7 @@ class ThingHandler {
         for (state in part.states) {
 
             buf.addFloatTriplet(state.position.toUnity());
-            buf.addFloatTriplet(state.rotation.toUnity());
+            buf.addFloatTriplet(state.rotation.toUnityEuler());
             buf.addFloatTriplet(state.scale.toUnity());
             buf.addFloatTriplet(state.color);
             writeStringArray(buf, state.scriptLines);

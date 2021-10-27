@@ -113,6 +113,15 @@ abstract Vector3(Vector3Raw) from Vector3Raw to Vector3Raw {
 	public function toUnity() {
 		return new Vector3(this.x * -1, this.y, this.z);
 	}
+	public function fromUnityEuler(unity:Vector3) {
+		this.x = unity.x;
+		this.y = -unity.y;
+		this.z = -unity.z;
+		return this;
+	}
+	public function toUnityEuler() {
+		return new Vector3(this.x, -this.y, -this.z);
+	}
 	@:op(A + B)
 	function add(b:Vector3) {
 		return new Vector3(this.x + b.x, this.y + b.y, this.z + b.z);
@@ -401,4 +410,52 @@ abstract Matrix3(Matrix3Raw) from Matrix3Raw to Matrix3Raw {
 			i: i
 		};
 	}
+}
+@:forward
+abstract Quaternion(Vector4) {
+	public function new(x:Float, y:Float, z:Float, w:Float) {
+		this = {
+			x: x,
+			y: y,
+			z: z,
+			w: w
+		};
+	}
+	// stolen from: 
+	// https://www.mathworks.com/matlabcentral/fileexchange/6335-euler-angles-to-quaternion-conversion-for-six-basic-sequence-of-rotations
+	public static function fromEuler(euler:Vector3) {
+		var x = euler.x * (Math.PI / 180);
+		var y = euler.y * (Math.PI / 180);
+		var z = euler.z * (Math.PI / 180);
+		var cx = Math.cos(x / 2);
+		var sx = Math.sin(x / 2);
+		var cy = Math.cos(y / 2);
+		var sy = Math.sin(y / 2);
+		var cz = Math.cos(z / 2);
+		var sz = Math.sin(z / 2);
+		var qx = new Quaternion( cx, sx, 0, 0);
+		var qy = new Quaternion( cy, 0, sy, 0);
+		var qz = new Quaternion( cz, 0, 0, sz);
+		var q1 = qx * qy;
+		return qz * q1;
+	}
+	public function matrix() {
+		return new Matrix4(
+			2 * (Math.pow(this.w, 2) + Math.pow(this.x, 2)) - 1, 2 * (this.x * this.y - this.w * this.z), 2 * (this.x * this.z + this.w * this.y), 0,
+			2 * (this.x * this.y + this.w * this.z), 2 * (Math.pow(this.w, 2) + Math.pow(this.y, 2)) - 1, 2 * (this.y * this.z - this.w * this.x), 0,
+			2 * (this.x * this.z - this.w * this.y), 2 * (this.y * this.z + this.w * this.x), 2 * (Math.pow(this.w, 2) + Math.pow(this.z, 2)) - 1, 0,
+			0, 0, 0, 1
+		);
+	}
+	public static function identity() {
+		return new Quaternion(0, 0, 0, 1);
+	}
+	@:op(A * B)
+	public function mult(b:Quaternion) {
+		return new Quaternion(this.w * b.x + this.x * b.w + this.y * b.z - this.z * b.y,
+			this.w * b.y - this.x * b.z + this.y * b.w + this.z * b.x,
+			this.w * b.z + this.x * b.y - this.y * b.x + this.z * b.w,
+			this.w * b.w - this.x * b.x - this.y * b.y - this.z * b.z);
+	}
+
 }
