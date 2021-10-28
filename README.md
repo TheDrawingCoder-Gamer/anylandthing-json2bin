@@ -13,4 +13,4 @@ Current problems
 
 Pictures: 
 
-![Example Model](gh/example_model_al.jpg)
+<img src="https://github.com/TheDrawingCoder-Gamer/anylandthing-json2bin/blob/main/gh/example_model_al.jpg" width=50% height = 50%/>
