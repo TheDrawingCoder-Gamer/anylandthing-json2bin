@@ -12,7 +12,7 @@ private typedef Vector2Raw = {
 	var y:Float;
 };
 
-@:forward(x, y)
+@:forward
 abstract Vector2(Vector2Raw) from Vector2Raw to Vector2Raw {
 	@:op(A == B) public function eq(b) {
 		return (this.x == b.x && this.y == b.y);

@@ -1,5 +1,6 @@
 package bulby.macro;
 
+import haxe.display.Display.Package;
 import haxe.macro.Expr;
 import haxe.Constraints.Constructible;
 import haxe.macro.Context;
@@ -100,18 +101,44 @@ class Macro {
      * Simply use "private" metadata to make it private.
      */
     public static function publish() {
-		var fields = haxe.macro.Context.getBuildFields();
-		var i = 0;
-		for (f in fields.copy()) {
-			if (f.access != null && f.access.contains(APrivate))
-				continue;
-			if (f.access == null)
-				f.access = [APublic];
-			else if (!f.access.contains(APublic))
-				f.access.push(APublic);
+		var calledOn = Context.getLocalType();
+		switch (calledOn) {
+			case TInst(_.get().meta.has(":publish") => hasPublish, _)
+			| TAbstract(_.get().meta.has(":publish") => hasPublish, _) if (hasPublish):
+				var fields = haxe.macro.Context.getBuildFields();
+				var i = 0;
+				for (f in fields.copy()) {
+					if (f.access != null && f.access.contains(APrivate))
+						continue;
+					if (f.access == null)
+						f.access = [APublic];
+					else if (!f.access.contains(APublic))
+						f.access.push(APublic);
+				}
+				return fields;
+			case _: 
+				return null;
 		}
-		return fields;
+		
     }
+	public static function staticClass() {
+		var t = Context.getLocalType();
+		switch (t) {
+			case TInst(_.get().meta.has(":static") => hasStatic, _): 
+				var fields = haxe.macro.Context.getBuildFields();
+				for (f in fields.copy()) {
+					// no "member" identifier
+					if (f.access != null)
+						f.access.push(AStatic);
+					else
+						f.access = [AStatic];
+
+				}
+				return fields;
+			case _: 
+				return null;
+		}
+	}
 	static function getTypePath(e:Expr):TypePath {
 		final parts = [];
 		while (true) {
