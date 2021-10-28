@@ -124,7 +124,7 @@ class Macro {
 	public static function staticClass() {
 		var t = Context.getLocalType();
 		switch (t) {
-			case TInst(_.get().meta.has(":static") => hasStatic, _): 
+			case TInst(_.get().meta.has(":static") => hasStatic, _) if (hasStatic): 
 				var fields = haxe.macro.Context.getBuildFields();
 				for (f in fields.copy()) {
 					// no "member" identifier
