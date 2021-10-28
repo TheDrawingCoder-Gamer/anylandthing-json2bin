@@ -113,14 +113,15 @@ abstract Vector3(Vector3Raw) from Vector3Raw to Vector3Raw {
 	public function toUnity() {
 		return new Vector3(this.x * -1, this.y, this.z);
 	}
+	// Ok so Y definetly needs to be flipped. Idk what else needs flipping tho :sob:
 	public function fromUnityEuler(unity:Vector3) {
 		this.x = unity.x;
 		this.y = -unity.y;
-		this.z = -unity.z;
+		this.z = unity.z;
 		return this;
 	}
 	public function toUnityEuler() {
-		return new Vector3(this.x, -this.y, -this.z);
+		return new Vector3(this.x, -this.y, this.z);
 	}
 	@:op(A + B)
 	function add(b:Vector3) {

@@ -11,7 +11,7 @@ function main() {
 
     // File.saveBytes("output.bin", ThingHandler.exportBytes(thing));
     var mesh = ThingHandler.generateMeshFromThing(thing);
-	var export = mesh.toObj();
+	// var export = mesh.toObj();
 
     // imagine using obj file when you can just use gltf
     //File.saveContent("output.obj", export.obj);
