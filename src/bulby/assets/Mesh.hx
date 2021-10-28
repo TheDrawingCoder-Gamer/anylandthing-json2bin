@@ -24,14 +24,11 @@ class Mesh {
         var optimizedUvs = [for (uv in uvs) new Vector2(uv.x, uv.y)];
         var newFaces = [for (tri in this.faces) DirectTri.fromTriAndMesh(tri, this)];
 
-        optimizedPos = [for (index => item in optimizedPos) if (item != null && optimizedPos.indexOfVector3(item) == index) item];
-        optimizedNormals = [for (index => item in optimizedNormals) if (optimizedNormals.indexOfVector3(item) == index) item];
-        optimizedUvs = [for (index => item in optimizedUvs) if (optimizedUvs.indexOfVector2(item) == index) item];
-		this.positions = optimizedPos;
-		this.uvs = optimizedUvs;
-		this.normals = optimizedNormals;
+		this.positions = [for (index => item in optimizedPos) if (item != null && optimizedPos.indexOfVector3(item) == index) item];
+        this.normals = [for (index => item in optimizedNormals) if (optimizedNormals.indexOfVector3(item) == index) item];
+        this.uvs = [for (index => item in optimizedUvs) if (optimizedUvs.indexOfVector2(item) == index) item];
+        applyTransformations();
         faces = [for (tri in newFaces) tri.toTriForMesh(this)];
-        
     }
     public function applyTransformations() {
         var positionsToEdit = [for (pos in positions) new Vector3(pos.x, pos.y, pos.z)];

@@ -128,9 +128,9 @@ class Macro {
 				var fields = haxe.macro.Context.getBuildFields();
 				for (f in fields.copy()) {
 					// no "member" identifier
-					if (f.access != null)
+					if (f.access != null && !f.access.contains(AStatic))
 						f.access.push(AStatic);
-					else
+					else if (f.access == null)
 						f.access = [AStatic];
 
 				}

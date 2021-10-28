@@ -127,7 +127,7 @@ abstract Vector3(Vector3Raw) from Vector3Raw to Vector3Raw {
 		return new Vector3(this.x + b.x, this.y + b.y, this.z + b.z);
 	}
 	@:op(A / B)
-	function divide(b:Float) {
+	function divide(b:Float):Vector3 {
 		return new Vector3(this.x / b, this.y / b, this.z / b);
 	}
 }
