@@ -12,4 +12,4 @@ Current problems
 - Materials are not fully fleshed out. The only fully working materials I know are default (obviously) and unshaded because my test json is almost all unshaded. 
 
 Pictures: 
-[Example Model](gh/example_model_al.jpg)
+![Example Model](gh/example_model_al.jpg)
