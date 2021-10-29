@@ -138,6 +138,10 @@ abstract Vector3(Vector3Raw) from Vector3Raw to Vector3Raw {
 	function divide(b:Float):Vector3 {
 		return new Vector3(this.x / b, this.y / b, this.z / b);
 	}
+	@:op(A - B)
+	function sub(b:Vector3) {
+		return new Vector3(this.x - b.x, this.y - b.y, this.z - b.z);
+	}
 }
 
 private typedef Vector4Raw = {

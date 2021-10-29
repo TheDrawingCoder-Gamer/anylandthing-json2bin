@@ -30,6 +30,14 @@ class Mesh {
         applyTransformations();
         faces = [for (tri in newFaces) tri.toTriForMesh(this)];
     }
+    public function copy() {
+        var newPos = [for (pos in positions) new Vector3(pos.x, pos.y, pos.z)];
+        var newNormals = [for (normal in normals) new Vector3(normal.x, normal.y, normal.z)];
+        var newUvs = [for (uv in uvs) new Vector2(uv.x, uv.y)];
+        var newFaces = [for (tri in faces) tri.copy()];
+        var newMaterial = material.copy();
+        return new Mesh(newPos, newNormals, newUvs, newFaces, false, newMaterial);
+    }
     public function applyTransformations() {
         var positionsToEdit = [for (pos in positions) new Vector3(pos.x, pos.y, pos.z)];
         var normalsToEdit = [for (normal in normals) new Vector3(normal.x, normal.y, normal.z)];

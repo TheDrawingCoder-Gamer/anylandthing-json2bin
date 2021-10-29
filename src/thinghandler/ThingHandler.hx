@@ -361,7 +361,32 @@ class ThingHandler {
                     mesh.positions[index] = pos;
                     // We don't have to apply transformations because we do that later
                 }   
-                mesh.optimize();
+				mesh.optimize();
+                if (part.autoContinuation != null && part.autoContinuation.count != 0) {
+                    var otherPart = part.autoContinuation.fromPart;
+                    // Just a guess, but I think from part means this part is the 2nd in sequence.
+                    // So we calculate the different with this on lhs
+                    var posDiff = part.states[0].position - otherPart.states[0].position;
+                    var rotDiff = part.states[0].rotation - otherPart.states[0].rotation;
+                    var scaleDiff = part.states[0].scale - otherPart.states[0].scale;
+                    // me when I'm lazy
+                    var thisPos = part.states[0].position / 1;
+                    var thisRot = part.states[0].rotation / 1;
+                    var thisScale = part.states[0].scale / 1;
+
+                    for (c in 0...part.autoContinuation.count) {
+                        thisPos += posDiff;
+                        thisRot += rotDiff;
+                        thisScale += scaleDiff;
+                        var newMesh = mesh.copy();
+                        mesh.rotation = Quaternion.fromEuler(thisRot);
+                        mesh.translation = thisPos / 1;
+                        mesh.scale = thisScale / 1;
+                        mesh.applyTransformations();
+                        node.children.push(mesh);
+                    }
+                }
+                
 				var matKey = '_${Math.round(part.states[0].color.r * 255)}_${Math.round(part.states[0].color.g * 255)}_${Math.round(part.states[0].color.b * 255)}_${Std.string(part.materialType)}_';
                 if (matCache.exists(matKey)) {
                     mesh.material = matCache.get(matKey);

@@ -21,7 +21,9 @@ class Image {
 		var colorBytes = data.getInt32((x + y * width) * 4);
         return ARGB255.fromARGB(colorBytes);
     }
-
+    function copy() {
+        return new Image(width, height, Bytes.ofHex(data.toHex()));
+    }
     function setPixel(x:Int, y:Int, color:ARGB255) {
         data.setInt32((x + y * width) * 4, color.asARGB());
     }

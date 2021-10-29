@@ -100,14 +100,19 @@ class Macro {
      * Useful for classes that make most everything public.
      * Simply use "private" metadata to make it private.
      */
-    public static function publish() {
+	public static function publish() {
 		var calledOn = Context.getLocalType();
 		switch (calledOn) {
-			case TInst(_.get().meta.has(":publish") => hasPublish, _)
-			| TAbstract(_.get().meta.has(":publish") => hasPublish, _) if (hasPublish):
+			case TInst(type, _):
+				switch (type.get().kind) {
+					case KAbstractImpl(_.get() => abstr):
+						if (!abstr.meta.has(":publish")) return null;
+					case _:
+						if (!type.get().meta.has(":publish")) return null;
+				}
 				var fields = haxe.macro.Context.getBuildFields();
 				var i = 0;
-				for (f in fields.copy()) {
+				for (f in fields) {
 					if (f.access != null && f.access.contains(APrivate))
 						continue;
 					if (f.access == null)
@@ -116,18 +121,22 @@ class Macro {
 						f.access.push(APublic);
 				}
 				return fields;
-			
-			case _: 
+			case _:
 				return null;
 		}
-		
-    }
+	}
 	public static function staticClass() {
 		var t = Context.getLocalType();
 		switch (t) {
-			case TInst(_.get().meta.has(":static") => hasStatic, _) if (hasStatic): 
+			case TInst(type, _): 
+				switch (type.get().kind) {
+					case KAbstractImpl(_.get() => abstr):
+						if (!abstr.meta.has(":publish")) return null;
+					case _:
+						if (!type.get().meta.has(":publish")) return null;
+				}
 				var fields = haxe.macro.Context.getBuildFields();
-				for (f in fields.copy()) {
+				for (f in fields) {
 					// no "member" identifier
 					if (f.access != null && !f.access.contains(AStatic))
 						f.access.push(AStatic);

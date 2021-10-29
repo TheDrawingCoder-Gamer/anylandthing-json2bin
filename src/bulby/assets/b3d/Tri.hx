@@ -19,7 +19,12 @@ abstract Tri(TriRaw) {
     public function iterator():Iterator<VertRef> {
         return [this.v1, this.v2, this.v3].iterator();
     }
-}
+    public function copy():Tri {
+        return new Tri(new VertRef(this.v1.position, this.v1.normal, this.v1.uv),
+                       new VertRef(this.v2.position, this.v2.normal, this.v2.uv),
+                       new VertRef(this.v3.position, this.v3.normal, this.v3.uv));
+    }
+ }
 
 @:forward 
 abstract DirectTri(DirectTriRaw) {
