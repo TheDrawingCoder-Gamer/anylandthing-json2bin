@@ -304,7 +304,7 @@ class GLTFMesh {
 				// Ignore uv outright if no texture (probably causes some wonky results)
 				var foundIndex = Lambda.findIndex(verts,
 					(v) -> v.position == mesh.displayPositions[vert.position]
-						&& (mesh.material.texture == "" || v.uv == mesh.uvs[vert.uv]));
+						&& (mesh.material.texture == null || v.uv == mesh.uvs[vert.uv]));
 				if (foundIndex != -1) {
 					faceVerts.push(foundIndex);
 					// Me when I average the normals

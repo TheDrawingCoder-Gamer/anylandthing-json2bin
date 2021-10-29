@@ -1,5 +1,6 @@
 package;
 
+import bulby.assets.Image;
 import haxe.Json;
 import sys.FileSystem;
 import thinghandler.ThingHandler;

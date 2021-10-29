@@ -1,10 +1,17 @@
 package bulby;
 
+@:publish
+@:static
 class BulbyMath {
-	public static function roundf(f:Float, to:Int) {
+	function roundf(f:Float, to:Int) {
 		return Math.round(f * (Math.pow(10, to))) / Math.pow(10, to);
 	}
-
+	function lerp(a:Float, b:Float, t:Float) {
+		return a * (1 - t) + b * t;
+	}
+	function alphaBlend(a:Float, b:Float, alpha:Float) {
+		return (a * alpha) + (b * (1 - alpha));
+	}
 }
 
 private typedef Vector2Raw = {
@@ -437,8 +444,7 @@ abstract Quaternion(Vector4) {
 		var qx = new Quaternion( cx, sx, 0, 0);
 		var qy = new Quaternion( cy, 0, sy, 0);
 		var qz = new Quaternion( cz, 0, 0, sz);
-		var q1 = qx * qy;
-		return qz * q1;
+		return qz * (qx * qy);
 	}
 	public function matrix() {
 		return new Matrix4(

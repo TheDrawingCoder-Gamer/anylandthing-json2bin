@@ -116,6 +116,7 @@ class Macro {
 						f.access.push(APublic);
 				}
 				return fields;
+			
 			case _: 
 				return null;
 		}

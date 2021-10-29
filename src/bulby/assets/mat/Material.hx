@@ -2,6 +2,7 @@ package bulby.assets.mat;
 
 
 
+
 class Material {
     public var name:String;
     public var diffuse:Color = new Color(0.8, 0.8, 0.8);
@@ -11,7 +12,7 @@ class Material {
     public var shinyness:Float = 0;
     public var illum:Int = 2;
     public var isUnshaded = false;
-    public var texture:String = "";
+    public var texture:Null<Image> = null;
     public function new(name:String, ?diffuse:Color, ?ambient:Color, ?specular:Color, alpha:Float = 1, shinyness:Float = 0, illum:Int = 2, texture:String = "") {
         this.name = name;
         this.diffuse = diffuse != null ? diffuse : new Color(0.8, 0.8, 0.8);
