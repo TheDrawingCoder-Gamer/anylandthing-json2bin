@@ -362,6 +362,16 @@ class ThingHandler {
                     // We don't have to apply transformations because we do that later
                 }   
 				mesh.optimize();
+				var matKey = '_${Math.round(part.states[0].color.r * 255)}_${Math.round(part.states[0].color.g * 255)}_${Math.round(part.states[0].color.b * 255)}_${Std.string(part.materialType)}_';
+				if (matCache.exists(matKey)) {
+					mesh.material = matCache.get(matKey);
+				} else {
+					matCache.set(matKey, new Material(matKey, part.states[0].color, null, null, part.materialType.alpha(), 0, part.materialType.illum()));
+					if (part.materialType == Unshaded) {
+						matCache.get(matKey).isUnshaded = true;
+					}
+					mesh.material = matCache.get(matKey);
+				}   
                 if (part.autoContinuation != null && part.autoContinuation.count != 0) {
                     var otherPart = part.autoContinuation.fromPart;
                     // Just a guess, but I think from part means this part is the 2nd in sequence.
@@ -386,17 +396,47 @@ class ThingHandler {
                         node.children.push(mesh);
                     }
                 }
-                
-				var matKey = '_${Math.round(part.states[0].color.r * 255)}_${Math.round(part.states[0].color.g * 255)}_${Math.round(part.states[0].color.b * 255)}_${Std.string(part.materialType)}_';
-                if (matCache.exists(matKey)) {
-                    mesh.material = matCache.get(matKey);
-                } else {
-                    matCache.set(matKey, new Material(matKey, part.states[0].color, null, null, part.materialType.alpha(), 0, part.materialType.illum()));
-                    if (part.materialType == Unshaded) {
-                        matCache.get(matKey).isUnshaded = true;
+                if (part.reflectPartDepth || part.reflectPartSideways || part.reflectPartVertical) {
+                    if (part.reflectPartDepth) {
+                        var newMesh = mesh.copy(); 
+                        // Reflect across the XY plane 
+                        newMesh.scale = part.states[0].scale / 1;
+                        var newRot = part.states[0].rotation / 1;
+                        newRot.z = -newRot.z;
+                        newMesh.rotation = Quaternion.fromEuler(newRot);
+                        var newPos = part.states[0].position / 1;
+                        newPos.z = -newPos.z;
+                        newMesh.translation = newPos;
+						node.children.push(newMesh);
                     }
-                    mesh.material = matCache.get(matKey);
+                    if (part.reflectPartSideways) {
+                        var newMesh = mesh.copy(); 
+                        // Reflect across the YZ plane 
+                        newMesh.scale = part.states[0].scale / 1;
+                        var newRot = part.states[0].rotation / 1;
+                        newRot.x = -newRot.x;
+                        newMesh.rotation = Quaternion.fromEuler(newRot);
+                        var newPos = part.states[0].position / 1;
+                        newPos.x = -newPos.x;
+                        newMesh.translation = newPos;
+						node.children.push(newMesh);
+                    }
+                    if (part.reflectPartVertical) {
+                        var newMesh = mesh.copy(); 
+                        // Reflect across the XZ plane 
+                        newMesh.scale = part.states[0].scale / 1;
+                        var newRot = part.states[0].rotation / 1;
+                        newRot.y = -newRot.y;
+                        newMesh.rotation = Quaternion.fromEuler(newRot);
+                        var newPos = part.states[0].position / 1;
+                        newPos.y = -newPos.y;
+                        newMesh.translation = newPos;
+                        node.children.push(newMesh);
+                    }
                 }
+                
+				
+               
                 // var euler = part.states[0].rotation * 1;
 
 				mesh.translation = part.states[0].position;

@@ -24,6 +24,9 @@ abstract Tri(TriRaw) {
                        new VertRef(this.v2.position, this.v2.normal, this.v2.uv),
                        new VertRef(this.v3.position, this.v3.normal, this.v3.uv));
     }
+    public function toString() {
+        return 'Tri {${this.v1} ${this.v2} ${this.v3}}';
+    }
  }
 
 @:forward 

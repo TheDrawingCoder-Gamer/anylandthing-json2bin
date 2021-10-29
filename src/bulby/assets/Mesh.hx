@@ -105,6 +105,18 @@ class Mesh {
 				faces.push(new Tri(indexRef[0], indexRef[1], indexRef[2]));
 			}
 		}
+        // Obj files allow for negative indices, but we don't support them
+        for (face in faces) {
+            for (vert in face) {
+                if (vert.uv < 0)
+                    vert.uv = uvs.length + vert.uv;
+                if (vert.normal < 0)
+                    vert.normal = normals.length + vert.normal;
+                if (vert.position < 0)
+                    vert.position = positions.length + vert.position;
+            }
+            trace(face);
+        }
 		return new Mesh(positions, normals, uvs, faces, optimized); 
     }
 }
