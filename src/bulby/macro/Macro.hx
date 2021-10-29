@@ -131,9 +131,9 @@ class Macro {
 			case TInst(type, _): 
 				switch (type.get().kind) {
 					case KAbstractImpl(_.get() => abstr):
-						if (!abstr.meta.has(":publish")) return null;
+						if (!abstr.meta.has(":static")) return null;
 					case _:
-						if (!type.get().meta.has(":publish")) return null;
+						if (!type.get().meta.has(":static")) return null;
 				}
 				var fields = haxe.macro.Context.getBuildFields();
 				for (f in fields) {
