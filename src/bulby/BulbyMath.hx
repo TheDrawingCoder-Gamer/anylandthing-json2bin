@@ -153,7 +153,7 @@ private typedef Vector4Raw = {
 
 @:forward
 abstract Vector4(Vector4Raw) from Vector4Raw to Vector4Raw {
-	@:op(A == B) public function eq(b) {
+	@:op(A == B) public inline function eq(b) {
 		return (this.x == b.x && this.y == b.y && this.z == b.z && this.w == b.w);
 	}
 
@@ -171,22 +171,22 @@ abstract Vector4(Vector4Raw) from Vector4Raw to Vector4Raw {
 	}
 
 	@:from
-	static public function fromArray(arr:Array<Float>) {
+	static public inline function fromArray(arr:Array<Float>) {
 		return new Vector4(arr[0], arr[1], arr[2], arr[3]);
 	}
 
 	@:to
-	public function asArray() {
+	public inline function asArray() {
 		return [this.x, this.y, this.z, this.w];
 	}
 
 	@:to
-	public function toString() {
+	inline function toString() {
 		return 'Vector4 {${this.x} ${this.y} ${this.z} ${this.w}}';
 	}
 
 	@:op(A + B)
-	public function add(b:Vector4) {
+	public inline function add(b:Vector4) {
 		return new Vector4(this.x + b.x, this.y + b.y, this.z + b.z, this.w + b.w);
 	}
 
@@ -249,8 +249,8 @@ abstract Matrix4(MatrixRaw) from MatrixRaw to MatrixRaw {
 		return a.a == b.a && a.b == b.b && a.c == b.c && a.d == b.d && a.e == b.e && a.f == b.f && a.g == b.g && a.h == b.h && a.i == b.i && a.j == b.j
 			&& a.k == b.k && a.l == b.l && a.m == b.m && a.n == b.n && a.o == b.o && a.p == b.p;
 	}
-
-	@:op(A * B) public static function times(a:Matrix4, b:Vector4):Vector4 {
+	// this may be kinda stupid to inline lmao
+	@:op(A * B) inline static function times(a:Matrix4, b:Vector4):Vector4 {
 		var resMat = new Matrix4(a.a * b.x, a.b * b.y, a.c * b.z, a.d * b.w, a.e * b.x, a.f * b.y, a.g * b.z, a.h * b.w, a.i * b.x, a.j * b.y, a.k * b.z,
 			a.l * b.w, a.m * b.x, a.n * b.y, a.o * b.z, a.p * b.w);
 		var retVector = new Vector4(resMat.a
@@ -271,14 +271,14 @@ abstract Matrix4(MatrixRaw) from MatrixRaw to MatrixRaw {
 	}
 
 	@:commutative
-	@:op(A * B) public static function timesf(a:Matrix4, b:Float) {
+	@:op(A * B) static inline function timesf(a:Matrix4, b:Float) {
 		return new Matrix4(a.a * b, a.b * b, a.c * b, a.d * b, a.e * b, a.f * b, a.g * b, a.h * b, a.i * b, a.j * b, a.k * b, a.l * b, a.m * b, a.n * b,
 			a.o * b, a.p * b);
 	}
 
 	@:commutative
 	@:op(A + B)
-	public static function addf(a:Matrix4, b:Float) {
+	static inline function addf(a:Matrix4, b:Float) {
 		return new Matrix4(a.a
 			+ b, a.b
 			+ b, a.c
@@ -337,7 +337,7 @@ abstract Matrix4(MatrixRaw) from MatrixRaw to MatrixRaw {
 	}
 
 	@:op(A + B)
-	public static inline function addition(a:Matrix4, b:Matrix4) {
+	static inline function addition(a:Matrix4, b:Matrix4) {
 		return new Matrix4(a.a
 			+ b.a, a.b
 			+ b.b, a.c
@@ -393,14 +393,13 @@ abstract Matrix4(MatrixRaw) from MatrixRaw to MatrixRaw {
 	}
 
 	public static inline function scale(x:Float, y:Float, z:Float) {
-		trace(x);
 		return new Matrix4(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1);
 	}
 }
 
-@:forward(a, b, c, d, e, f, g, h, i)
+@:forward
 abstract Matrix3(Matrix3Raw) from Matrix3Raw to Matrix3Raw {
-	@:op(A * B) public static function timesSelf(a:Matrix3, b:Matrix3) {
+	@:op(A * B) inline static function timesMatrix(a:Matrix3, b:Matrix3) {
 		return new Matrix3(a.a * b.a, a.b * b.b, a.c * b.c, a.d * b.d, a.e * b.e, a.f * b.f, a.g * b.g, a.h * b.h, a.i * b.i);
 	}
 
@@ -458,11 +457,11 @@ abstract Quaternion(Vector4) {
 			0, 0, 0, 1
 		);
 	}
-	public static function identity() {
+	public static inline function identity() {
 		return new Quaternion(0, 0, 0, 1);
 	}
 	@:op(A * B)
-	public function mult(b:Quaternion) {
+	public inline function mult(b:Quaternion) {
 		return new Quaternion(this.w * b.x + this.x * b.w + this.y * b.z - this.z * b.y,
 			this.w * b.y - this.x * b.z + this.y * b.w + this.z * b.x,
 			this.w * b.z + this.x * b.y - this.y * b.x + this.z * b.w,

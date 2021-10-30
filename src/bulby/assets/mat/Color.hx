@@ -1,56 +1,17 @@
 package bulby.assets.mat;
 
-import haxe.Int64;
 import bulby.BulbyMath;
-@:build(bulby.macro.Macro.buildForwardFields())
-@:build(bulby.macro.Macro.buildProduceNewInstFromVar())
-abstract Color(Vector3) from Vector3 to Vector3 {
-	@:forwardfield(x)
-	public var r:Float;
-	@:forwardfield(y)
-	public var g:Float;
-	@:forwardfield(z)
-	public var b:Float;
-
-	public function new(r:Float, g:Float, b:Float) {
-		this = new Vector3(r, g, b);
-	}
-
-	@:createinstonread(bulby.assets.mat.Color, 1, 1, 1)
-	public static var white:Color;
-}
-@:build(bulby.macro.Macro.buildForwardFields())
-@:build(bulby.macro.Macro.buildProduceNewInstFromVar())
-abstract RGBA(Vector4) from Vector4 to Vector4 {
-	@:forwardfield(x)
-	public var r:Float;
-	@:forwardfield(y)
-	public var g:Float;
-	@:forwardfield(z)
-	public var b:Float;
-	@:forwardfield(w)
-	public var a:Float;
-
-	public function new(r:Float, g:Float, b:Float, a:Float) {
-		this = new Vector4(r, g, b, a);
-	}
-	public function blend(other:RGBA) {
-		var a0 = other.a + (1 - other.a) * a;
-		return new RGBA(blend_internal(other.r, r, other.a, a, a0), blend_internal(other.g, g, other.a, a, a0), blend_internal(other.b, b, other.a, a, a0), a0);
-	}
-	private function blend_internal(colortop:Float, colorbottom:Float, alphatop:Float, alphabottom:Float, a0:Float) {
-		return (colortop + colorbottom * (1 - alphatop));
-	}
-	@:createinstonread(bulby.assets.mat.RGBA, 1, 1, 1, 1)
-	public static var white:RGBA;
-}
 /**
  * An Color Int represented in ARGB format
  */
-abstract ARGB255(Int) from Int{
+@:build(bulby.macro.Macro.buildProduceNewInstFromVar())
+abstract Color(Int) from Int to Int {
 	public var r(get, set):Int;
-	public function new(r:Int, g:Int, b:Int, a:Int) {
+	public function new(r:Int, g:Int, b:Int, a:Int = 255) {
 		this = (a << 24) | (r << 16) | (g << 8) | b;
+	}
+	public static function fromFloat(r:Float, g:Float, b:Float, a:Float = 1) {
+		return new Color(Std.int(r * 255), Std.int(g * 255), Std.int(b * 255), Std.int(a * 255));
 	}
 	public function asARGB():Int {
 		return this;
@@ -62,13 +23,13 @@ abstract ARGB255(Int) from Int{
 		return (r << 24) | (g << 16) | (b << 8) | a;
 	}
 	public static function fromARGB(argb:Int) {
-		return new ARGB255((argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF, (argb >> 24) & 0xFF);
+		return new Color((argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF, (argb >> 24) & 0xFF);
 	}
 	public static function fromBGRA(bgra:Int) {
-		return new ARGB255((bgra >> 8) & 0xFF, (bgra >> 16) & 0xFF, (bgra >> 24) & 0xFF, (bgra) & 0xFF);
+		return new Color((bgra >> 8) & 0xFF, (bgra >> 16) & 0xFF, (bgra >> 24) & 0xFF, (bgra) & 0xFF);
 	}
 	public static function fromRGBA(rgba:Int) {
-		return new ARGB255((rgba >> 24) & 0xFF, (rgba >> 16) & 0xFF, (rgba >> 8) & 0xFF, (rgba) & 0xFF);
+		return new Color((rgba >> 24) & 0xFF, (rgba >> 16) & 0xFF, (rgba >> 8) & 0xFF, (rgba) & 0xFF);
 	}
 	private function get_r():Int {
 		return this >> 16 & 0xFF;
@@ -101,8 +62,17 @@ abstract ARGB255(Int) from Int{
 	private inline function set_a(a:Int) {
 		return this = (this & 0x00FFFFFF) | (a << 24);
 	}
-
-	public static function blend(bottom:ARGB255, top:ARGB255):ARGB255 {
+	// backwards compatibility
+	@:from
+	static function fromArrayFloat(arr:Array<Float>) {
+		if (arr.length != 3 && arr.length != 4) {
+			throw "Array must have 3 or 4 elements";
+		}
+		if (arr.length == 3)
+			arr.push(1);
+		return Color.fromFloat(arr[0], arr[1], arr[2], arr[3]);
+	}
+	public static function blend(bottom:Color, top:Color):Color {
 		var top_a = top.a / 255;
 		var bottom_a = bottom.a / 255;
 		var top_r_a = (top.r / 255) * top_a;
@@ -113,11 +83,13 @@ abstract ARGB255(Int) from Int{
 		var bottom_b_a = (bottom.b / 255) * bottom_a;
 		var alpha_final = (bottom_a + top_a - bottom_a * top_a);
 		
-		return new ARGB255(blend_internal(top_r_a, bottom_r_a, top_a, bottom_a, alpha_final), blend_internal(top_g_a, bottom_g_a, top_a, bottom_a, alpha_final), blend_internal(top_b_a, bottom_b_a, top_a, bottom_a, alpha_final), Std.int(alpha_final * 255));
+		return new Color(blend_internal(top_r_a, bottom_r_a, top_a, bottom_a, alpha_final), blend_internal(top_g_a, bottom_g_a, top_a, bottom_a, alpha_final), blend_internal(top_b_a, bottom_b_a, top_a, bottom_a, alpha_final), Std.int(alpha_final * 255));
 	}
 	private static function blend_internal(top_c_a:Float, bottom_c_a:Float, top_a:Float, bottom_a:Float, alpha_final:Float) {
 
 		return Std.int(255 * ((top_c_a + bottom_c_a * (1 - top_a)) / alpha_final));
 	}
+	@:createinstonread(bulby.assets.mat.Color, 255, 255, 255, 255)
+	public static var white:Color;
 }
 

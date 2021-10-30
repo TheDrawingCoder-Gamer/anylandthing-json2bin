@@ -30,29 +30,29 @@ using Lambda;
 @:forward(length)
 abstract ChangedVerticies(Array<Dynamic>) from Array<Dynamic> to Array<Dynamic> {
     var x(get, set):Float;
-    function get_x() {
+    inline function get_x() {
         return this[0];
     }
-    function set_x(f) {
+	inline function set_x(f) {
         return this[0] = f;
     }
     var y(get, set):Float;
-    function get_y() {
+	inline function get_y() {
         return this[1];
     }
-    function set_y(f) {
+	inline function set_y(f) {
         return this[1] = f;
     }
     var z(get, set):Float;
-    function get_z() {
+	inline function get_z() {
         return this[2];
     }
-    function set_z(f) {
+	inline function set_z(f) {
         return this[2] = f;
     }
     public var indexes(get, set):Array<Int>;
 
-    function get_indexes():Array<Int> {
+	inline function get_indexes():Array<Int> {
         return cast this.slice(3);
     }
     function set_indexes(arr:Array<Int>):Array<Int> {
@@ -760,7 +760,7 @@ class ThingHandler {
             buf.addFloatTriplet(state.position.toUnity());
             buf.addFloatTriplet(state.rotation.toUnityEuler());
             buf.addFloatTriplet(state.scale.toUnity());
-            buf.addFloatTriplet(state.color);
+            buf.addInt32(state.color);
             writeStringArray(buf, state.scriptLines);
             if (part.textureTypes[0] != None)
                 writeStateTextureBytes(buf, part, state, 0);
@@ -792,7 +792,7 @@ class ThingHandler {
         Flame
     ];
     static function writeStateTextureBytes(buf:BytesBuffer, part:ThingPart, state:ThingPartState, index:Int) {
-        buf.addFloatTriplet(state.textureColors[index]);
+        buf.addInt32(state.textureColors[index]);
         var withOnlyAlphaSetting = textureTypeWithOnlyAlphaSetting.contains(part.textureTypes[index]);
         if (withOnlyAlphaSetting) {
             // Byte because there should be less than 256 keys lmao
@@ -808,7 +808,7 @@ class ThingHandler {
         }
     }
     static function writeStateParticleBytes(buf:BytesBuffer, part:ThingPart, state:ThingPartState) {
-        buf.addFloatTriplet(state.particleSystemColor);
+        buf.addInt32(state.particleSystemColor);
         final withOnlyAlphaSetting = particleSystemWithOnlyAlphaSetting.contains(part.particleSystem);
         if (withOnlyAlphaSetting) {
             buf.addByte(1);

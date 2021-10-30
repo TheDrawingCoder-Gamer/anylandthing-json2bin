@@ -8,6 +8,19 @@ import sys.io.File;
 using StringTools;
 
 function main() {
+    var args = Sys.args();
+    var input = "";
+    var output = "";
+	if (args.length < 2) {
+    #if debugbubly
+        input = "input.json";
+        output = "output.gltf";
+    #else
+        throw "Expected input as arg one";
+    #end
+    }
+    else 
+        input = args[0];
 	var thing = ThingHandler.importJson(File.getContent("input.json"));
 
     // File.saveBytes("output.bin", ThingHandler.exportBytes(thing));

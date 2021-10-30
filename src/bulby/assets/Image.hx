@@ -19,12 +19,12 @@ class Image {
 
     function getPixel(x:Int, y:Int) {
 		var colorBytes = data.getInt32((x + y * width) * 4);
-        return ARGB255.fromARGB(colorBytes);
+        return Color.fromARGB(colorBytes);
     }
     function copy() {
         return new Image(width, height, Bytes.ofHex(data.toHex()));
     }
-    function setPixel(x:Int, y:Int, color:ARGB255) {
+    function setPixel(x:Int, y:Int, color:Color) {
         data.setInt32((x + y * width) * 4, color.asARGB());
     }
     function blend(other:Image):Image {
@@ -35,7 +35,7 @@ class Image {
             for (x in 0...w) {
                 var p1 = this.getPixel(x, y);
                 var p2 = other.getPixel(x, y);
-                var p = ARGB255.blend(p1, p2);
+                var p = Color.blend(p1, p2);
                 image.setPixel(x, y, p);
             }
         }
