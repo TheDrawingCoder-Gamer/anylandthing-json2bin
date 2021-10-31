@@ -61,32 +61,41 @@ class Macro {
 		for (f in fields.copy()) {
 			if (f.meta == null)
 				continue;
-			var className:Null<Expr> = null;
+			var hasMeta = false;
 			var classArgs:Null<Array<Expr>> = null;
 			for (metadata in f.meta) {
 				if (metadata.name == ":createinstonread") {
-					if (metadata.params == null) {
-						haxe.macro.Context.error("No params provided", metadata.pos);
-					}
-					switch (metadata.params[0]) {
-						case {pos: _,}:
-					}
-					className = metadata.params[0];
-					classArgs = metadata.params.slice(1);
+					hasMeta = true;
+					classArgs = metadata.params;
 					break;
 				}
 			}
-			if (classArgs == null)
+			if (!hasMeta)
 				continue;
+			var classPath:TypePath;
 			switch (f.kind) {
 				case FVar(ct, _):
+					switch (ct) {
+						case TPath(path) : 
+							classPath = path;
+						case TOptional(t):
+							switch (t) {
+								case TPath(path): 
+									classPath = path;
+								default: 
+									haxe.macro.Context.info("Skipping because type isn't a typepath.", Context.currentPos());
+									continue;
+							}
+						default: 
+							haxe.macro.Context.info("Skipping because type isn't a typepath.", Context.currentPos());
+							continue;
+					}
 					f.kind = FProp('get', 'never', ct);
 				default:
 					continue;
 			}
 
 			var get = "get_" + f.name;
-			var classPath = getTypePath(className);
 			var typeDef = macro class Dummy {
 				public static function $get() return new $classPath($a{classArgs});
 			}

@@ -1,10 +1,13 @@
 package bulby.assets.mat;
 
 import bulby.BulbyMath;
+
+using StringTools;
 /**
  * An Color Int represented in ARGB format
  */
 @:build(bulby.macro.Macro.buildProduceNewInstFromVar())
+@:publish 
 abstract Color(Int) from Int to Int {
 	public var r(get, set):Int;
 	public function new(r:Int, g:Int, b:Int, a:Int = 255) {
@@ -13,7 +16,14 @@ abstract Color(Int) from Int to Int {
 	public static function fromFloat(r:Float, g:Float, b:Float, a:Float = 1) {
 		return new Color(Std.int(r * 255), Std.int(g * 255), Std.int(b * 255), Std.int(a * 255));
 	}
-	public function asARGB():Int {
+	static function fromVector4(vector4:Vector4) {
+		return fromFloat(vector4.x, vector4.y, vector4.z, vector4.w);
+	}
+	@:to
+	function asVector4() {
+		return new Vector4(r / 255, g / 255, b / 255, a / 255);
+	}
+	public inline function asARGB():Int {
 		return this;
 	}
 	public function asBGRA():Int {
@@ -31,7 +41,7 @@ abstract Color(Int) from Int to Int {
 	public static function fromRGBA(rgba:Int) {
 		return new Color((rgba >> 24) & 0xFF, (rgba >> 16) & 0xFF, (rgba >> 8) & 0xFF, (rgba) & 0xFF);
 	}
-	private function get_r():Int {
+	private inline function get_r():Int {
 		return this >> 16 & 0xFF;
 	}
 	// Copilot it's ARGB
@@ -40,7 +50,7 @@ abstract Color(Int) from Int to Int {
 	}
 
 	public var g(get, set):Int;
-	private function get_g():Int {
+	private inline function get_g():Int {
 		return this >> 8 & 0xFF;
 	}
 	private inline function set_g(g:Int) {
@@ -48,7 +58,7 @@ abstract Color(Int) from Int to Int {
 	}
 
 	public var b(get, set):Int;
-	private function get_b():Int {
+	private inline function get_b():Int {
 		return this & 0xFF;
 	}
 	private inline function set_b(b:Int) {
@@ -56,7 +66,7 @@ abstract Color(Int) from Int to Int {
 	}
 
 	public var a(get, set):Int;
-	private function get_a():Int {
+	private inline function get_a():Int {
 		return this >> 24 & 0xFF;
 	}
 	private inline function set_a(a:Int) {
@@ -85,11 +95,24 @@ abstract Color(Int) from Int to Int {
 		
 		return new Color(blend_internal(top_r_a, bottom_r_a, top_a, bottom_a, alpha_final), blend_internal(top_g_a, bottom_g_a, top_a, bottom_a, alpha_final), blend_internal(top_b_a, bottom_b_a, top_a, bottom_a, alpha_final), Std.int(alpha_final * 255));
 	}
+	inline function hex():String {
+		return "#" + this.hex(8);
+	}
+	inline function invert() {
+		return new Color(255 - r, 255 - g, 255 - b, a);
+	}
+	@:op(A * B)
+	function times(other:Color) {
+		var v1 = asVector4();
+		var v2 = other.asVector4();
+		var v3 = new Vector4(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z, v1.w * v2.w);
+		return Color.fromVector4(v3);
+	}
 	private static function blend_internal(top_c_a:Float, bottom_c_a:Float, top_a:Float, bottom_a:Float, alpha_final:Float) {
 
 		return Std.int(255 * ((top_c_a + bottom_c_a * (1 - top_a)) / alpha_final));
 	}
-	@:createinstonread(bulby.assets.mat.Color, 255, 255, 255, 255)
+	@:createinstonread(255, 255, 255, 255)
 	public static var white:Color;
 }
 

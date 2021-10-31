@@ -48,7 +48,7 @@ enum abstract TextureTypes(UInt) from UInt to UInt {
     var Misc_StraightIce;
     var Misc_CrackedIce2;
     var Misc_Shades;
-    var Misc_Core;
+    var Misc_Cork;
     var Misc_Wool;
     var Misc_Salad;
     var Misc_CrossLines;

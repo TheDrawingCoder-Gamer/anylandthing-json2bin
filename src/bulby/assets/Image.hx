@@ -1,10 +1,14 @@
 package bulby.assets;
 
+import haxe.io.BytesOutput;
+import haxe.io.BytesInput;
 import bulby.assets.mat.Color;
 import haxe.io.Bytes;
 import format.png.Reader as PngReader;
 import format.png.Tools as PngTools;
 import format.png.Writer as PngWriter;
+
+using StringTools;
 @:publish
 class Image {
     var data:Bytes;
@@ -27,6 +31,26 @@ class Image {
     function setPixel(x:Int, y:Int, color:Color) {
         data.setInt32((x + y * width) * 4, color.asARGB());
     }
+    function invert():Image {
+        var result = new Image(width, height);
+        for (y in 0...height) {
+            for (x in 0...width) {
+                var color = getPixel(x, y);
+                result.setPixel(x, y, color.invert());
+            }
+        }
+        return result;
+    }
+    function times(color:Color) {
+        var result = new Image(width, height);
+        for (y in 0...height) {
+            for (x in 0...width) {
+                var pixel = getPixel(x, y);
+                result.setPixel(x, y, pixel * color);
+            }
+        }
+        return result;
+    }
     function blend(other:Image):Image {
         var w = Std.int(Math.min(this.width, other.width));
         var h = Std.int(Math.min(this.height, other.height));
@@ -43,13 +67,36 @@ class Image {
     }
     static function fromPng(png:String) {
         var fin = sys.io.File.read(png);
-        var pdata = new PngReader(fin).read();
-        var header = PngTools.getHeader(pdata);
-        return new Image(header.width, header.height, PngTools.extract32(pdata));
+        return fromInputPng(fin);
     }
     function writePng(file:String) {
         var fout = sys.io.File.write(file);
-        new PngWriter(fout).write(PngTools.build32BGRA(width, height, data));
-        fout.close();
+        toOutputPng(fout);
+    }
+    static function fromPngBytes(bytes:Bytes) {
+        var bin = new BytesInput(bytes);
+        return fromInputPng(bin);
+    }
+    function getPngBytes():Bytes {
+        var bout = new BytesOutput();
+        toOutputPng(bout);
+        return bout.getBytes();
+    }
+    private static function fromInputPng(input:haxe.io.Input) {
+        var pdata = new PngReader(input).read();
+        var header = PngTools.getHeader(pdata);
+        return new Image(header.width, header.height, PngTools.extract32(pdata));
+    }
+    private function toOutputPng(output:haxe.io.Output) { 
+        var pdata = PngTools.build32BGRA(width, height, data);
+        new PngWriter(output).write(pdata);
+        output.close();
+    }
+    static function fromPngUrl(url:String) {
+        if (!url.endsWith(".png")) {
+            throw "Non-png images are currently unsupported";
+        }
+        var bytes = Bytes.ofString(haxe.Http.requestUrl(url));
+        return fromPngBytes(bytes);
     }
 }

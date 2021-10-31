@@ -97,7 +97,9 @@ class Node {
 				generator: "Bulby's Anyland Thing Converter",
 				version: "2.0"
 			},
-			extensionsUsed: ["KHR_materials_unlit"]
+			extensionsUsed: ["KHR_materials_unlit"],
+			buffers: [null],
+			images: []
 		};
 		var buf = new BytesBuffer();
 		var compatMeshes:Array<GLTFMesh> = [for (mesh in this.children) GLTFMesh.fromMesh(mesh)];
@@ -106,8 +108,11 @@ class Node {
 		var bufferViews:Array<TBufferView> = [];
 		var primitives:Array<TPrimitive> = [];
 		var accessors:Array<TAccessor> = [];
+		
 		var b = 0;
 		var m = 0;
+		var t1 = 1;
+		var t = 0;
 		for (compatMesh in compatMeshes) {
 			if (!usedMats.exists(compatMesh.material.name)) {
 				usedMats.set(compatMesh.material.name, m);
@@ -125,6 +130,20 @@ class Node {
 					// don't waste time on blending if it's opaque
 					alphaMode: compatMesh.material.alpha == 1 ? OPAQUE : BLEND
 				};
+				/*
+				if (compatMesh.material.texture != null)  {
+					mat.pbrMetallicRoughness.baseColorTexture = {
+						index: t++
+					};
+					mat.pbrMetallicRoughness.baseColorFactor = null;
+					var bytes = compatMesh.material.texture.getPngBytes();
+					gltf.images.push({
+						uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(bytes),
+						mimeType: "image/png"
+					});
+					
+				}
+				*/
 				if (compatMesh.material.isUnshaded)
 					mat.extensions = {
 						"KHR_materials_unlit": {}
@@ -272,12 +291,10 @@ class Node {
 			}
 		];
 		gltf.scene = 0;
-		gltf.buffers = [
-			{
+		gltf.buffers[0] = {
 				byteLength: buf.length,
 				uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(buf.getBytes())
-			}
-		];
+			};
 		return gltf;
 	}
 }

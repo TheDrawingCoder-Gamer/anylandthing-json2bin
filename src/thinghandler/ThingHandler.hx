@@ -1,5 +1,7 @@
 package thinghandler;
 
+import bulby.assets.mat.Color;
+import bulby.assets.Image;
 import bulby.assets.mat.Material;
 import bulby.BulbyMath;
 import bulby.assets.Node;
@@ -362,7 +364,7 @@ class ThingHandler {
                     // We don't have to apply transformations because we do that later
                 }   
 				mesh.optimize();
-				var matKey = '_${Math.round(part.states[0].color.r * 255)}_${Math.round(part.states[0].color.g * 255)}_${Math.round(part.states[0].color.b * 255)}_${Std.string(part.materialType)}_';
+				var matKey = '_${part.states[0].color.hex()}_${Std.string(part.materialType)}_${part.imageUrl == null ? "NoURL" : part.imageUrl }_${part.textureTypes[0]}_${part.textureTypes[1]}_';
 				if (matCache.exists(matKey)) {
 					mesh.material = matCache.get(matKey);
 				} else {
@@ -370,8 +372,44 @@ class ThingHandler {
 					if (part.materialType == Unshaded) {
 						matCache.get(matKey).isUnshaded = true;
 					}
+                    
+                    if (part.textureTypes[0] != None || part.textureTypes[1] != None) {
+                        try {
+							if (FileSystem.exists("./res/Textures/" + Std.string(part.textureTypes[0]) + ".png")) {
+								var texture = Image.fromPng("./res/Textures/" + Std.string(part.textureTypes[0]) + ".png");
+								var color = part.states[0].textureColors[0].asVector4();
+								color.w = part.states[0].textureProperties[0].strength;
+
+								var goodTexture = texture.times(Color.fromVector4(color));
+								matCache.get(matKey).texture = goodTexture;
+							}
+							if (FileSystem.exists(".res/Textures/" + Std.string(part.textureTypes[1]) + ".png")) {
+								var texture = Image.fromPng("./res/Textures/" + Std.string(part.textureTypes[1]) + ".png");
+								var color = part.states[0].textureColors[1].asVector4();
+								color.w = part.states[0].textureProperties[1].strength;
+
+								var goodTexture = texture.times(Color.fromVector4(color));
+								// Technically 1st being null and 2nd being not null is impossible but we'll check anyway
+								if (matCache.get(matKey).texture == null)
+									matCache.get(matKey).texture = goodTexture;
+								else
+									matCache.get(matKey).texture = matCache.get(matKey).texture.blend(goodTexture);
+							}
+                        } catch (e:Dynamic) {
+                            matCache.get(matKey).texture = null;
+                        }
+                        
+                    }
+                        
+                    try {
+						if (part.imageUrl != null && part.imageType == Png)
+							matCache.get(matKey).texture = Image.fromPngUrl(part.imageUrl);
+                    } catch (e:Dynamic) {
+                        matCache.get(matKey).texture = null;
+                    }
+                    
 					mesh.material = matCache.get(matKey);
-				}   
+				}  
                 if (part.autoContinuation != null && part.autoContinuation.count != 0) {
                     var otherPart = part.autoContinuation.fromPart;
                     // Just a guess, but I think from part means this part is the 2nd in sequence.
