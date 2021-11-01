@@ -1,5 +1,7 @@
 package bulby.assets;
 
+import haxe.io.Bytes;
+import haxe.Json;
 import bulby.BulbyMath;
 import haxe.io.BytesBuffer;
 import bulby.assets.mat.Material;
@@ -46,6 +48,7 @@ class Node {
         mesh.optimize();
         return mesh;
     }
+	/*
     public function toObj() {
 		var file = "# Export of Bulby's Anyland converter \nmtllib output.mtl\ng ALThing\n";
 		for (mesh in this.children) {
@@ -86,7 +89,7 @@ class Node {
 			}
 		}
 		return {obj: file, mtl: mtl};
-    }
+    } */
 	public static function filteri<A>(it:Array<A>, f:(item:A, index:Int) -> Bool) {
         return [for (i in 0...Lambda.count(it, (_) -> true )) if (f(it[i], i)) it[i]];
     }
@@ -98,8 +101,16 @@ class Node {
 				version: "2.0"
 			},
 			extensionsUsed: ["KHR_materials_unlit"],
-			buffers: [null],
-			images: []
+			buffers: [],
+			images: [],
+			samplers: [{
+				magFilter:NEAREST,
+				minFilter:NEAREST,
+				wrapS:REPEAT,
+				wrapT:REPEAT
+
+			}],
+			textures: []
 		};
 		var buf = new BytesBuffer();
 		var compatMeshes:Array<GLTFMesh> = [for (mesh in this.children) GLTFMesh.fromMesh(mesh)];
@@ -119,31 +130,28 @@ class Node {
 				var mat:TMaterial = {
 					name: compatMesh.material.name,
 					pbrMetallicRoughness: {
-						baseColorFactor: [
-							compatMesh.material.diffuse.r,
-							compatMesh.material.diffuse.g,
-							compatMesh.material.diffuse.b,
-							compatMesh.material.alpha
-						],
+						baseColorFactor: compatMesh.material.diffuse.asVector4().asArray(),
 						metallicFactor: 0
 					},
 					// don't waste time on blending if it's opaque
 					alphaMode: compatMesh.material.alpha == 1 ? OPAQUE : BLEND
 				};
-				/*
+				
 				if (compatMesh.material.texture != null)  {
 					mat.pbrMetallicRoughness.baseColorTexture = {
-						index: t++
+						index: t
 					};
 					mat.pbrMetallicRoughness.baseColorFactor = null;
 					var bytes = compatMesh.material.texture.getPngBytes();
 					gltf.images.push({
-						uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(bytes),
-						mimeType: "image/png"
+						uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(bytes)
 					});
-					
+					gltf.textures.push({
+						source: t++,
+						sampler: 0
+					});
 				}
-				*/
+				
 				if (compatMesh.material.isUnshaded)
 					mat.extensions = {
 						"KHR_materials_unlit": {}
@@ -291,11 +299,70 @@ class Node {
 			}
 		];
 		gltf.scene = 0;
-		gltf.buffers[0] = {
-				byteLength: buf.length,
-				uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(buf.getBytes())
-			};
+		gltf.buffers.push({
+			byteLength: buf.length,
+			uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(buf.getBytes())
+		});
 		return gltf;
+	}
+	public function toGLB() {
+		var bytesChunkBuf = new BytesBuffer();
+		var gltf = this.toGltf();
+		var buffers = gltf.buffers.copy();
+		gltf.buffers = [];
+		var images = gltf.images.copy();
+		gltf.images = [];
+		
+		
+		for (buffer in buffers) {
+			var bufBytes = haxe.crypto.Base64.decode(buffer.uri.substring(buffer.uri.indexOf(",") + 1));
+			bytesChunkBuf.addBytes(bufBytes, 0, bufBytes.length);
+			
+		}
+		var viewLen = gltf.bufferViews.length;
+		for (image in images ) {
+			var curPos = bytesChunkBuf.length;
+			var imgBytes = haxe.crypto.Base64.decode(image.uri.substring(image.uri.indexOf(",") + 1));
+			
+			bytesChunkBuf.addBytes(imgBytes, 0, imgBytes.length);
+			var newPos = bytesChunkBuf.length;
+			var len = newPos - curPos;
+			gltf.bufferViews.push({
+				buffer: 0,
+				byteLength: len,
+				byteOffset: curPos
+			});
+			gltf.images.push({
+				bufferView: viewLen++,
+				mimeType: "image/png"
+			});
+		}
+		gltf.buffers.push({
+			byteLength: bytesChunkBuf.length
+		});
+		var jsonBuf = new BytesBuffer();
+		// sys.io.File.saveContent("debug.json", haxe.Json.stringify(gltf));
+		jsonBuf.addString(Json.stringify(gltf));
+		while (jsonBuf.length % 4 != 0)
+			jsonBuf.addByte(0x02);
+		while (bytesChunkBuf.length % 4 != 0)
+			bytesChunkBuf.addByte(0x00);
+		final glbBuf = new BytesBuffer();
+
+		glbBuf.addInt32(0x46546C67);
+		glbBuf.addInt32(2);
+		// header (12 bytes) + jsonBuf prefix (8 bytes) + jsonBuf + bytesChunkBuf prefix (8 bytes) + bytesChunkBuf
+		final length = 12 + 8 + 8 + jsonBuf.length + bytesChunkBuf.length;
+		glbBuf.addInt32(length);
+		glbBuf.addInt32(jsonBuf.length);
+		glbBuf.addInt32(0x4E4F534A);
+		glbBuf.addBytes(jsonBuf.getBytes(), 0, jsonBuf.length);
+		glbBuf.addInt32(bytesChunkBuf.length);
+		glbBuf.addInt32(0x004E4942);
+		glbBuf.addBytes(bytesChunkBuf.getBytes(), 0, bytesChunkBuf.length);
+
+		return glbBuf.getBytes();
+
 	}
 }
 

@@ -13,7 +13,8 @@ class Material {
     public var illum:Int = 2;
     public var isUnshaded = false;
     public var texture:Null<Image> = null;
-    public function new(name:String, ?diffuse:Color, ?ambient:Color, ?specular:Color, alpha:Float = 1, shinyness:Float = 0, illum:Int = 2, ?texture:Null<Image>) {
+    public var normalTexture:Null<Image> = null;
+    public function new(name:String, ?diffuse:Color, ?ambient:Color, ?specular:Color, alpha:Float = 1, shinyness:Float = 0, illum:Int = 2, ?texture:Null<Image>, ?normalTexture:Null<Image>) {
         this.name = name;
         this.diffuse = diffuse != null ? diffuse : Color.fromFloat(0.8, 0.8, 0.8);
         this.ambient = ambient != null ? ambient : Color.fromFloat(0.2, 0.2, 0.2);
@@ -22,14 +23,17 @@ class Material {
         this.shinyness = shinyness;
         this.illum = illum;
         this.texture = texture;
+        this.normalTexture = normalTexture;
     }
     public function copy():Material {
         var newDiffuse = new Color(diffuse.r, diffuse.g, diffuse.b);
         var newAmbient = new Color(ambient.r, ambient.g, ambient.b);
         var newSpecular = new Color(specular.r, specular.g, specular.b);
         var newImage = texture != null ? texture.copy() : null;
-        return new Material(name, newDiffuse, newAmbient, newSpecular, alpha, shinyness, illum, newImage);
+        var newNormalImage = normalTexture != null ? normalTexture.copy() : null;
+        return new Material(name, newDiffuse, newAmbient, newSpecular, alpha, shinyness, illum, newImage, newNormalImage);
     }
+    /*
     public function toMtl():String {
         return 'newmtl ${this.name}\n' +
             'Ka ${this.ambient.r} ${this.ambient.g} ${this.ambient.b}\n' +
@@ -39,4 +43,5 @@ class Material {
             'd ${this.alpha}\n' +
             'illum ${this.illum}\n';
     }
+    */
 }

@@ -2,3 +2,4 @@ output.*
 bin 
 run.*
 dump/*
+debug.json

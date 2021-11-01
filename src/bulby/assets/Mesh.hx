@@ -115,7 +115,6 @@ class Mesh {
                 if (vert.position < 0)
                     vert.position = positions.length + vert.position;
             }
-            trace(face);
         }
 		return new Mesh(positions, normals, uvs, faces, optimized); 
     }
