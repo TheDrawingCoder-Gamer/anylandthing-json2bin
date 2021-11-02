@@ -8,18 +8,16 @@ class Material {
     public var diffuse:Color = Color.fromFloat(0.8, 0.8, 0.8);
     public var ambient:Color = Color.fromFloat(0.2, 0.2, 0.2);
     public var specular:Color = Color.fromFloat(1, 1, 1);
-    public var alpha:Float = 1;
     public var shinyness:Float = 0;
     public var illum:Int = 2;
     public var isUnshaded = false;
     public var texture:Null<Image> = null;
     public var normalTexture:Null<Image> = null;
-    public function new(name:String, ?diffuse:Color, ?ambient:Color, ?specular:Color, alpha:Float = 1, shinyness:Float = 0, illum:Int = 2, ?texture:Null<Image>, ?normalTexture:Null<Image>) {
+    public function new(name:String, ?diffuse:Color, ?ambient:Color, ?specular:Color, shinyness:Float = 0, illum:Int = 2, ?texture:Null<Image>, ?normalTexture:Null<Image>) {
         this.name = name;
         this.diffuse = diffuse != null ? diffuse : Color.fromFloat(0.8, 0.8, 0.8);
         this.ambient = ambient != null ? ambient : Color.fromFloat(0.2, 0.2, 0.2);
         this.specular = specular != null ? specular : Color.fromFloat(1, 1, 1);
-        this.alpha = alpha;
         this.shinyness = shinyness;
         this.illum = illum;
         this.texture = texture;
@@ -31,7 +29,7 @@ class Material {
         var newSpecular = new Color(specular.r, specular.g, specular.b);
         var newImage = texture != null ? texture.copy() : null;
         var newNormalImage = normalTexture != null ? normalTexture.copy() : null;
-        return new Material(name, newDiffuse, newAmbient, newSpecular, alpha, shinyness, illum, newImage, newNormalImage);
+        return new Material(name, newDiffuse, newAmbient, newSpecular, shinyness, illum, newImage, newNormalImage);
     }
     /*
     public function toMtl():String {

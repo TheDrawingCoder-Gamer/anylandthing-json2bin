@@ -8,7 +8,7 @@ using StringTools;
  */
 @:build(bulby.macro.Macro.buildProduceNewInstFromVar())
 @:publish 
-abstract Color(Int) from Int to Int {
+abstract Color(Int) {
 	public var r(get, set):Int;
 	public function new(r:Int, g:Int, b:Int, a:Int = 255) {
 		this = (a << 24) | (r << 16) | (g << 8) | b;
@@ -16,6 +16,7 @@ abstract Color(Int) from Int to Int {
 	public static function fromFloat(r:Float, g:Float, b:Float, a:Float = 1) {
 		return new Color(Std.int(r * 255), Std.int(g * 255), Std.int(b * 255), Std.int(a * 255));
 	}
+	@:from
 	static function fromVector4(vector4:Vector4) {
 		return fromFloat(vector4.x, vector4.y, vector4.z, vector4.w);
 	}
@@ -23,6 +24,8 @@ abstract Color(Int) from Int to Int {
 	function asVector4() {
 		return new Vector4(r / 255, g / 255, b / 255, a / 255);
 	}
+
+	@:to
 	public inline function asARGB():Int {
 		return this;
 	}
@@ -32,7 +35,8 @@ abstract Color(Int) from Int to Int {
 	public function asRGBA():Int {
 		return (r << 24) | (g << 16) | (b << 8) | a;
 	}
-	public static function fromARGB(argb:Int) {
+	@:from
+	public static inline function fromARGB(argb:Int) {
 		return new Color((argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF, (argb >> 24) & 0xFF);
 	}
 	public static function fromBGRA(bgra:Int) {
@@ -71,6 +75,34 @@ abstract Color(Int) from Int to Int {
 	}
 	private inline function set_a(a:Int) {
 		return this = (this & 0x00FFFFFF) | (a << 24);
+	}
+	var rfloat(get, set):Float;
+	private inline function get_rfloat():Float {
+		return r / 255;
+	}
+	private inline function set_rfloat(r:Float) {
+		return this = (this & 0x00FFFFFF) | (Std.int(r * 255) << 16);
+	}
+	var gfloat(get, set):Float;
+	private inline function get_gfloat():Float {
+		return g / 255;
+	}
+	private inline function set_gfloat(g:Float) {
+		return this = (this & 0xFFFF00FF) | (Std.int(g * 255) << 8);
+	}
+	var bfloat(get, set):Float;
+	private inline function get_bfloat():Float {
+		return b / 255;
+	}
+	private inline function set_bfloat(b:Float) {
+		return this = (this & 0xFFFFFF00) | Std.int(b * 255);
+	}
+	var afloat(get, set):Float;
+	private inline function get_afloat():Float {
+		return a / 255;
+	}
+	private inline function set_afloat(a:Float) {
+		return this = (this & 0xFF00FFFF) | (Std.int(a * 255) << 24);
 	}
 	// backwards compatibility
 	@:from
@@ -112,7 +144,6 @@ abstract Color(Int) from Int to Int {
 
 		return Std.int(255 * ((top_c_a + bottom_c_a * (1 - top_a)) / alpha_final));
 	}
-	@:createinstonread(255, 255, 255, 255)
-	public static var white:Color;
+	public static var white:Color = 0xFFFFFFFF;
 }
 

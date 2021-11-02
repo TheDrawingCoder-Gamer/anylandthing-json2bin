@@ -1,5 +1,7 @@
 package;
 
+import haxe.io.Bytes;
+import bulby.assets.gltf.schema.TGLTF;
 import bulby.assets.Image;
 import haxe.Json;
 import sys.FileSystem;
@@ -8,21 +10,46 @@ import sys.io.File;
 import Sys.println as println;
 using StringTools;
 
+var debug = false;
 function main() {
     var args = Sys.args();
+    #if debugbubly 
+    if (args.length == 0)
+        args = ["input.json", "output", "-gltf", "-glb", "-debug"];
+    #end
     var input = "";
     var output = "";
+    var doGltf = false;
+    var doGlb = false;
 	if (args.length < 2) {
-    #if debugbubly
-        input = "input.json";
-        output = "output";
-    #else
-        throw "Expected input as arg one";
-    #end
+        println("Not enough args.");
+        println("Command usage:");
+        println("al2gltf [input] [output]");
+        println("Where input is input file");
+        println("and output is output file (no extension)");
+        println("Available flags:");
+        println("-gltf: Generate gltf file");
+        println("-glb: Generate glb file");
+        println("-debug: Output extra files/print more to commandline");
+        Sys.exit(1);
+
     }
     else {
-        input = args[0];
-        output = args[1];
+        input = args.shift();
+        output = args.shift();
+        for (flag in args) {
+            switch (flag) {
+                case "-gltf": 
+                    doGltf = true;
+                case "-glb": 
+                    doGlb = true;
+                case "-debug": 
+                    debug = true;
+                default: 
+                    println("Unexpected arg: " + flag);
+                    Sys.exit(1);
+            }
+        }
     }
     println("Importing Thing...");
 	var thing = ThingHandler.importJson(File.getContent(input));
@@ -36,14 +63,23 @@ function main() {
     // imagine using obj file when you can just use gltf
     //File.saveContent("output.obj", export.obj);
     //File.saveContent("output.mtl", export.mtl);
-    println("Generating GLTF Json...");
-    var gltf = mesh.toGltf();
-    println("Done!");
-    println("Generating GLB...");
-    var glb = mesh.toGLB();
-    println("Done!");
+    var gltf:Dynamic = {};
+    var glb:Bytes = Bytes.alloc(0);
+    if (doGltf) {
+		println("Generating GLTF Json...");
+		gltf = mesh.toGltf();
+		println("Done!");
+    }
+    if (doGlb) {
+		println("Generating GLB...");
+		glb = mesh.toGLB();
+		println("Done!");
+    }
+    
     println("Saving files...");
-    File.saveBytes(output + ".glb", glb);
-    File.saveContent(output + ".gltf", Json.stringify(gltf));
+    if (doGlb)
+        File.saveBytes(output + ".glb", glb);
+    if (doGltf)
+        File.saveContent(output + ".gltf", Json.stringify(gltf));
     println("Done!");
 }

@@ -354,6 +354,7 @@ class ThingHandler {
     public static function generateMeshFromThing(thing:Thing):Node {
         var node = new Node([]);
         var matCache:Map<String, Material> = new Map<String, Material>();
+        var i = 0;
         for (part in thing.parts) {
             if (part.materialType == InvisibleWhenDone || part.partInvisible) 
                 continue;
@@ -368,7 +369,9 @@ class ThingHandler {
 				if (matCache.exists(matKey)) {
 					mesh.material = matCache.get(matKey);
 				} else {
-					matCache.set(matKey, new Material(matKey, part.states[0].color, null, null, part.materialType.alpha(), 0, part.materialType.illum()));
+                    var color = part.states[0].color;
+                    color.a = Std.int(part.materialType.alpha() * 255);
+					matCache.set(matKey, new Material(matKey, color, null, null, 0, part.materialType.illum()));
 					if (part.materialType == Unshaded) {
 						matCache.get(matKey).isUnshaded = true;
 					}
@@ -377,18 +380,19 @@ class ThingHandler {
                         try {
 							if (FileSystem.exists("./res/Textures/" + Std.string(part.textureTypes[0]) + ".png")) {
 								var texture = Image.fromPng("./res/Textures/" + Std.string(part.textureTypes[0]) + ".png");
-								var color = part.states[0].textureColors[0].asVector4();
-								color.w = part.states[0].textureProperties[0].strength;
+								var color = part.states[0].textureColors[0];
+								color.afloat = part.states[0].textureProperties[0].strength;
 
-								var goodTexture = texture.times(Color.fromVector4(color));
+								var goodTexture = texture.times(color);
 								matCache.get(matKey).texture = goodTexture;
+                                // goodTexture.writePng("./output.png");
 							}
 							if (FileSystem.exists(".res/Textures/" + Std.string(part.textureTypes[1]) + ".png")) {
 								var texture = Image.fromPng("./res/Textures/" + Std.string(part.textureTypes[1]) + ".png");
-								var color = part.states[0].textureColors[1].asVector4();
-								color.w = part.states[0].textureProperties[1].strength;
+								var color = part.states[0].textureColors[1];
+								color.afloat = part.states[0].textureProperties[1].strength;
 
-								var goodTexture = texture.times(Color.fromVector4(color));
+								var goodTexture = texture.times(color);
 								// Technically 1st being null and 2nd being not null is impossible but we'll check anyway
 								if (matCache.get(matKey).texture == null)
 									matCache.get(matKey).texture = goodTexture;
@@ -483,7 +487,7 @@ class ThingHandler {
                 mesh.applyTransformations();
 				node.children.push(mesh);
             }
-            
+            i++;
         }
         return node;
     }
