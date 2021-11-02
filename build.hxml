@@ -1,7 +1,7 @@
 -cp src
 -main Main
 -L format
-# -D debugbubly
+-D debugbubly
 --macro addGlobalMetadata("", "@:build(bulby.macro.Macro.publish())")
 --macro addGlobalMetadata("", "@:build(bulby.macro.Macro.staticClass())")
 --hl run.hl
