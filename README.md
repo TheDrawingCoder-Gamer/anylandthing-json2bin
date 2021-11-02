@@ -10,6 +10,7 @@ This project also used to double as a Thing Json to BIN file but let's be honest
 Current problems
 - Damn Rotations :sob: Anylands rotation is... interesting to say the least. As of now, rotation is read as "Don't invert x, but invert y and z" and then it's converted to a quaternion with order of ZXY (which afaik is what unity uses). 
 - Materials are not fully fleshed out. The only fully working materials I know are default (obviously) and unshaded because my test json is almost all unshaded. 
+- Images; Currently any texture that is not in RGBA mode (which is basically all of them) simply doesn't work. This also messes up the base color. 
 
 Pictures: 
 
