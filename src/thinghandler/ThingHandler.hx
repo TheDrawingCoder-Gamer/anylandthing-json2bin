@@ -385,7 +385,8 @@ class ThingHandler {
 
 								var goodTexture = texture.times(color);
 								matCache.get(matKey).texture = goodTexture;
-                                // goodTexture.writePng("./output.png");
+                                if (Main.debug)
+                                    goodTexture.writePng("./output.png");
 							}
 							if (FileSystem.exists(".res/Textures/" + Std.string(part.textureTypes[1]) + ".png")) {
 								var texture = Image.fromPng("./res/Textures/" + Std.string(part.textureTypes[1]) + ".png");
