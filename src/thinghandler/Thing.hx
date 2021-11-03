@@ -316,7 +316,7 @@ class ThingPartState {
     public var rotation:Vector3 = Vector3.empty();
     public var scale:Vector3 = new Vector3(1, 1, 1);
     public var scriptLines:Array<String> = [];
-    public var textureProperties:Vector<TexturePropertyMap<Float>> = Vector.fromArrayCopy([new Map(), new Map()]);
+    public var textureProperties:Vector<TexturePropertyMap<Float>> = Vector.fromArrayCopy([new TexturePropertyMap<Float>([]), new TexturePropertyMap<Float>([])]);
     public var particleSystemProperty:Map<ParticleSystemProperty, Int> = [];
     public var particleSystemColor:Color = new Color(0, 0, 0);
     public var textureColors:Vector<Color> = Vector.fromArrayCopy([new Color(0, 0, 0), new Color(0,0,0)]);

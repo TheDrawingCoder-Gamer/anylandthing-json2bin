@@ -11,7 +11,7 @@ enum abstract TextureTypes(UInt) from UInt to UInt {
     var VoronoiDots;
     var PerlinNoise1;
     var QuasiCrystal;
-        var QuasiNoise = 12;
+        var PlasmaNoise = 12;
         var Pool;
         var Bio;
         var FractalNoise;

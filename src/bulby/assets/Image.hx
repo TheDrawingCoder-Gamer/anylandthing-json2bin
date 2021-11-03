@@ -52,12 +52,13 @@ class Image {
         return result;
     }
     // All textures are grayscale; This represents the alpha afaik. 
-    function colortexture(color:Color) {
+    function colortexture(color:Color, alphacap:Int = 255) {
         var result = new Image(width, height);
+    
         for (y in 0...height) {
             for (x in 0...width) {
                 var pixel = getPixel(x, y);
-                result.setPixel(x, y, new Color(color.r, color.g, color.b, pixel.r));
+                result.setPixel(x, y, new Color(color.r, color.g, color.b, Std.int(Math.min(pixel.r, alphacap))));
             }
         }
         return result;
@@ -84,6 +85,51 @@ class Image {
             }
         }
         return image;
+    }
+    static function procedural(width:Int, height:Int, tex:thinghandler.TextureTypes, ?param1:Float, ?param2:Float, ?param3:Float):Image {
+        switch (tex) {
+            case Gradient:
+
+            case PerlinNoise1: 
+
+            case QuasiCrystal:
+
+            case VoronoiDots:
+
+            case VoronoiPolys:
+
+            case WavyLines: 
+
+            case WoodGrain: 
+
+            case PlasmaNoise:
+
+            case Pool:
+
+            case Bio: 
+
+            case FractalNoise:
+
+            case LightSquares:
+
+            case Machine: 
+
+            case SweptNoise:
+
+            case Abstract:
+
+            case Dashes:
+
+            case LayeredNoise:
+
+            case SquareRegress:
+
+            case Swirly:
+
+            default: 
+                return null;
+        }
+        return null;
     }
     static function fromPng(png:String) {
         var fin = sys.io.File.read(png);

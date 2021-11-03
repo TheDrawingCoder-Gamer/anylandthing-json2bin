@@ -140,6 +140,21 @@ typedef AnylandStateJson = {
     var s:Array<Float>;
     var c:Array<Float>;
     var b:Array<String>;
+    var ?t1:ALStateTextureInfo;
+    var ?t2:ALStateTextureInfo;
+}
+typedef ALStateTextureInfo = {
+    var c:Array<Float>; // Color
+    var x:Float; // X Scale
+    var y:Float; // Y SCale
+    var a:Float; // Alpha
+    var m:Float; // X Offset
+    var n:Float; // Y Offset
+    var r:Float; // Rotation
+    var g:Float; // Glow
+    var o:Float; // Param 1
+    var t:Float; // Param 2
+    var e:Float; // Param 3
 }
 typedef AnylandAC = {
     var id:String;
@@ -265,6 +280,30 @@ class ThingHandler {
                 // Ensure no negative scale to prevent : (
                 thingpart.states[statesI].scale = thingpart.states[statesI].scale.abs();
                 thingpart.states[statesI].color = state.c;
+                if (state.t1 != null) {
+                    thingpart.states[statesI].textureColors[0] = state.t1.c;
+                    thingpart.states[statesI].textureProperties[0] = [
+                        TextureProperty.ScaleY => state.t1.y,
+						TextureProperty.ScaleX => state.t1.x,
+						TextureProperty.Rotation => state.t1.r,
+						TextureProperty.OffsetX => state.t1.m,
+						TextureProperty.OffsetY => state.t1.n,
+						TextureProperty.Glow => state.t1.g,
+						TextureProperty.Param1 => state.t1.o,
+						TextureProperty.Strength => state.t1.a,
+						TextureProperty.Param2 => state.t1.t,
+						TextureProperty.Param3 => state.t1.e
+                    ];
+                }
+				if (state.t2 != null) {
+					thingpart.states[statesI].textureColors[1] = state.t2.c;
+					thingpart.states[statesI].textureProperties[1] = [
+						TextureProperty.ScaleY => state.t2.y, TextureProperty.ScaleX => state.t2.x, TextureProperty.Rotation => state.t2.r,
+						TextureProperty.OffsetX => state.t2.m, TextureProperty.OffsetY => state.t2.n, TextureProperty.Glow => state.t2.g,
+						TextureProperty.Param1 => state.t2.o, TextureProperty.Strength => state.t2.a, TextureProperty.Param2 => state.t2.t,
+						TextureProperty.Param3 => state.t2.e
+					];
+				}
                 
                 if (state.b != null) {
                     partContainsScript = true;
@@ -370,7 +409,7 @@ class ThingHandler {
 					mesh.material = matCache.get(matKey);
 				} else {
                     var color = part.states[0].color;
-                    color.a = Std.int(part.materialType.alpha() * 255);
+                    color.afloat =  part.materialType.alpha();
 					matCache.set(matKey, new Material(matKey, color, null, null, 0, part.materialType.illum()));
 					if (part.materialType == Unshaded) {
 						matCache.get(matKey).isUnshaded = true;
@@ -383,7 +422,7 @@ class ThingHandler {
 								var color = part.states[0].textureColors[0];
 								color.afloat = part.states[0].textureProperties[0].strength;
 
-								var goodTexture = texture.colortexture(color);
+								var goodTexture = texture.colortexture(color, textureAlphaCap(part.textureTypes[0]));
                                 var colorTexture = Image.filled(goodTexture.width, goodTexture.height, part.states[0].color);
 								matCache.get(matKey).texture = colorTexture.blend(goodTexture);
                                 if (Main.debug)
@@ -394,7 +433,8 @@ class ThingHandler {
 								var color = part.states[0].textureColors[1];
 								color.afloat = part.states[0].textureProperties[1].strength;
 
-								var goodTexture = texture.colortexture(color);
+								var goodTexture = texture.colortexture(color, textureAlphaCap(part.textureTypes[1]));
+                                var colorTexture = Image.filled(goodTexture.width, goodTexture.height, part.states[0].color);
 								// Technically 1st being null and 2nd being not null is impossible but we'll check anyway
 								if (matCache.get(matKey).texture == null) {
 									var colorTexture = Image.filled(goodTexture.width, goodTexture.height, part.states[0].color);
@@ -838,6 +878,22 @@ class ThingHandler {
         Sparks,
         Flame
     ];
+    static function textureAlphaCap(textureType:TextureTypes) {
+        switch (textureType) {
+            case QuasiCrystal
+            | VoronoiDots
+            | VoronoiPolys
+            | WavyLines
+            | WoodGrain
+            | Machine
+            | Dashes
+            | SquareRegress
+            | Swirly:
+                return 128;
+            default:
+                return 255;
+        }
+    }
     static function writeStateTextureBytes(buf:BytesBuffer, part:ThingPart, state:ThingPartState, index:Int) {
         buf.addInt32(state.textureColors[index]);
         var withOnlyAlphaSetting = textureTypeWithOnlyAlphaSetting.contains(part.textureTypes[index]);
