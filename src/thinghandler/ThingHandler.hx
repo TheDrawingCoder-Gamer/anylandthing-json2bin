@@ -383,8 +383,9 @@ class ThingHandler {
 								var color = part.states[0].textureColors[0];
 								color.afloat = part.states[0].textureProperties[0].strength;
 
-								var goodTexture = texture.times(color);
-								matCache.get(matKey).texture = goodTexture;
+								var goodTexture = texture.colortexture(color);
+                                var colorTexture = Image.filled(goodTexture.width, goodTexture.height, part.states[0].color);
+								matCache.get(matKey).texture = colorTexture.blend(goodTexture);
                                 if (Main.debug)
                                     goodTexture.writePng("./output.png");
 							}
@@ -393,10 +394,13 @@ class ThingHandler {
 								var color = part.states[0].textureColors[1];
 								color.afloat = part.states[0].textureProperties[1].strength;
 
-								var goodTexture = texture.times(color);
+								var goodTexture = texture.colortexture(color);
 								// Technically 1st being null and 2nd being not null is impossible but we'll check anyway
-								if (matCache.get(matKey).texture == null)
-									matCache.get(matKey).texture = goodTexture;
+								if (matCache.get(matKey).texture == null) {
+									var colorTexture = Image.filled(goodTexture.width, goodTexture.height, part.states[0].color);
+									matCache.get(matKey).texture = colorTexture.blend(goodTexture);
+                                }
+									
 								else
 									matCache.get(matKey).texture = matCache.get(matKey).texture.blend(goodTexture);
 							}

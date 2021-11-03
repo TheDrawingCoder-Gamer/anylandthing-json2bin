@@ -51,6 +51,26 @@ class Image {
         }
         return result;
     }
+    // All textures are grayscale; This represents the alpha afaik. 
+    function colortexture(color:Color) {
+        var result = new Image(width, height);
+        for (y in 0...height) {
+            for (x in 0...width) {
+                var pixel = getPixel(x, y);
+                result.setPixel(x, y, new Color(color.r, color.g, color.b, pixel.r));
+            }
+        }
+        return result;
+    }
+    static function filled(width:Int, height:Int, color:Color) {
+        var result = new Image(width, height);
+        for (y in 0...height) {
+            for (x in 0...width) {
+                result.setPixel(x, y, color);
+            }
+        }
+        return result;
+    }
     function blend(other:Image):Image {
         var w = Std.int(Math.min(this.width, other.width));
         var h = Std.int(Math.min(this.height, other.height));
