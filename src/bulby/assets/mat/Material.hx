@@ -2,34 +2,39 @@ package bulby.assets.mat;
 
 
 
+enum Extensions {
+    Clearcoat(?clearcoatFactor:Float, ?clearcoatTexture:Image, ?clearcoatRoughnessFactor:Float, ?clearcoatRoughnessTexture:Image, ?clearcoatNormalTexture:Image);
+    Ior(?ior:Float);
+    Sheen(?sheenColorFactor:Color, ?sheenColorTexture:Image, ?sheenRoughnessFactor:Float, ?sheenRoughnessTexture:Image);
+    Specular(?specularFactor:Float, ?specularTexture:Image, ?specularColorFactor:Color, ?specularColorTexture:Image);
+    Transmission(?transmissionFactor:Float, ?transmissionTexture:Image);
+    Unlit;
+    Volume(?thicknessFactor:Float, ?thicknessTexture:Image, ?attenuationDistance:Float, ?attenuationColor:Color);
 
+}
 class Material {
     public var name:String;
     public var diffuse:Color = Color.fromFloat(0.8, 0.8, 0.8);
-    public var ambient:Color = Color.fromFloat(0.2, 0.2, 0.2);
-    public var specular:Color = Color.fromFloat(1, 1, 1);
-    public var shinyness:Float = 0;
-    public var illum:Int = 2;
+    public var metalness:Float = 0.0;
+    public var roughness:Float = 0;
     public var isUnshaded = false;
     public var texture:Null<Image> = null;
     public var normalTexture:Null<Image> = null;
-    public function new(name:String, ?diffuse:Color, ?ambient:Color, ?specular:Color, shinyness:Float = 0, illum:Int = 2, ?texture:Null<Image>, ?normalTexture:Null<Image>) {
+    public var extensions:Array<Extensions> = [];
+    public function new(name:String, ?diffuse:Color, metalness:Float = 0, roughness:Float = 0, ?texture:Null<Image>, ?normalTexture:Null<Image>, ?extensions:Array<Extensions>):Void {
         this.name = name;
         this.diffuse = diffuse != null ? diffuse : Color.fromFloat(0.8, 0.8, 0.8);
-        this.ambient = ambient != null ? ambient : Color.fromFloat(0.2, 0.2, 0.2);
-        this.specular = specular != null ? specular : Color.fromFloat(1, 1, 1);
-        this.shinyness = shinyness;
-        this.illum = illum;
+        this.metalness = metalness;
+        this.roughness = roughness;
         this.texture = texture;
         this.normalTexture = normalTexture;
+        extensions = extensions != null ? extensions : [];
     }
     public function copy():Material {
         var newDiffuse = new Color(diffuse.r, diffuse.g, diffuse.b);
-        var newAmbient = new Color(ambient.r, ambient.g, ambient.b);
-        var newSpecular = new Color(specular.r, specular.g, specular.b);
         var newImage = texture != null ? texture.copy() : null;
         var newNormalImage = normalTexture != null ? normalTexture.copy() : null;
-        return new Material(name, newDiffuse, newAmbient, newSpecular, shinyness, illum, newImage, newNormalImage);
+        return new Material(name, newDiffuse, metalness, roughness, newImage, newNormalImage, extensions.copy());
     }
     /*
     public function toMtl():String {

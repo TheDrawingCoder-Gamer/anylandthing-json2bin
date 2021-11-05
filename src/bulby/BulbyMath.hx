@@ -3,14 +3,20 @@ package bulby;
 @:publish
 @:static
 class BulbyMath {
-	function roundf(f:Float, to:Int) {
+	inline function roundf(f:Float, to:Int) {
 		return Math.round(f * (Math.pow(10, to))) / Math.pow(10, to);
 	}
-	function lerp(a:Float, b:Float, t:Float) {
-		return a * (1 - t) + b * t;
+	inline function lerp(a:Float, b:Float, t:Float):Float {
+		return a + (b - a) * t;
 	}
-	function alphaBlend(a:Float, b:Float, alpha:Float) {
+	inline function sCurve(t:Float):Float {
+		return t * t * (3 - 2 * t);
+	}
+	inline function alphaBlend(a:Float, b:Float, alpha:Float) {
 		return (a * alpha) + (b * (1 - alpha));
+	}
+	inline function clamp(a:Float, min:Float, max:Float) {
+		return Math.min(Math.max(a, min), max);
 	}
 }
 

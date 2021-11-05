@@ -134,7 +134,7 @@ class Node {
 						metallicFactor: 0
 					},
 					// don't waste time on blending if it's opaque
-					alphaMode: compatMesh.material.diffuse.a == 1 ? OPAQUE : BLEND
+					alphaMode: compatMesh.material.diffuse.a == 255 ? OPAQUE : BLEND
 				};
 				
 				if (compatMesh.material.texture != null)  {
@@ -151,11 +151,166 @@ class Node {
 						sampler: 0
 					});
 				}
-				
-				if (compatMesh.material.isUnshaded)
-					mat.extensions = {
-						"KHR_materials_unlit": {}
-					};
+				mat.extensions = {};
+				for (ext in compatMesh.material.extensions) {
+					switch (ext) {
+						case Unlit: 
+							mat.extensions.KHR_materials_unlit = {};
+						case Clearcoat(ccFactor, ccTex, ccRFactor, ccRTex, ccNTex): 
+							mat.extensions.KHR_materials_clearcoat = {};
+							if (ccTex != null) {
+								gltf.images.push({
+									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(ccTex.getPngBytes())
+								});
+								gltf.textures.push({
+									source: t,
+									sampler: 0
+								});
+								mat.extensions.KHR_materials_clearcoat.clearcoatTexture = {
+									index: t++
+								};
+								
+							}
+							if (ccRTex != null) {
+								gltf.images.push({
+									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(ccRTex.getPngBytes())
+								});
+								gltf.textures.push({
+									source: t,
+									sampler: 0
+								});
+								mat.extensions.KHR_materials_clearcoat.clearcoatRoughnessTexture = {
+									index: t++
+								};
+							}
+							if (ccNTex != null) {
+								gltf.images.push({
+									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(ccNTex.getPngBytes())
+								});
+								gltf.textures.push({
+									source: t,
+									sampler: 0
+								});
+								mat.extensions.KHR_materials_clearcoat.clearcoatTexture = {
+									index: t++
+								};
+							}
+							if (ccFactor != null) {
+								mat.extensions.KHR_materials_clearcoat.clearcoatFactor = ccFactor;
+							}
+							if (ccRFactor != null) {
+								mat.extensions.KHR_materials_clearcoat.clearcoatRoughnessFactor = ccRFactor;
+							}
+						case Ior(ior):
+							mat.extensions.KHR_materials_ior = {
+								ior: ior
+							};
+						case Sheen(sheenColorFactor, sheenColorTexture, sheenRoughnessFactor, sheenRoughnessTexture):
+							mat.extensions.KHR_materials_sheen = {};
+							if (sheenColorTexture != null) {
+								gltf.images.push({
+									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(sheenColorTexture.getPngBytes())
+								});
+								gltf.textures.push({
+									source: t,
+									sampler: 0
+								});
+								mat.extensions.KHR_materials_sheen.sheenColorTexture = {
+									index: t++
+								};
+							}
+							if (sheenRoughnessTexture != null) {
+								gltf.images.push({
+									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(sheenRoughnessTexture.getPngBytes())
+								});
+								gltf.textures.push({
+									source: t,
+									sampler: 0
+								});
+								mat.extensions.KHR_materials_sheen.sheenRoughnessTexture = {
+									index: t++
+								};
+							}
+							if (sheenColorFactor != null) {
+								mat.extensions.KHR_materials_sheen.sheenColorFactor = sheenColorFactor.asVector4().asArray().slice(0, 3);
+							}
+							if (sheenRoughnessFactor != null) {
+								mat.extensions.KHR_materials_sheen.sheenRoughnessFactor = sheenRoughnessFactor;
+							}
+						case Specular(specularFactor, specularTexture, specularColorFactor, specularColorTexture):
+							mat.extensions.KHR_materials_specular = {};
+							if (specularTexture != null) {
+								gltf.images.push({
+									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(specularTexture.getPngBytes())
+								});
+								gltf.textures.push({
+									source: t,
+									sampler: 0
+								});
+								mat.extensions.KHR_materials_specular.specularTexture = {
+									index: t++
+								};
+							}
+							if (specularColorTexture != null) {
+								gltf.images.push({
+									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(specularColorTexture.getPngBytes())
+								});
+								gltf.textures.push({
+									source: t,
+									sampler: 0
+								});
+								mat.extensions.KHR_materials_specular.specularColorTexture = {
+									index: t++
+								}
+							} 
+							if (specularFactor != null) {
+								mat.extensions.KHR_materials_specular.specularFactor = specularFactor;
+							}
+							if (specularColorFactor != null) {
+								mat.extensions.KHR_materials_specular.specularColorFactor = specularColorFactor.asVector4().asArray().slice(0, 3);
+							}
+						case Transmission(transmissionFactor, transmissionTexture):
+							mat.extensions.KHR_materials_transmission = {};
+							if (transmissionTexture != null) {
+								gltf.images.push({
+									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(transmissionTexture.getPngBytes())
+								});
+								gltf.textures.push({
+									source: t,
+									sampler: 0
+								});
+								mat.extensions.KHR_materials_transmission.transmissionTexture = {
+									index: t++
+								};
+							}
+							if (transmissionFactor != null) {
+								mat.extensions.KHR_materials_transmission.transmissionFactor = transmissionFactor;
+							}
+						case Volume(thicknessFactor, thicknessTexture, attenuationDistance, attenuationColor):
+							mat.extensions.KHR_materials_volume = {};
+							if (thicknessTexture != null) {
+								gltf.images.push({
+									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(thicknessTexture.getPngBytes())
+								});
+								gltf.textures.push({
+									source: t,
+									sampler: 0
+								});
+								mat.extensions.KHR_materials_volume.thicknessTexture = {
+									index: t++
+								};
+							}
+							if (thicknessFactor != null) {
+								mat.extensions.KHR_materials_volume.thicknessFactor = thicknessFactor;
+							}
+							if (attenuationDistance != null) {
+								mat.extensions.KHR_materials_volume.attenuationDistance = attenuationDistance;
+							}
+							if (attenuationColor != null) {
+								mat.extensions.KHR_materials_volume.attenuationColor = attenuationColor.asVector4().asArray().slice(0, 3);
+							}
+					}
+				}
 				mats.push(mat);
 				m++;
 			}

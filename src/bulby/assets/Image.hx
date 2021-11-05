@@ -58,7 +58,7 @@ class Image {
         for (y in 0...height) {
             for (x in 0...width) {
                 var pixel = getPixel(x, y);
-                result.setPixel(x, y, new Color(color.r, color.g, color.b, Std.int(Math.min(pixel.r, alphacap))));
+                result.setPixel(x, y, new Color(color.r, color.g, color.b, Std.int(Math.min(Math.min(pixel.r, alphacap), color.a))));
             }
         }
         return result;
@@ -89,9 +89,31 @@ class Image {
     static function procedural(width:Int, height:Int, tex:thinghandler.TextureTypes, ?param1:Float, ?param2:Float, ?param3:Float):Image {
         switch (tex) {
             case Gradient:
-
+                var colorArray = [];
+                for (i in 0...height) {
+                    colorArray.push(Color.lerp(Color.black, Color.white, i / height));
+                }
+                var image = new Image(width, height);
+                for (y in 0...height) {
+                    for (x in 0...width) {
+                        image.setPixel(x, y, colorArray[y]);
+                    }
+                }
+                return image;
             case PerlinNoise1: 
-
+                if (param1 == null) throw "Perlin noise expects param1.";
+                var perlin = new hxnoise.Perlin();
+                var image = new Image(width, height);
+                for (y in 0...height) {
+                    for (x in 0...width) {
+                        if (param1 != null) {
+							var noise = BulbyMath.clamp(perlin.OctavePerlin(x, y, 0, 1, 0.5, 2), 0, 1);
+							image.setPixel(x, y, Color.fromFloat(noise, noise, noise, 1));
+                        }
+                        
+                    }
+                }
+                return image;
             case QuasiCrystal:
 
             case VoronoiDots:
@@ -131,6 +153,7 @@ class Image {
         }
         return null;
     }
+    
     static function fromPng(png:String) {
         var fin = sys.io.File.read(png);
         return fromInputPng(fin);

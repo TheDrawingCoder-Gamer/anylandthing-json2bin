@@ -1,5 +1,6 @@
 package;
 
+import bulby.assets.mat.Color;
 import haxe.io.Bytes;
 import bulby.assets.gltf.schema.TGLTF;
 import bulby.assets.Image;
@@ -82,4 +83,12 @@ function main() {
     if (doGltf)
         File.saveContent(output + ".gltf", Json.stringify(gltf));
     println("Done!");
+    if (debug) {
+        println("Combining two png images...");
+        var bottom = Image.fromPng("./bottom_layer_test.png");
+        var top = Image.fromPng("./top_layer_test.png");
+        var combined  = bottom.blend(top);
+        combined.writePng(output + "_combined.png");
+        println("Done!");
+    }
 }

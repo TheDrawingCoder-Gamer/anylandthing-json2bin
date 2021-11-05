@@ -24,7 +24,10 @@ abstract Color(Int) {
 	function asVector4() {
 		return new Vector4(r / 255, g / 255, b / 255, a / 255);
 	}
-
+	static function lerp(a:Color, b:Color, t:Float) {
+		return Color.fromFloat(BulbyMath.lerp(a.rfloat, b.rfloat, t), BulbyMath.lerp(a.gfloat, b.gfloat, t), BulbyMath.lerp(a.bfloat, b.bfloat, t),
+			BulbyMath.lerp(a.afloat, b.afloat, t));
+	}
 	@:to
 	public inline function asARGB():Int {
 		return this;
@@ -80,29 +83,29 @@ abstract Color(Int) {
 	private inline function get_rfloat():Float {
 		return r / 255;
 	}
-	private inline function set_rfloat(r:Float) {
-		return this = (this & 0x00FFFFFF) | (Std.int(r * 255) << 16);
+	private inline function set_rfloat(ri:Float) {
+		return r = Std.int(ri * 255);
 	}
 	var gfloat(get, set):Float;
 	private inline function get_gfloat():Float {
 		return g / 255;
 	}
-	private inline function set_gfloat(g:Float) {
-		return this = (this & 0xFFFF00FF) | (Std.int(g * 255) << 8);
+	private inline function set_gfloat(gi:Float) {
+		return g = Std.int(gi * 255);
 	}
 	var bfloat(get, set):Float;
 	private inline function get_bfloat():Float {
 		return b / 255;
 	}
-	private inline function set_bfloat(b:Float) {
-		return this = (this & 0xFFFFFF00) | Std.int(b * 255);
+	private inline function set_bfloat(bi:Float) {
+		return b = Std.int(bi * 255);
 	}
 	var afloat(get, set):Float;
 	private inline function get_afloat():Float {
 		return a / 255;
 	}
-	private inline function set_afloat(a:Float) {
-		return this = (this & 0xFF00FFFF) | (Std.int(a * 255) << 24);
+	private inline function set_afloat(ai:Float) {
+		return a = Std.int(ai * 255);
 	}
 	// backwards compatibility
 	@:from
@@ -115,14 +118,14 @@ abstract Color(Int) {
 		return Color.fromFloat(arr[0], arr[1], arr[2], arr[3]);
 	}
 	public static function blend(bottom:Color, top:Color):Color {
-		var top_a = top.a / 255;
-		var bottom_a = bottom.a / 255;
-		var top_r_a = (top.r / 255) * top_a;
-		var top_g_a = (top.g / 255) * top_a;
-		var top_b_a = (top.b / 255) * top_a;
-		var bottom_r_a = (bottom.r / 255) * bottom_a;
-		var bottom_g_a = (bottom.g / 255) * bottom_a;
-		var bottom_b_a = (bottom.b / 255) * bottom_a;
+		var top_a = top.afloat;
+		var bottom_a = bottom.afloat;
+		var top_r_a = top.rfloat * top_a;
+		var top_g_a = top.gfloat * top_a;
+		var top_b_a = top.bfloat * top_a;
+		var bottom_r_a = bottom.rfloat * bottom_a;
+		var bottom_g_a = bottom.gfloat * bottom_a;
+		var bottom_b_a = bottom.bfloat * bottom_a;
 		var alpha_final = (bottom_a + top_a - bottom_a * top_a);
 		
 		return new Color(blend_internal(top_r_a, bottom_r_a, top_a, bottom_a, alpha_final), blend_internal(top_g_a, bottom_g_a, top_a, bottom_a, alpha_final), blend_internal(top_b_a, bottom_b_a, top_a, bottom_a, alpha_final), Std.int(alpha_final * 255));
@@ -145,5 +148,6 @@ abstract Color(Int) {
 		return Std.int(255 * ((top_c_a + bottom_c_a * (1 - top_a)) / alpha_final));
 	}
 	public static var white:Color = 0xFFFFFFFF;
+	public static var black:Color = 0x000000FF;
 }
 

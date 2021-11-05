@@ -410,9 +410,9 @@ class ThingHandler {
 				} else {
                     var color = part.states[0].color;
                     color.afloat =  part.materialType.alpha();
-					matCache.set(matKey, new Material(matKey, color, null, null, 0, part.materialType.illum()));
+					matCache.set(matKey, new Material(matKey, color, 0, 0));
 					if (part.materialType == Unshaded) {
-						matCache.get(matKey).isUnshaded = true;
+						matCache.get(matKey).extensions.push(Unlit);
 					}
                     
                     if (part.textureTypes[0] != None || part.textureTypes[1] != None) {
@@ -426,15 +426,22 @@ class ThingHandler {
                                 var colorTexture = Image.filled(goodTexture.width, goodTexture.height, part.states[0].color);
 								matCache.get(matKey).texture = colorTexture.blend(goodTexture);
                                 if (Main.debug)
-                                    goodTexture.writePng("./output.png");
-							}
+                                    // I FEEL SO STUPID :sob: I WAS WRITING GOOD TEXTURE WHEN I WAS SUPPOSED TO BE WRITING THIS
+                                    matCache.get(matKey).texture.writePng("./output.png");
+							} else if (TextureTypes.isProcedural(part.textureTypes[0])) {
+                                var texture = Image.procedural(2048, 2048, part.textureTypes[0], part.states[0].textureProperties[0].param1, part.states[0].textureProperties[0].param2, part.states[0].textureProperties[0].param3);
+                                if (texture != null) {
+                                    texture = texture.colortexture(part.states[0].textureColors[0], textureAlphaCap(part.textureTypes[0]));
+                                    var colorTexture = Image.filled(texture.width, texture.height, part.states[0].color);
+                                    matCache.get(matKey).texture = colorTexture.blend(texture);
+                                }
+                            }
 							if (FileSystem.exists(".res/Textures/" + Std.string(part.textureTypes[1]) + ".png")) {
 								var texture = Image.fromPng("./res/Textures/" + Std.string(part.textureTypes[1]) + ".png");
 								var color = part.states[0].textureColors[1];
 								color.afloat = part.states[0].textureProperties[1].strength;
 
 								var goodTexture = texture.colortexture(color, textureAlphaCap(part.textureTypes[1]));
-                                var colorTexture = Image.filled(goodTexture.width, goodTexture.height, part.states[0].color);
 								// Technically 1st being null and 2nd being not null is impossible but we'll check anyway
 								if (matCache.get(matKey).texture == null) {
 									var colorTexture = Image.filled(goodTexture.width, goodTexture.height, part.states[0].color);
@@ -443,7 +450,20 @@ class ThingHandler {
 									
 								else
 									matCache.get(matKey).texture = matCache.get(matKey).texture.blend(goodTexture);
-							}
+							} else if (TextureTypes.isProcedural(part.textureTypes[1])) {
+                                var texture = Image.procedural(2048, 2048, part.textureTypes[1], part.states[0].textureProperties[1].param1, part.states[0].textureProperties[1].param2, part.states[0].textureProperties[1].param3);
+                                // Check for null because right now not everything is implemented
+                                if (texture != null) {
+									texture = texture.colortexture(part.states[0].textureColors[1], textureAlphaCap(part.textureTypes[1]));
+                                    
+                                    if (matCache.get(matKey).texture == null) {
+                                        var colorTexture = Image.filled(texture.width, texture.height, part.states[0].color);
+                                        matCache.get(matKey).texture = colorTexture.blend(texture);
+                                    }
+                                    else
+                                        matCache.get(matKey).texture = matCache.get(matKey).texture.blend(texture);
+                                }
+                            }
                         } catch (e:Dynamic) {
                             matCache.get(matKey).texture = null;
                         }

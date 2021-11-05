@@ -182,4 +182,31 @@ enum abstract TextureTypes(UInt) from UInt to UInt {
     
     var Wireframe = 167;
     var Outline = 168;
+
+    public static function isProcedural(tex:TextureTypes) {
+        switch (tex) {
+            case TextureTypes.Gradient
+            | TextureTypes.PerlinNoise1
+            | QuasiCrystal
+            | VoronoiDots
+            | VoronoiPolys
+            | WavyLines
+            | WoodGrain
+            | PlasmaNoise
+            | Pool
+            | Bio
+            | FractalNoise
+            | LightSquares
+            | Machine
+            | SweptNoise 
+            | Abstract
+            | Dashes
+            | LayeredNoise
+            | SquareRegress
+            | Swirly: 
+                return true;
+            default: 
+                return false; 
+        }
+    } 
 }
