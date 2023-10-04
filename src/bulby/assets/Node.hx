@@ -10,89 +10,91 @@ import bulby.cloner.Cloner;
 import bulby.assets.Mesh;
 import bulby.BulbyMath.roundf;
 import bulby.assets.gltf.schema.*;
-class Node {
-    public var children:Array<Mesh>;
-    public function new(children:Array<Mesh>) {
-        this.children = children;
-    }
-    /**
-     * Returns a mesh that is a merge of all children. Note scaling does NOT reset and is taken into account.
-     */
-    
-    public function mergeAllChildren() {
-        var mesh = new Mesh([], [], [], [], false);
-        var totalP = 0;
-        var totalU = 0;
-        var totalN = 0;
-        for (child in children) {
-            var cChild = Cloner.clone(child);
-            
 
-            for (face in cChild.faces) {
-                for (vert in face) {
-                    vert.normal += totalN;
-                    vert.position += totalP;
-                    vert.uv += totalU;
-                }
-            }
-			totalP += cChild.positions.length;
-			totalU += cChild.uvs.length;
-			totalN += cChild.normals.length;
-            mesh.faces = mesh.faces.concat(cChild.faces);
-            mesh.displayNormals = mesh.normals.concat(cChild.displayNormals);
-            mesh.displayPositions = mesh.positions.concat(cChild.displayPositions);
-            mesh.uvs = mesh.uvs.concat(cChild.uvs);
-        }
-        mesh.normals = mesh.displayNormals;
-        mesh.positions = mesh.displayPositions;
-        mesh.optimize();
-        return mesh;
-    }
-	/*
-    public function toObj() {
-		var file = "# Export of Bulby's Anyland converter \nmtllib output.mtl\ng ALThing\n";
-		for (mesh in this.children) {
-			for (pos in mesh.displayPositions) {
-				file += 'v ${roundf(pos.x, 7)} ${roundf(pos.y, 7)} ${roundf(pos.z, 7)}\n';
-			}
-		}
-		for (mesh in this.children) {
-			for (normal in mesh.displayNormals) {
-				file += 'vn ${roundf(normal.x, 7)} ${roundf(normal.y, 7)} ${roundf(normal.z, 7)}\n';
-			}
-		}
-		for (mesh in this.children) {
-			for (uv in mesh.uvs) {
-				file += 'vt ${roundf(uv.x, 7)} ${roundf(uv.y, 7)}\n';
-			}
-		}
+class Node {
+	public var children:Array<Mesh>;
+
+	public function new(children:Array<Mesh>) {
+		this.children = children;
+	}
+
+	/**
+	 * Returns a mesh that is a merge of all children. Note scaling does NOT reset and is taken into account.
+	 */
+	public function mergeAllChildren() {
+		var mesh = new Mesh([], [], [], [], false);
 		var totalP = 0;
 		var totalU = 0;
 		var totalN = 0;
-		for (mesh in this.children) {
-			file += 'usemtl ${mesh.material.name}\n';
-			for (face in mesh.faces) {
-				final v1 = face.v1;
-				final v2 = face.v2;
-				final v3 = face.v3;
-				file += 'f ${v1.position + 1 + totalP}/${v1.uv + 1 + totalU}/${v1.normal + 1 + totalN} ${v2.position + 1 + totalP}/${v2.uv + 1 + totalU}/${v2.normal + 1 + totalN} ${v3.position + 1 + totalP}/${v3.uv + 1 + totalU}/${v3.normal + 1 + totalN}\n';
+		for (child in children) {
+			var cChild = Cloner.clone(child);
+
+			for (face in cChild.faces) {
+				for (vert in face) {
+					vert.normal += totalN;
+					vert.position += totalP;
+					vert.uv += totalU;
+				}
 			}
-			totalP += mesh.positions.length;
-			totalU += mesh.uvs.length;
-			totalN += mesh.normals.length;
+			totalP += cChild.positions.length;
+			totalU += cChild.uvs.length;
+			totalN += cChild.normals.length;
+			mesh.faces = mesh.faces.concat(cChild.faces);
+			mesh.displayNormals = mesh.normals.concat(cChild.displayNormals);
+			mesh.displayPositions = mesh.positions.concat(cChild.displayPositions);
+			mesh.uvs = mesh.uvs.concat(cChild.uvs);
 		}
-		var mtl = "";
-		for (mesh in this.children) {
-			var result = mesh.material.toMtl();
-			if (mtl.indexOf(result) == -1) {
-				mtl += result;
+		mesh.normals = mesh.displayNormals;
+		mesh.positions = mesh.displayPositions;
+		mesh.optimize();
+		return mesh;
+	}
+
+	/*
+		public function toObj() {
+			var file = "# Export of Bulby's Anyland converter \nmtllib output.mtl\ng ALThing\n";
+			for (mesh in this.children) {
+				for (pos in mesh.displayPositions) {
+					file += 'v ${roundf(pos.x, 7)} ${roundf(pos.y, 7)} ${roundf(pos.z, 7)}\n';
+				}
 			}
-		}
-		return {obj: file, mtl: mtl};
-    } */
+			for (mesh in this.children) {
+				for (normal in mesh.displayNormals) {
+					file += 'vn ${roundf(normal.x, 7)} ${roundf(normal.y, 7)} ${roundf(normal.z, 7)}\n';
+				}
+			}
+			for (mesh in this.children) {
+				for (uv in mesh.uvs) {
+					file += 'vt ${roundf(uv.x, 7)} ${roundf(uv.y, 7)}\n';
+				}
+			}
+			var totalP = 0;
+			var totalU = 0;
+			var totalN = 0;
+			for (mesh in this.children) {
+				file += 'usemtl ${mesh.material.name}\n';
+				for (face in mesh.faces) {
+					final v1 = face.v1;
+					final v2 = face.v2;
+					final v3 = face.v3;
+					file += 'f ${v1.position + 1 + totalP}/${v1.uv + 1 + totalU}/${v1.normal + 1 + totalN} ${v2.position + 1 + totalP}/${v2.uv + 1 + totalU}/${v2.normal + 1 + totalN} ${v3.position + 1 + totalP}/${v3.uv + 1 + totalU}/${v3.normal + 1 + totalN}\n';
+				}
+				totalP += mesh.positions.length;
+				totalU += mesh.uvs.length;
+				totalN += mesh.normals.length;
+			}
+			var mtl = "";
+			for (mesh in this.children) {
+				var result = mesh.material.toMtl();
+				if (mtl.indexOf(result) == -1) {
+					mtl += result;
+				}
+			}
+			return {obj: file, mtl: mtl};
+	}*/
 	public static function filteri<A>(it:Array<A>, f:(item:A, index:Int) -> Bool) {
-        return [for (i in 0...Lambda.count(it, (_) -> true )) if (f(it[i], i)) it[i]];
-    }
+		return [for (i in 0...Lambda.count(it, (_) -> true)) if (f(it[i], i)) it[i]];
+	}
 
 	public function toGltf() {
 		var gltf:TGLTF = {
@@ -103,13 +105,14 @@ class Node {
 			extensionsUsed: ["KHR_materials_unlit"],
 			buffers: [],
 			images: [],
-			samplers: [{
-				magFilter:NEAREST,
-				minFilter:NEAREST,
-				wrapS:REPEAT,
-				wrapT:REPEAT
-
-			}],
+			samplers: [
+				{
+					magFilter: NEAREST,
+					minFilter: NEAREST,
+					wrapS: REPEAT,
+					wrapT: REPEAT
+				}
+			],
 			textures: []
 		};
 		var buf = new BytesBuffer();
@@ -119,7 +122,7 @@ class Node {
 		var bufferViews:Array<TBufferView> = [];
 		var primitives:Array<TPrimitive> = [];
 		var accessors:Array<TAccessor> = [];
-		
+
 		var b = 0;
 		var m = 0;
 		var t1 = 1;
@@ -136,8 +139,8 @@ class Node {
 					// don't waste time on blending if it's opaque
 					alphaMode: compatMesh.material.diffuse.a == 255 ? OPAQUE : BLEND
 				};
-				
-				if (compatMesh.material.texture != null)  {
+
+				if (compatMesh.material.texture != null) {
 					mat.pbrMetallicRoughness.baseColorTexture = {
 						index: t
 					};
@@ -154,9 +157,9 @@ class Node {
 				mat.extensions = {};
 				for (ext in compatMesh.material.extensions) {
 					switch (ext) {
-						case Unlit: 
+						case Unlit:
 							mat.extensions.KHR_materials_unlit = {};
-						case Clearcoat(ccFactor, ccTex, ccRFactor, ccRTex, ccNTex): 
+						case Clearcoat(ccFactor, ccTex, ccRFactor, ccRTex, ccNTex):
 							mat.extensions.KHR_materials_clearcoat = {};
 							if (ccTex != null) {
 								gltf.images.push({
@@ -169,7 +172,6 @@ class Node {
 								mat.extensions.KHR_materials_clearcoat.clearcoatTexture = {
 									index: t++
 								};
-								
 							}
 							if (ccRTex != null) {
 								gltf.images.push({
@@ -262,7 +264,7 @@ class Node {
 								mat.extensions.KHR_materials_specular.specularColorTexture = {
 									index: t++
 								}
-							} 
+							}
 							if (specularFactor != null) {
 								mat.extensions.KHR_materials_specular.specularFactor = specularFactor;
 							}
@@ -460,6 +462,7 @@ class Node {
 		});
 		return gltf;
 	}
+
 	public function toGLB() {
 		var bytesChunkBuf = new BytesBuffer();
 		var gltf = this.toGltf();
@@ -467,18 +470,16 @@ class Node {
 		gltf.buffers = [];
 		var images = gltf.images.copy();
 		gltf.images = [];
-		
-		
+
 		for (buffer in buffers) {
 			var bufBytes = haxe.crypto.Base64.decode(buffer.uri.substring(buffer.uri.indexOf(",") + 1));
 			bytesChunkBuf.addBytes(bufBytes, 0, bufBytes.length);
-			
 		}
 		var viewLen = gltf.bufferViews.length;
-		for (image in images ) {
+		for (image in images) {
 			var curPos = bytesChunkBuf.length;
 			var imgBytes = haxe.crypto.Base64.decode(image.uri.substring(image.uri.indexOf(",") + 1));
-			
+
 			bytesChunkBuf.addBytes(imgBytes, 0, imgBytes.length);
 			var newPos = bytesChunkBuf.length;
 			var len = newPos - curPos;
@@ -517,7 +518,6 @@ class Node {
 		glbBuf.addBytes(bytesChunkBuf.getBytes(), 0, bytesChunkBuf.length);
 
 		return glbBuf.getBytes();
-
 	}
 }
 

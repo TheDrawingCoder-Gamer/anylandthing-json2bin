@@ -46,5 +46,4 @@ enum abstract ThingPartAttribute(UInt) to UInt from UInt {
 	var isVideoButton = 2;
 	var isSlideshowButton = 7;
 	var isCameraButton = 9;
-    
 }

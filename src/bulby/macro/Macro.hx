@@ -76,17 +76,17 @@ class Macro {
 			switch (f.kind) {
 				case FVar(ct, _):
 					switch (ct) {
-						case TPath(path) : 
+						case TPath(path):
 							classPath = path;
 						case TOptional(t):
 							switch (t) {
-								case TPath(path): 
+								case TPath(path):
 									classPath = path;
-								default: 
+								default:
 									haxe.macro.Context.info("Skipping because type isn't a typepath.", Context.currentPos());
 									continue;
 							}
-						default: 
+						default:
 							haxe.macro.Context.info("Skipping because type isn't a typepath.", Context.currentPos());
 							continue;
 					}
@@ -104,11 +104,12 @@ class Macro {
 		}
 		return fields;
 	}
-    /**
-     * Implicity makes fields public. 
-     * Useful for classes that make most everything public.
-     * Simply use "private" metadata to make it private.
-     */
+
+	/**
+	 * Implicity makes fields public. 
+	 * Useful for classes that make most everything public.
+	 * Simply use "private" metadata to make it private.
+	 */
 	public static function publish() {
 		var calledOn = Context.getLocalType();
 		switch (calledOn) {
@@ -134,10 +135,11 @@ class Macro {
 				return null;
 		}
 	}
+
 	public static function staticClass() {
 		var t = Context.getLocalType();
 		switch (t) {
-			case TInst(type, _): 
+			case TInst(type, _):
 				switch (type.get().kind) {
 					case KAbstractImpl(_.get() => abstr):
 						if (!abstr.meta.has(":static")) return null;
@@ -151,13 +153,13 @@ class Macro {
 						f.access.push(AStatic);
 					else if (f.access == null)
 						f.access = [AStatic];
-
 				}
 				return fields;
-			case _: 
+			case _:
 				return null;
 		}
 	}
+
 	static function getTypePath(e:Expr):TypePath {
 		final parts = [];
 		while (true) {

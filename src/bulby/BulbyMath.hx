@@ -6,15 +6,19 @@ class BulbyMath {
 	inline function roundf(f:Float, to:Int) {
 		return Math.round(f * (Math.pow(10, to))) / Math.pow(10, to);
 	}
+
 	inline function lerp(a:Float, b:Float, t:Float):Float {
 		return a + (b - a) * t;
 	}
+
 	inline function sCurve(t:Float):Float {
 		return t * t * (3 - 2 * t);
 	}
+
 	inline function alphaBlend(a:Float, b:Float, alpha:Float) {
 		return (a * alpha) + (b * (1 - alpha));
 	}
+
 	inline function clamp(a:Float, min:Float, max:Float) {
 		return Math.min(Math.max(a, min), max);
 	}
@@ -55,7 +59,7 @@ abstract Vector2(Vector2Raw) from Vector2Raw to Vector2Raw {
 	}
 }
 
-private typedef Vector3Raw  = {
+private typedef Vector3Raw = {
 	var x:Float;
 	var y:Float;
 	var z:Float;
@@ -82,7 +86,9 @@ abstract Vector3(Vector3Raw) from Vector3Raw to Vector3Raw {
 	}
 
 	public static function nearlyequals(a:Vector3, b:Vector3) {
-		return BulbyMath.roundf(a.x, 7) == BulbyMath.roundf(b.x, 7) && BulbyMath.roundf(a.y, 7) == BulbyMath.roundf(b.y, 7) && BulbyMath.roundf(a.z, 7) == BulbyMath.roundf(b.z, 7);
+		return BulbyMath.roundf(a.x, 7) == BulbyMath.roundf(b.x, 7)
+			&& BulbyMath.roundf(a.y, 7) == BulbyMath.roundf(b.y, 7)
+			&& BulbyMath.roundf(a.z, 7) == BulbyMath.roundf(b.z, 7);
 	}
 
 	@:to public function toArray() {
@@ -121,23 +127,28 @@ abstract Vector3(Vector3Raw) from Vector3Raw to Vector3Raw {
 	}
 
 	public function toUnity() {
-		return new Vector3(-this.x , this.y, this.z);
+		return new Vector3(-this.x, this.y, this.z);
 	}
+
 	// Ok so Y definetly needs to be flipped. Idk what else needs flipping tho :sob:
 	public static function fromUnityEuler(unity:Vector3) {
 		return new Vector3(unity.x, -unity.y, unity.z);
 	}
+
 	public function toUnityEuler() {
 		return new Vector3(this.x, -this.y, this.z);
 	}
+
 	@:op(A + B)
 	function add(b:Vector3) {
 		return new Vector3(this.x + b.x, this.y + b.y, this.z + b.z);
 	}
+
 	@:op(A / B)
 	function divide(b:Float):Vector3 {
 		return new Vector3(this.x / b, this.y / b, this.z / b);
 	}
+
 	@:op(A - B)
 	function sub(b:Vector3) {
 		return new Vector3(this.x - b.x, this.y - b.y, this.z - b.z);
@@ -189,17 +200,19 @@ abstract Vector4(Vector4Raw) from Vector4Raw to Vector4Raw {
 	public inline function add(b:Vector4) {
 		return new Vector4(this.x + b.x, this.y + b.y, this.z + b.z, this.w + b.w);
 	}
+
 	public function magnitude() {
 		return Math.pow(Math.pow(this.x, 2) + Math.pow(this.y, 2) + Math.pow(this.z, 2) + Math.pow(this.w, 2), 1 / 2);
 	}
+
 	/**
 	 * Normalizes this vector. Modifies this in place.
 	 */
 	public function normalize() {
 		final mag = Math.pow(Math.pow(this.x, 2) + Math.pow(this.y, 2) + Math.pow(this.z, 2) + Math.pow(this.w, 2), 1 / 2);
-		this.x /= mag; 
+		this.x /= mag;
 		this.y /= mag;
-		this.z /= mag; 
+		this.z /= mag;
 		this.w /= mag;
 		return this;
 	}
@@ -210,7 +223,10 @@ abstract Vector4(Vector4Raw) from Vector4Raw to Vector4Raw {
 	}
 
 	public static function nearlyequals(a:Vector4, b:Vector4) {
-		return BulbyMath.roundf(a.x, 7) == BulbyMath.roundf(b.x, 7) && BulbyMath.roundf(a.y, 7) == BulbyMath.roundf(b.y, 7) && BulbyMath.roundf(a.z, 7) == BulbyMath.roundf(b.z, 7) && BulbyMath.roundf(b.w, 7) == BulbyMath.roundf(a.w, 7);
+		return BulbyMath.roundf(a.x, 7) == BulbyMath.roundf(b.x, 7)
+			&& BulbyMath.roundf(a.y, 7) == BulbyMath.roundf(b.y, 7)
+			&& BulbyMath.roundf(a.z, 7) == BulbyMath.roundf(b.z, 7)
+			&& BulbyMath.roundf(b.w, 7) == BulbyMath.roundf(a.w, 7);
 	}
 }
 
@@ -252,6 +268,7 @@ abstract Matrix4(MatrixRaw) from MatrixRaw to MatrixRaw {
 		return a.a == b.a && a.b == b.b && a.c == b.c && a.d == b.d && a.e == b.e && a.f == b.f && a.g == b.g && a.h == b.h && a.i == b.i && a.j == b.j
 			&& a.k == b.k && a.l == b.l && a.m == b.m && a.n == b.n && a.o == b.o && a.p == b.p;
 	}
+
 	// this may be kinda stupid to inline lmao
 	@:op(A * B) inline static function times(a:Matrix4, b:Vector4):Vector4 {
 		var resMat = new Matrix4(a.a * b.x, a.b * b.y, a.c * b.z, a.d * b.w, a.e * b.x, a.f * b.y, a.g * b.z, a.h * b.w, a.i * b.x, a.j * b.y, a.k * b.z,
@@ -272,6 +289,7 @@ abstract Matrix4(MatrixRaw) from MatrixRaw to MatrixRaw {
 			+ resMat.p);
 		return retVector;
 	}
+
 	@:commutative
 	@:op(A * B) static inline function timesf(a:Matrix4, b:Float) {
 		return new Matrix4(a.a * b, a.b * b, a.c * b, a.d * b, a.e * b, a.f * b, a.g * b, a.h * b, a.i * b, a.j * b, a.k * b, a.l * b, a.m * b, a.n * b,
@@ -312,9 +330,9 @@ abstract Matrix4(MatrixRaw) from MatrixRaw to MatrixRaw {
 		var b3 = inline new Vector4(b.c, b.g, b.k, b.o);
 		var b4 = inline new Vector4(b.d, b.h, b.l, b.p);
 
-		return new Matrix4(inline a1.dot(b1), inline a1.dot(b2), inline a1.dot(b3), inline a1.dot(b4), inline a2.dot(b1), inline a2.dot(b2),
-			inline a2.dot(b3), inline a2.dot(b4), inline a3.dot(b1), inline a3.dot(b2), inline a3.dot(b3), inline a3.dot(b4), inline a4.dot(b1),
-			inline a4.dot(b2), inline a4.dot(b3), inline a4.dot(b4));
+		return new Matrix4(inline a1.dot(b1), inline a1.dot(b2), inline a1.dot(b3), inline a1.dot(b4), inline a2.dot(b1), inline a2.dot(b2), inline a2.dot(b3),
+			inline a2.dot(b4), inline a3.dot(b1), inline a3.dot(b2), inline a3.dot(b3), inline
+			a3.dot(b4), inline a4.dot(b1), inline a4.dot(b2), inline a4.dot(b3), inline a4.dot(b4));
 	}
 
 	public function new(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) {
@@ -425,6 +443,7 @@ abstract Matrix3(Matrix3Raw) from Matrix3Raw to Matrix3Raw {
 		};
 	}
 }
+
 @:forward
 abstract Quaternion(Vector4) {
 	public function new(x:Float, y:Float, z:Float, w:Float) {
@@ -435,7 +454,8 @@ abstract Quaternion(Vector4) {
 			w: w
 		};
 	}
-	// stolen from: 
+
+	// stolen from:
 	// https://www.mathworks.com/matlabcentral/fileexchange/6335-euler-angles-to-quaternion-conversion-for-six-basic-sequence-of-rotations
 	public static function fromEuler(euler:Vector3) {
 		var x = euler.x * (Math.PI / 180);
@@ -448,7 +468,7 @@ abstract Quaternion(Vector4) {
 		var cz = Math.cos(z / 2);
 		var sz = Math.sin(z / 2);
 		// Rotation x axis
-		var qx = new Quaternion( sx, 0, 0, cx);
+		var qx = new Quaternion(sx, 0, 0, cx);
 		// Rotation Y axis
 		var qy = new Quaternion(0, sy, 0, cy);
 		// Rotation Z axis
@@ -457,30 +477,33 @@ abstract Quaternion(Vector4) {
 		final q2 = qy * q1;
 		return q2;
 	}
+
 	public static function fromUnityEuler(unity:Vector3) {
 		return fromEuler(Vector3.fromUnityEuler(unity));
 	}
+
 	/*
-	public function matrix() {
-		final s = Math.pow(this.magnitude(), -2);
-		return new Matrix4(
-			1 - 2 * s * (Math.pow(this.w, 2) + Math.pow(this.x, 2)), 2 * s * (this.x * this.y - this.w * this.z), 2 * s *(this.x * this.z + this.w * this.y), 0,
-			2 * s * (this.x * this.y + this.z * this.w), 1 - 2 * s * (Math.pow(this.x, 2) + Math.pow(this.z, 2)), 2 * s * (this.y * this.z - this.x * this.w), 0,
-			2 * s * (this.x * this.z - this.y * this.w), 2 * s * (this.y * this.z + this.x * this.w), 1 - 2 * s * (Math.pow(this.x, 2) + Math.pow(this.y, 2)), 0,
-			0, 0, 0, 1
-		);
-	}
-	*/
+		public function matrix() {
+			final s = Math.pow(this.magnitude(), -2);
+			return new Matrix4(
+				1 - 2 * s * (Math.pow(this.w, 2) + Math.pow(this.x, 2)), 2 * s * (this.x * this.y - this.w * this.z), 2 * s *(this.x * this.z + this.w * this.y), 0,
+				2 * s * (this.x * this.y + this.z * this.w), 1 - 2 * s * (Math.pow(this.x, 2) + Math.pow(this.z, 2)), 2 * s * (this.y * this.z - this.x * this.w), 0,
+				2 * s * (this.x * this.z - this.y * this.w), 2 * s * (this.y * this.z + this.x * this.w), 1 - 2 * s * (Math.pow(this.x, 2) + Math.pow(this.y, 2)), 0,
+				0, 0, 0, 1
+			);
+		}
+	 */
 	public static inline function identity() {
 		return new Quaternion(0, 0, 0, 1);
 	}
+
 	@:op(A * B)
 	public inline function mult(b:Quaternion) {
 		final w0 = this.w;
 		final x0 = this.x;
 		final y0 = this.y;
 		final z0 = this.z;
-		
+
 		final w1 = b.w;
 		final x1 = b.x;
 		final y1 = b.y;
@@ -491,19 +514,19 @@ abstract Quaternion(Vector4) {
 		final yr = (w0 * y1) - (x0 * z1) + (y0 * w1) + (z0 * x1);
 		final zr = (w0 * z1) + (x0 * y1) - (y0 * x1) + (z0 * w1);
 
-
 		return new Quaternion(xr, yr, zr, wr);
 	}
+
 	public inline function conjugate() {
 		return new Quaternion(-this.x, -this.y, -this.z, this.w);
 	}
-	public inline function inverse(): Quaternion {
+
+	public inline function inverse():Quaternion {
 		return cast conjugate().div(this.dot(this));
 	}
-	@:op(A * B) public static inline function timesv(a: Quaternion, b: Vector4): Vector4 {
+
+	@:op(A * B) public static inline function timesv(a:Quaternion, b:Vector4):Vector4 {
 		final good = a * (cast b : Quaternion) * a.conjugate();
 		return cast good;
-
 	}
-
 }
