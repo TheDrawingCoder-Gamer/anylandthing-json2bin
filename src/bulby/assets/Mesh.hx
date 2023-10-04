@@ -41,18 +41,18 @@ class Mesh {
     public function applyTransformations() {
         var positionsToEdit = [for (pos in positions) new Vector3(pos.x, pos.y, pos.z)];
         var normalsToEdit = [for (normal in normals) new Vector3(normal.x, normal.y, normal.z)];
-        var mRot = this.rotation.matrix();
+        var mRot = this.rotation;
         var mTrans = Matrix4.translation(this.translation.x, this.translation.y, this.translation.z);
         var mScale = Matrix4.scale(this.scale.x, this.scale.y, this.scale.z);
         for (i in 0...positionsToEdit.length) {
             var convertedPos = new Vector4(positionsToEdit[i].x, positionsToEdit[i].y, positionsToEdit[i].z, 1);
-            convertedPos = mTrans * mRot * mScale * convertedPos;
+            convertedPos = mTrans * (mRot * (mScale * convertedPos));
             positionsToEdit[i] = new Vector3(convertedPos.x, convertedPos.y, convertedPos.z);
            
         }
         for (i in 0...normalsToEdit.length) {
 			var convertedNorm = new Vector4(normalsToEdit[i].x, normalsToEdit[i].y, normalsToEdit[i].z, 0);
-			convertedNorm = mTrans * mRot * mScale * convertedNorm;
+			convertedNorm = mTrans * (mRot * (mScale * convertedNorm));
 			normalsToEdit[i] = new Vector3(convertedNorm.x, convertedNorm.y, convertedNorm.z);
         }
         displayNormals = normalsToEdit;

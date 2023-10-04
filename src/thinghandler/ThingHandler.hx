@@ -228,8 +228,8 @@ class ThingHandler {
                 for (subThingNode in jsonpart.i) {
                     var includedSubthing = new SubThingInfo(false);
                     includedSubthing.thingId = subThingNode.t;
-                    includedSubthing.pos.fromUnity(subThingNode.p);
-                    includedSubthing.rot.fromUnityEuler(subThingNode.r);
+                    includedSubthing.pos = Vector3.fromUnity(subThingNode.p);
+                    includedSubthing.rot = Vector3.fromUnityEuler(subThingNode.r);
                     if (subThingNode.n != null) includedSubthing.nameOverride = subThingNode.n;
                     expandIncludedSubthingInvertAttribute(includedSubthing, subThingNode.a);
                     thingpart.includedSubThings.push(includedSubthing);
@@ -241,8 +241,8 @@ class ThingHandler {
                     if (pSNode.i != null) {
                         var placedSubthing = new SubThingInfo(true);
                         placedSubthing.thingId = pSNode.t;
-                        placedSubthing.pos.fromUnity(pSNode.p);
-                        placedSubthing.rot.fromUnityEuler(pSNode.r);
+                        placedSubthing.pos = Vector3.fromUnity(pSNode.p);
+                        placedSubthing.rot = Vector3.fromUnityEuler(pSNode.r);
                     }
                 }
             }
@@ -273,10 +273,10 @@ class ThingHandler {
                 thingpart.states[statesI] = new ThingPartState();
                 final state = jsonpart.s[statesI];
 
-                thingpart.states[statesI].position.fromUnity(state.p);
+                thingpart.states[statesI].position = Vector3.fromUnity(state.p);
                 
-                thingpart.states[statesI].rotation.fromUnityEuler(state.r);
-                thingpart.states[statesI].scale.fromUnity(state.s);
+                thingpart.states[statesI].rotation = Vector3.fromUnityEuler(state.r);
+                thingpart.states[statesI].scale = state.s;
                 // Ensure no negative scale to prevent : (
                 thingpart.states[statesI].scale = thingpart.states[statesI].scale.abs();
                 thingpart.states[statesI].color = state.c;
@@ -352,13 +352,13 @@ class ThingHandler {
                 // Pain
                 part.changedVerticies = new Map<Int, Vector3>();
                 for (item in partNode.c) {
-                    var vector:Vector3 = Vector3.empty().fromUnity(item.toVector3());
+                    var vector:Vector3 = item.toVector3();
                     var previousVertexIndex = 0;
                     for (relVertexIndex in item.indexes) {
                         var vertexIndex = previousVertexIndex + relVertexIndex;
                         if (vertexIndex <  cast PartTypeVertCount.fromPartType(part.baseType)) {
                             previousVertexIndex = vertexIndex;
-                            part.changedVerticies.set(vertexIndex, vector);
+                            part.changedVerticies.set(vertexIndex, Vector3.fromUnity(vector));
                         }
                     } 
                 }
@@ -479,28 +479,29 @@ class ThingHandler {
                     
 					mesh.material = matCache.get(matKey);
 				}  
+                // TODO: this won't work with autocompleted parts that also reflect
                 if (part.autoContinuation != null && part.autoContinuation.count != 0) {
                     var otherPart = part.autoContinuation.fromPart;
                     // Just a guess, but I think from part means this part is the 2nd in sequence.
                     // So we calculate the different with this on lhs
                     var posDiff = part.states[0].position - otherPart.states[0].position;
-                    var rotDiff = part.states[0].rotation - otherPart.states[0].rotation;
+                    var rotDiff = Quaternion.fromEuler(part.states[0].rotation) * Quaternion.fromEuler(otherPart.states[0].rotation).inverse();
                     var scaleDiff = part.states[0].scale - otherPart.states[0].scale;
                     // me when I'm lazy
                     var thisPos = part.states[0].position / 1;
-                    var thisRot = part.states[0].rotation / 1;
+                    var thisRot = Quaternion.fromEuler(part.states[0].rotation);
                     var thisScale = part.states[0].scale / 1;
 
-                    for (c in 0...part.autoContinuation.count) {
+                    for (_ in 0...part.autoContinuation.count) {
                         thisPos += posDiff;
-                        thisRot += rotDiff;
+                        thisRot *= rotDiff;
                         thisScale += scaleDiff;
                         var newMesh = mesh.copy();
-                        mesh.rotation = Quaternion.fromEuler(thisRot);
-                        mesh.translation = thisPos / 1;
-                        mesh.scale = thisScale / 1;
-                        mesh.applyTransformations();
-                        node.children.push(mesh);
+                        newMesh.rotation = thisRot;
+                        newMesh.translation = thisPos / 1;
+                        newMesh.scale = thisScale.abs();
+                        newMesh.applyTransformations();
+                        node.children.push(newMesh);
                     }
                 }
                 if (part.reflectPartDepth || part.reflectPartSideways || part.reflectPartVertical) {
@@ -514,6 +515,7 @@ class ThingHandler {
                         var newPos = part.states[0].position / 1;
                         newPos.z = -newPos.z;
                         newMesh.translation = newPos;
+                        newMesh.applyTransformations();
 						node.children.push(newMesh);
                     }
                     if (part.reflectPartSideways) {
@@ -526,7 +528,8 @@ class ThingHandler {
                         var newPos = part.states[0].position / 1;
                         newPos.x = -newPos.x;
                         newMesh.translation = newPos;
-						node.children.push(newMesh);
+                        newMesh.applyTransformations();
+			node.children.push(newMesh);
                     }
                     if (part.reflectPartVertical) {
                         var newMesh = mesh.copy(); 
@@ -538,13 +541,14 @@ class ThingHandler {
                         var newPos = part.states[0].position / 1;
                         newPos.y = -newPos.y;
                         newMesh.translation = newPos;
+                        newMesh.applyTransformations();
                         node.children.push(newMesh);
                     }
+                    
                 }
                 
 				
                
-                // var euler = part.states[0].rotation * 1;
 
 				mesh.translation = part.states[0].position;
 				mesh.rotation = Quaternion.fromEuler(part.states[0].rotation);
@@ -679,6 +683,7 @@ class ThingHandler {
                 }
             }
     }
+    /*
     public static function exportBytes(thing:Thing) {
         var buf = new BytesBuffer();
         var changedVertsIndex:Map<String, Int> = [];
@@ -749,8 +754,8 @@ class ThingHandler {
         buf.addInt32(part.includedSubThings.length);
         for (iSubThing in part.includedSubThings) {
             writeStringWLength(buf, iSubThing.thingId);
-            buf.addFloatTriplet(iSubThing.pos.toUnity());
-            buf.addFloatTriplet(iSubThing.rot.toUnityEuler());
+            buf.addFloatTriplet(iSubThing.pos);
+            buf.addFloatTriplet(iSubThing.rot);
             writeStringWLength(buf, iSubThing.nameOverride != null ? iSubThing.nameOverride : thing.givenName);
             buf.addByte(getSubthingAttr(iSubThing));
         }
@@ -764,8 +769,8 @@ class ThingHandler {
         for (placementId => pSubThing in part.placedSubThings) {
             buf.addStringWLength(placementId);
             buf.addStringWLength(pSubThing.thingId);
-            buf.addFloatTriplet(pSubThing.pos.toUnity());
-            buf.addFloatTriplet(pSubThing.rot.toUnityEuler());
+            buf.addFloatTriplet(pSubThing.pos);
+            buf.addFloatTriplet(pSubThing.rot);
         }
     }
     static function getSubthingAttr(subthing:SubThingInfo) {
@@ -814,7 +819,7 @@ class ThingHandler {
         var indicesByPosition:Map<Vector3, Array<Int>> = [];
         var addedThings:Array<String> = [];
         for (index => pos in part.changedVerticies) {
-            var unityPos = pos.toUnity();
+            var unityPos = pos;
             // I think this is only made by us so we will have the references??? Busted
             if (!addedThings.contains(Std.string(unityPos))) {
                 var indices:Array<Int> = [];
@@ -838,35 +843,16 @@ class ThingHandler {
             
 
         }
-        /*
-        if (indLength > 0) {
-            s = '"c":[$s]';
-            if (part.smoothingAngle != null) {s += Std.string(part.smoothingAngle);}
-            s += "_";
-            // Technically i can just write `part.convex` but then maybe null gets busted?? idrc
-            if (part.convex != null) s += part.convex == true ? "1" : "0";
-            
-            if (changedVertsIndexRef.exists(s)) {
-                var exIndex = changedVertsIndexRef.get(s);
-                buf.addInt32(exIndex);
-                part.smoothingAngle = null;
-                part.convex = null;
-            } else {
-                changedVertsIndexRef.set(s, indexWithinThing);
-                buf.addInt32(indexWithinThing);
-            }
-        }
-        */
-
     }
+    
     static function writeStateBytes(buf:BytesBuffer, part:ThingPart) {
         // byte because there is a hard limit at like 50 iirc
         buf.addByte(part.states.length);
         for (state in part.states) {
 
-            buf.addFloatTriplet(state.position.toUnity());
-            buf.addFloatTriplet(state.rotation.toUnityEuler());
-            buf.addFloatTriplet(state.scale.toUnity());
+            buf.addFloatTriplet(state.position);
+            buf.addFloatTriplet(state.rotation);
+            buf.addFloatTriplet(state.scale);
             buf.addInt32(state.color);
             writeStringArray(buf, state.scriptLines);
             if (part.textureTypes[0] != None)
@@ -877,6 +863,7 @@ class ThingHandler {
                 writeStateParticleBytes(buf, part, state);
         }
     }
+    */
     static var textureTypeWithOnlyAlphaSetting = [
         TextureTypes.SideGlow,
         TextureTypes.Wireframe,
@@ -914,6 +901,7 @@ class ThingHandler {
                 return 255;
         }
     }
+    /*
     static function writeStateTextureBytes(buf:BytesBuffer, part:ThingPart, state:ThingPartState, index:Int) {
         buf.addInt32(state.textureColors[index]);
         var withOnlyAlphaSetting = textureTypeWithOnlyAlphaSetting.contains(part.textureTypes[index]);
@@ -1050,5 +1038,5 @@ class ThingHandler {
         if (part.isText) higherBits |= isText;
         return Int64.make(higherBits, lowerBits);
 
-    }
+    }*/
 }

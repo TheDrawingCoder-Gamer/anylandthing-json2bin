@@ -3,3 +3,5 @@ bin
 run.*
 dump/*
 debug.json
+*.gltf
+out.jar

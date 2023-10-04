@@ -5,8 +5,8 @@ enum abstract ThingAttribute(UInt) from UInt to UInt {
 	var isHoldable = 2;
 	var remainsHeld = 3;
 	var isClimbable = 4;
-	var isPassable = 6;
 	var isUnwalkable = 5;
+	var isPassable = 6;
 	var doSnapAngles = 7;
 	var isBouncy = 9;
 	var currentlyUnused1 = 10;

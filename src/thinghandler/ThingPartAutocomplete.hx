@@ -19,7 +19,7 @@ class ThingPartAutocomplete {
         buf.addByte(waves);
         var unityPR = posRandom.toUnity();
         var unityRR = rotRandom.toUnityEuler();
-        var unitySR = scaleRandom.toUnity();
+        var unitySR = scaleRandom;
         buf.addFloat(unityPR.x);
         buf.addFloat(unityPR.y);
         buf.addFloat(unityPR.z);
@@ -37,9 +37,9 @@ class ThingPartAutocomplete {
         fromPart.guid = data.id;
         waves = data.w != null ? data.w : 0;
         count = data.c;
-        posRandom.fromUnity(cast data.rp);
-        rotRandom.fromUnityEuler(cast data.rr);
-        scaleRandom.fromUnity(cast data.rs);
+        posRandom = Vector3.fromUnity(cast data.rp);
+        rotRandom = Vector3.fromUnityEuler(cast data.rr);
+        scaleRandom = cast data.rs;
     }
     public var fromPart:ThingPart;
     public var count:Int = 0;
