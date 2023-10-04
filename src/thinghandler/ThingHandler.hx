@@ -1,5 +1,6 @@
 package thinghandler;
 
+import thinghandler.TextureProperty.TexturePropertyMap;
 import bulby.assets.mat.Color;
 import bulby.assets.Image;
 import bulby.assets.mat.Material;
@@ -29,6 +30,7 @@ import thinghandler.Thing.LowerThingPartAttribute;
 
 using thinghandler.BytesBufferTools;
 using Lambda;
+using StringTools;
 
 @:forward(length)
 abstract ChangedVerticies(Array<Dynamic>) from Array<Dynamic> to Array<Dynamic> {
@@ -466,9 +468,9 @@ class ThingHandler {
 								var goodTexture = texture.colortexture(color, textureAlphaCap(part.textureTypes[0]));
 								var colorTexture = Image.filled(goodTexture.width, goodTexture.height, part.states[0].color);
 								matCache.get(matKey).texture = colorTexture.blend(goodTexture);
-								if (Main.debug)
+								// if (Main.debug)
 									// I FEEL SO STUPID :sob: I WAS WRITING GOOD TEXTURE WHEN I WAS SUPPOSED TO BE WRITING THIS
-									matCache.get(matKey).texture.writePng("./output.png");
+								//	matCache.get(matKey).texture.writePng("./output.png");
 							} else if (TextureTypes.isProcedural(part.textureTypes[0])) {
 								var texture = Image.procedural(2048, 2048, part.textureTypes[0], part.states[0].textureProperties[0].param1,
 									part.states[0].textureProperties[0].param2, part.states[0].textureProperties[0].param3);
@@ -511,13 +513,14 @@ class ThingHandler {
 
 					try {
 						if (part.imageUrl != null && part.imageType == Png)
-							matCache.get(matKey).texture = Image.fromPngUrl(part.imageUrl);
+							matCache.get(matKey).texture = Image.fromPngUrl(readImageUrl(part.imageUrl, part.imageType));
 					} catch (e:Dynamic) {
 						matCache.get(matKey).texture = null;
 					}
 
 					mesh.material = matCache.get(matKey);
 				}
+
 				// TODO: this won't work with autocompleted parts that also reflect
 				if (part.autoContinuation != null && part.autoContinuation.count != 0) {
 					var otherPart = part.autoContinuation.fromPart;
@@ -539,55 +542,17 @@ class ThingHandler {
 						newMesh.rotation = thisRot;
 						newMesh.translation = thisPos / 1;
 						newMesh.scale = thisScale.abs();
+						applyReflectionIfApplicable(node, part, newMesh);
 						newMesh.applyTransformations();
 						node.children.push(newMesh);
-					}
-				}
-				if (part.reflectPartDepth || part.reflectPartSideways || part.reflectPartVertical) {
-					if (part.reflectPartDepth) {
-						var newMesh = mesh.copy();
-						// Reflect across the XY plane
-						newMesh.scale = part.states[0].scale / 1;
-						var newRot = part.states[0].rotation / 1;
-						newRot.z = -newRot.z;
-						newMesh.rotation = Quaternion.fromEuler(newRot);
-						var newPos = part.states[0].position / 1;
-						newPos.z = -newPos.z;
-						newMesh.translation = newPos;
-						newMesh.applyTransformations();
-						node.children.push(newMesh);
-					}
-					if (part.reflectPartSideways) {
-						var newMesh = mesh.copy();
-						// Reflect across the YZ plane
-						newMesh.scale = part.states[0].scale / 1;
-						var newRot = part.states[0].rotation / 1;
-						newRot.x = -newRot.x;
-						newMesh.rotation = Quaternion.fromEuler(newRot);
-						var newPos = part.states[0].position / 1;
-						newPos.x = -newPos.x;
-						newMesh.translation = newPos;
-						newMesh.applyTransformations();
-						node.children.push(newMesh);
-					}
-					if (part.reflectPartVertical) {
-						var newMesh = mesh.copy();
-						// Reflect across the XZ plane
-						newMesh.scale = part.states[0].scale / 1;
-						var newRot = part.states[0].rotation / 1;
-						newRot.y = -newRot.y;
-						newMesh.rotation = Quaternion.fromEuler(newRot);
-						var newPos = part.states[0].position / 1;
-						newPos.y = -newPos.y;
-						newMesh.translation = newPos;
-						newMesh.applyTransformations();
-						node.children.push(newMesh);
+						
 					}
 				}
 
 				mesh.translation = part.states[0].position;
 				mesh.rotation = Quaternion.fromEuler(part.states[0].rotation);
 				mesh.scale = part.states[0].scale;
+				applyReflectionIfApplicable(node, part, mesh);
 				mesh.applyTransformations();
 				node.children.push(mesh);
 			}
@@ -595,7 +560,100 @@ class ThingHandler {
 		}
 		return node;
 	}
-
+	public static function readImageUrl(url: String, imageType: ImageType): String {
+		if (url.contains("http"))
+			return url;
+		if (url.toLowerCase() == url) {
+			final base = (imageType == NotPng ? "http://" : "https://") + "steamuserimages-a.akamaihd.net/ugc/";
+			return base + url; 
+		}
+		return url;
+	}	
+	static function modulateTextureProperties(textureType: TextureTypes, props: TexturePropertyMap<Float>): TexturePropertyMap<Float>  {
+		final newProps: TexturePropertyMap<Float> = props.copy();
+		final isAlgo = TextureTypes.isProcedural(textureType);
+		modulateStrength(newProps, textureType, isAlgo);
+		if (!TextureTypes.isAlphaOnly(textureType)) {
+			modulateScale(props, TextureProperty.ScaleX, isAlgo);
+			modulateScale(props, TextureProperty.ScaleY, isAlgo);
+			modulateOffset(props, TextureProperty.OffsetX, isAlgo);
+			modulateOffset(props, TextureProperty.OffsetY, isAlgo);
+			modulateRotation(props);
+		}
+		return newProps;
+	}
+	static function modulateStrength(props: TexturePropertyMap<Float>, textureType: TextureTypes, isAlgorithimTexture: Bool): Void {
+		if (textureType != TextureTypes.SideGlow) {
+			var num = props.strength;
+			num = (num - 0.5) * 2;
+			if (Math.abs(num) <= 0.1)
+				num = 0;
+			else if (num >= 0) {
+				final t = (num - 1) * 1.1111112;
+				num = BulbyMath.lerp(0, 1, t);
+			} else {
+				final t2 = Math.abs((num + 0.1) * 1.1111112);
+				num = 0 - BulbyMath.lerp(0, 1, t2);
+			}
+			props.strength = num;
+		}
+	}
+	static function modulateScale(props: TexturePropertyMap<Float>, key: TextureProperty, isAlgorithimTexture: Bool): Void {
+		var num = props.get(key);
+		if (num > 0.5) {
+			num -= 0.5;
+			final b = !isAlgorithimTexture ? 3.0 : 2.0;
+			final p = BulbyMath.lerp(1, b, num * 2);
+			num *= 100;
+			num = Math.pow(num, p);
+			if (num > 0)
+				num /= 100;
+			num += 0.5;
+		}
+		if (num < 0.0002) {
+			num = 0.0002;
+		}
+		props.set(key, num);
+	}
+	static function modulateOffset(props: TexturePropertyMap<Float>, key: TextureProperty, isAlgorithmTexture: Bool): Void {
+		final num = props.get(key);
+		props.set(key, ((!isAlgorithmTexture) ? (num * 5) : ((num <= 0.4) ? ((0 - Math.abs(num - 0.4)) * 10) : ((!(num >= 0.6)) ? 0 : (Math.abs(num - 0.6) * 10)))));
+	}
+	static function modulateRotation(props: TexturePropertyMap<Float>): Void {
+		props.rotation = props.rotation * 360;
+	}
+	private static function applyReflectionIfApplicable(node: Node, part: ThingPart, mesh: Mesh): Void {
+		if (!part.reflectPartDepth && !part.reflectPartSideways && !part.reflectPartVertical)
+			return;
+		final rot = mesh.rotation;
+		if (part.reflectPartDepth) {
+			final newMesh = mesh.copy();
+			// Reflect across XY Plane
+			final goodRot = new Quaternion(-rot.x, -rot.y, rot.z, rot.w);
+			newMesh.rotation = goodRot;
+			newMesh.translation.z = -newMesh.translation.z;
+			newMesh.applyTransformations();
+			node.children.push(newMesh);
+		}
+		if (part.reflectPartSideways) {
+			final newMesh = mesh.copy();
+			// Reflect across YZ Plane
+			final goodRot = new Quaternion(rot.x, -rot.y, -rot.z, rot.w);
+			newMesh.rotation = goodRot;
+			newMesh.translation.x = -newMesh.translation.x;
+			newMesh.applyTransformations();
+			node.children.push(newMesh);
+		}
+		if (part.reflectPartVertical) {
+			final newMesh = mesh.copy();
+			// Reflect across XZ Plane
+			final goodRot = new Quaternion(-rot.x, rot.y, -rot.z, rot.w);
+			newMesh.rotation = goodRot;
+			newMesh.translation.y = -newMesh.translation.y;
+			newMesh.applyTransformations();
+			node.children.push(newMesh);
+		}
+	} 
 	static function expandThingAttributeFromJson(thing:Thing, attributes:Array<Int>) {
 		if (attributes != null) {
 			for (attr in attributes) {

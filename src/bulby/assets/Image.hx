@@ -197,9 +197,6 @@ class Image {
 	}
 
 	static function fromPngUrl(url:String) {
-		if (!url.endsWith(".png")) {
-			throw "Non-png images are currently unsupported";
-		}
 		var bytes = Bytes.ofString(haxe.Http.requestUrl(url));
 		return fromPngBytes(bytes);
 	}

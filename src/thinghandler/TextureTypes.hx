@@ -191,4 +191,12 @@ enum abstract TextureTypes(UInt) from UInt to UInt {
 				return false;
 		}
 	}
+	public static function isAlphaOnly(tex: TextureTypes) {
+		switch (tex) {
+			case TextureTypes.SideGlow | TextureTypes.Wireframe | TextureTypes.Outline: 
+				return true;
+			default:
+				return false;
+		}
+	}
 }
