@@ -420,7 +420,15 @@ abstract Matrix4(MatrixRaw) from MatrixRaw to MatrixRaw {
 @:forward
 abstract Matrix3(Matrix3Raw) from Matrix3Raw to Matrix3Raw {
 	@:op(A * B) inline static function timesMatrix(a:Matrix3, b:Matrix3) {
-		return new Matrix3(a.a * b.a, a.b * b.b, a.c * b.c, a.d * b.d, a.e * b.e, a.f * b.f, a.g * b.g, a.h * b.h, a.i * b.i);
+		final a1 = new Vector3(a.a, a.b, a.c);
+		final a2 = new Vector3(a.d, a.e, a.f);
+		final a3 = new Vector3(a.g, a.h, a.i);
+
+		final b1 = new Vector3(b.a, b.d, b.g);
+		final b2 = new Vector3(b.b, b.e, b.h);
+		final b3 = new Vector3(b.c, b.f, b.i);
+		
+		return new Matrix3(a1.dot(b1), a1.dot(b2), a1.dot(b3), a2.dot(b1), a2.dot(b2), a2.dot(b3), a3.dot(b1), a3.dot(b2), a3.dot(b3));
 	}
 
 	@:op(A * B) public static function timesVector(a:Matrix3, b:Vector3) {
@@ -441,6 +449,38 @@ abstract Matrix3(Matrix3Raw) from Matrix3Raw to Matrix3Raw {
 			h: h,
 			i: i
 		};
+	}
+	public static inline function identity() {
+		return new Matrix3(
+				1, 0, 0,
+				0, 1, 0,
+				0, 0, 1 
+				);
+	}
+	public static inline function scale(x: Float, y: Float): Matrix3 {
+		return new Matrix3(
+				x, 0, 0,
+				0, y, 0,
+				0, 0, 1
+				);
+	}
+	public static inline function translate(x: Float, y: Float): Matrix3 {
+		return new Matrix3(
+				1, 0, x,
+				0, 1, y,
+				0, 0, 1
+				);
+	}
+	public static inline function rotate(angle:Float) {
+		final cos = Math.cos(angle), sin = Math.sin(angle);
+		return new Matrix3(
+				cos, -sin, 0,
+				sin, cos, 0,
+				0, 0, 1
+				);
+	}
+	public static inline function rotateDegrees(angle: Float) {
+		return rotate(angle * (Math.PI /  180));
 	}
 }
 

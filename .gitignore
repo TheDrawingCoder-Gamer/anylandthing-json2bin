@@ -4,4 +4,5 @@ run.*
 dump/*
 debug.json
 *.gltf
+*.glb
 out.jar

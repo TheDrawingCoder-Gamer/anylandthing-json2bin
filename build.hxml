@@ -5,4 +5,4 @@
 -D debugbubly
 --macro addGlobalMetadata("", "@:build(bulby.macro.Macro.publish())")
 --macro addGlobalMetadata("", "@:build(bulby.macro.Macro.staticClass())")
---jvm out.jar
+--neko run.n

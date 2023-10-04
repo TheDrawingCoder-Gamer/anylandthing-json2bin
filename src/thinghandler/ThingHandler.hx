@@ -460,14 +460,13 @@ class ThingHandler {
 
 					if (part.textureTypes[0] != None || part.textureTypes[1] != None) {
 						try {
+							var texture1: Image = null;
 							if (FileSystem.exists("./res/Textures/" + Std.string(part.textureTypes[0]) + ".png")) {
 								var texture = Image.fromPng("./res/Textures/" + Std.string(part.textureTypes[0]) + ".png");
 								var color = part.states[0].textureColors[0];
 								color.afloat = part.states[0].textureProperties[0].strength;
 
-								var goodTexture = texture.colortexture(color, textureAlphaCap(part.textureTypes[0]));
-								var colorTexture = Image.filled(goodTexture.width, goodTexture.height, part.states[0].color);
-								matCache.get(matKey).texture = colorTexture.blend(goodTexture);
+								texture1 = texture.colortexture(color, textureAlphaCap(part.textureTypes[0]));
 								// if (Main.debug)
 									// I FEEL SO STUPID :sob: I WAS WRITING GOOD TEXTURE WHEN I WAS SUPPOSED TO BE WRITING THIS
 								//	matCache.get(matKey).texture.writePng("./output.png");
@@ -475,11 +474,10 @@ class ThingHandler {
 								var texture = Image.procedural(2048, 2048, part.textureTypes[0], part.states[0].textureProperties[0].param1,
 									part.states[0].textureProperties[0].param2, part.states[0].textureProperties[0].param3);
 								if (texture != null) {
-									texture = texture.colortexture(part.states[0].textureColors[0], textureAlphaCap(part.textureTypes[0]));
-									var colorTexture = Image.filled(texture.width, texture.height, part.states[0].color);
-									matCache.get(matKey).texture = colorTexture.blend(texture);
+									texture1 = texture.colortexture(part.states[0].textureColors[0], textureAlphaCap(part.textureTypes[0]));
 								}
 							}
+							var texture2: Image = null;
 							if (FileSystem.exists(".res/Textures/" + Std.string(part.textureTypes[1]) + ".png")) {
 								var texture = Image.fromPng("./res/Textures/" + Std.string(part.textureTypes[1]) + ".png");
 								var color = part.states[0].textureColors[1];
@@ -487,33 +485,38 @@ class ThingHandler {
 
 								var goodTexture = texture.colortexture(color, textureAlphaCap(part.textureTypes[1]));
 								// Technically 1st being null and 2nd being not null is impossible but we'll check anyway
-								if (matCache.get(matKey).texture == null) {
-									var colorTexture = Image.filled(goodTexture.width, goodTexture.height, part.states[0].color);
-									matCache.get(matKey).texture = colorTexture.blend(goodTexture);
-								} else
-									matCache.get(matKey).texture = matCache.get(matKey).texture.blend(goodTexture);
+								texture2 = goodTexture;
 							} else if (TextureTypes.isProcedural(part.textureTypes[1])) {
 								var texture = Image.procedural(2048, 2048, part.textureTypes[1], part.states[0].textureProperties[1].param1,
 									part.states[0].textureProperties[1].param2, part.states[0].textureProperties[1].param3);
 								// Check for null because right now not everything is implemented
 								if (texture != null) {
-									texture = texture.colortexture(part.states[0].textureColors[1], textureAlphaCap(part.textureTypes[1]));
+									texture2 = texture.colortexture(part.states[0].textureColors[1], textureAlphaCap(part.textureTypes[1]));
 
-									if (matCache.get(matKey).texture == null) {
-										var colorTexture = Image.filled(texture.width, texture.height, part.states[0].color);
-										matCache.get(matKey).texture = colorTexture.blend(texture);
-									} else
-										matCache.get(matKey).texture = matCache.get(matKey).texture.blend(texture);
 								}
 							}
-						} catch (e:Dynamic) {
-							matCache.get(matKey).texture = null;
-						}
+							if (texture1 != null || texture2 != null) {
+								final colorTexture = Image.filled(2048, 2048, part.states[0].color);
+								var goodTex = colorTexture;
+								final res = applyAndMergeTexture(part.textureTypes[0], part.textureTypes[1], part.states[0].textureProperties[0],
+										part.states[0].textureProperties[1], texture1, texture2);
+								matCache.get(matKey).texture = goodTex.blend(res);
+							
+							}
+						} catch (e:Dynamic) {}
 					}
 
 					try {
-						if (part.imageUrl != null && part.imageType == Png)
-							matCache.get(matKey).texture = Image.fromPngUrl(readImageUrl(part.imageUrl, part.imageType));
+						if (part.imageUrl != null) {
+							final url = readImageUrl(part.imageUrl, part.imageType);
+							switch (part.imageType) {
+								case Png: 
+									matCache.get(matKey).texture = Image.fromPngUrl(url);
+								case NotPng:
+									matCache.get(matKey).texture = Image.fromJpegUrl(url);
+							}
+						}
+
 					} catch (e:Dynamic) {
 						matCache.get(matKey).texture = null;
 					}
@@ -581,6 +584,42 @@ class ThingHandler {
 			modulateRotation(props);
 		}
 		return newProps;
+	}
+	static function applyAndMergeTexture(textureType1: TextureTypes, textureType2: TextureTypes, props1: Null<TexturePropertyMap<Float>>, 
+			props2: Null<TexturePropertyMap<Float>>, img1: Null<Image>, img2: Null<Image>): Image {
+		if (img1 == null && img2 == null)
+			throw "Both textures are null";
+		if (img1 == null && img2 != null)
+			return applyAndMergeTexture(textureType2,None, props2, null, img2, null);
+		// TODO: Sky
+		if (img2 == null) {
+			final props = modulateTextureProperties(textureType1, props1);
+			final scaleThingie = Matrix3.scale(props.scaleX, props.scaleY);
+			final translationThingie = Matrix3.translate(props.offsetX * 2048, props.offsetY * 2048);
+			final rotationThingie = Matrix3.rotateDegrees(props.rotation);
+			return img1.transformTiled(translationThingie * rotationThingie * scaleThingie);
+		}
+		final p1 = modulateTextureProperties(textureType1, props1);
+		final p2 = modulateTextureProperties(textureType2, props2);
+		if (p1.scaleX > 1 || p1.scaleY > 1 || p2.scaleX > 1 || p2.scaleY > 1) {
+			// Find the larger of the two
+			final maxX = Math.max(p1.scaleX, p2.scaleX);
+			final maxY = Math.max(p1.scaleY, p2.scaleY);
+			final max = Math.max(maxX, maxY);
+			p1.scaleX /= max;
+			p1.scaleY /= max;
+			p2.scaleX /= max;
+			p2.scaleY /= max;
+		}
+		final s1 = Matrix3.scale(p1.scaleX, p1.scaleY);
+		final s2 = Matrix3.scale(p2.scaleX, p2.scaleY);
+		final t1 = Matrix3.translate(p1.offsetX * 2048, p1.offsetY * 2048);
+		final t2 = Matrix3.translate(p2.offsetX * 2048, p2.offsetY * 2048);
+		final r1 = Matrix3.rotateDegrees(p1.rotation);
+		final r2 = Matrix3.rotateDegrees(p2.rotation);
+		final res1 = img1.transformTiled(t1 * r1 * s1);
+		final res2 = img2.transformTiled(t2 * r2 * s2);
+		return res1.blend(res2);
 	}
 	static function modulateStrength(props: TexturePropertyMap<Float>, textureType: TextureTypes, isAlgorithimTexture: Bool): Void {
 		if (textureType != TextureTypes.SideGlow) {

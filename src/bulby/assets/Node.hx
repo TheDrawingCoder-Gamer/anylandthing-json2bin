@@ -504,18 +504,21 @@ class Node {
 		while (bytesChunkBuf.length % 4 != 0)
 			bytesChunkBuf.addByte(0x00);
 		final glbBuf = new BytesBuffer();
-
+		final jsonLen = jsonBuf.length;
+		final jsonBytes = jsonBuf.getBytes();
+		final bytesChunkLen = bytesChunkBuf.length;
+		final bytesChunkBytes = bytesChunkBuf.getBytes();
 		glbBuf.addInt32(0x46546C67);
 		glbBuf.addInt32(2);
 		// header (12 bytes) + jsonBuf prefix (8 bytes) + jsonBuf + bytesChunkBuf prefix (8 bytes) + bytesChunkBuf
-		final length = 12 + 8 + 8 + jsonBuf.length + bytesChunkBuf.length;
+		final length = 12 + 8 + 8 + jsonLen + bytesChunkLen;
 		glbBuf.addInt32(length);
-		glbBuf.addInt32(jsonBuf.length);
+		glbBuf.addInt32(jsonLen);
 		glbBuf.addInt32(0x4E4F534A);
-		glbBuf.addBytes(jsonBuf.getBytes(), 0, jsonBuf.length);
-		glbBuf.addInt32(bytesChunkBuf.length);
+		glbBuf.addBytes(jsonBytes, 0, jsonLen);
+		glbBuf.addInt32(bytesChunkLen);
 		glbBuf.addInt32(0x004E4942);
-		glbBuf.addBytes(bytesChunkBuf.getBytes(), 0, bytesChunkBuf.length);
+		glbBuf.addBytes(bytesChunkBytes, 0, bytesChunkLen);
 
 		return glbBuf.getBytes();
 	}
