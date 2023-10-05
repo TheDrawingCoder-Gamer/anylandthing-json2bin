@@ -229,11 +229,35 @@ class Image {
 	}
 
 	static function fromPngUrl(url:String) {
-		var bytes = Bytes.ofString(haxe.Http.requestUrl(url));
+		var bytes = fetchBytes(url);
 		return fromPngBytes(bytes);
 	}
 	static function fromJpegUrl(url: String) {
-		final bytes = Bytes.ofString(haxe.Http.requestUrl(url));
+		final bytes = fetchBytes(url);
 		return fromJpegBytes(bytes);
 	}
+	// ???
+	static function fromUrl(url: String) {
+		final bytes = fetchBytes(url);
+		if (bytes.length < 2)
+			throw "Not an image";
+		if (bytes.get(0) == 0xFF && bytes.get(1) == 0xD8) {
+			return fromJpegBytes(bytes);
+		}
+		return fromPngBytes(bytes);
+	}
+	private static function fetchBytes(url: String): Bytes {
+		final http = new haxe.Http(url);
+		var r = null;
+		http.onBytes = function (b) {
+			r = b;
+		}
+		http.onError = function (e) {
+			throw e;
+		}
+		http.request(false);
+		return r;
+
+	}
+
 }

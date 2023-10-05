@@ -506,20 +506,27 @@ class ThingHandler {
 						} catch (e:Dynamic) {}
 					}
 
-					try {
+					// try {
 						if (part.imageUrl != null) {
 							final url = readImageUrl(part.imageUrl, part.imageType);
-							switch (part.imageType) {
-								case Png: 
-									matCache.get(matKey).texture = Image.fromPngUrl(url);
-								case NotPng:
-									matCache.get(matKey).texture = Image.fromJpegUrl(url);
+							final img = Image.fromUrl(url);
+							var color = part.states[0].color;
+							if ((!part.isImagePasteScreen || part.states[0].color == Color.black) && !part.allowBlackImageBackgrounds) {
+								color = Color.white;
 							}
+							final res = switch (part.materialType) {
+								case TransparentTexture | TransparentGlowTexture:
+									img;
+								default:
+									Image.filled(img.width, img.height, color).blend(img);
+							}
+							matCache.get(matKey).texture = res;
 						}
 
-					} catch (e:Dynamic) {
-						matCache.get(matKey).texture = null;
-					}
+					//} catch (e:Dynamic) {
+					//	throw e;
+					//	matCache.get(matKey).texture = null;
+					//}
 
 					mesh.material = matCache.get(matKey);
 				}
@@ -566,11 +573,8 @@ class ThingHandler {
 	public static function readImageUrl(url: String, imageType: ImageType): String {
 		if (url.contains("http"))
 			return url;
-		if (url.toLowerCase() == url) {
-			final base = (imageType == NotPng ? "http://" : "https://") + "steamuserimages-a.akamaihd.net/ugc/";
-			return base + url; 
-		}
-		return url;
+		final base = (imageType == NotPng ? "http://" : "https://") + "steamuserimages-a.akamaihd.net/ugc/";
+		return base + url; 
 	}	
 	static function modulateTextureProperties(textureType: TextureTypes, props: TexturePropertyMap<Float>): TexturePropertyMap<Float>  {
 		final newProps: TexturePropertyMap<Float> = props.copy();
