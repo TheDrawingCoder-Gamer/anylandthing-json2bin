@@ -267,3 +267,101 @@ class Image {
 		return r;
 	}
 }
+
+@:allow(bulby.assets)
+class Tile {
+	var innerImg: Image;
+
+	var u: Float;
+	var v: Float;
+	var u2: Float;
+	var v2: Float;
+
+	public var x(default, null): Float;
+	public var y(default, null): Float;
+	
+	public var width(default, null): Float;
+	public var height(default, null): Float;
+
+	public var dx: Float;
+	public var dy: Float;
+
+	public var ix(get, never): Int;
+	inline function get_ix() return Math.floor(x);
+
+	public var iy(get, never): Int;
+	inline function get_iy() return Math.floor(y);
+
+	public var iwidth(get, never): Int;
+	inline function get_iwidth() return Math.ceil(width + x) - ix;
+
+	public var iheight(get, never): Int;
+	inline function get_iheight() return Math.ceil(height + y) - iy;
+
+
+	function new(img: Image, x: Float, y: Float, w: Float, h: Float, dx: Float = 0, dy: Float = 0) {
+		this.innerImg = img;
+		this.x = x;
+		this.y = y;
+		this.width = w;
+		this.height = h;
+		this.dx = dx;
+		this.dy = dy;
+		if (img != null) setTexture(img);
+	}
+	function setTexture(img: Image) {
+		this.innerImg = img;
+		updateUV();
+	}
+	function updateUV() {
+		final img = this.innerImg;
+		if (img != null) {
+			this.u = x / img.width;
+			this.v = y / img.height;
+			this.u2 = (x + width) / img.width;
+			this.v2 = (y + height) / img.height;
+		}
+	}
+	public static function fromImage(img: Image): Tile {
+		return new Tile(img, 0, 0, img.width, img.height);
+	}
+	public function setPosition(x: Float, y: Float): Void {
+		this.x = x;
+		this.y = y;
+		updateUV();
+	}
+	public function setSize(w: Float, h: Float): Void {
+		this.width = w;
+		this.height = h;
+		updateUV();
+	}
+	public function draw(on: Image): Void {
+		var rx = Math.floor(dx);
+		var ry = Math.floor(dy);
+		for (y in iy...iheight) {
+			final cy = ry++;
+			for (x in ix...iwidth) {
+				final cx = rx++;
+				final p1 = on.getPixel(cx, cy);
+				final p2 = this.innerImg.getPixel(x, y);
+				on.setPixel(cx, cy, Color.blend(p1, p2));
+			}
+		}	
+	}
+	public function clone(): Tile {
+		final t =new Tile(null, x, y, width, height, dx, dy);
+		t.innerImg = innerImg;
+		t.u = u;
+		t.v = v;
+		t.u2 = u2;
+		t.v2 = v2;
+		return t;
+	}
+	public function scaleToSize(w: Float, h: Float): Void {
+		this.width = w;
+		this.height = h;
+	}
+	public function dispose(): Void {
+		this.innerImg = null;
+	}
+}
