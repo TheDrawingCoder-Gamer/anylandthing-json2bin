@@ -8,6 +8,7 @@ import format.png.Reader as PngReader;
 import format.png.Tools as PngTools;
 import format.png.Writer as PngWriter;
 import bulby.BulbyMath;
+
 using StringTools;
 
 @:publish
@@ -162,25 +163,26 @@ class Image {
 		}
 		return null;
 	}
-	private static function applyToPoint(mat: Matrix3, x: Float, y: Float) {
+
+	private static function applyToPoint(mat:Matrix3, x:Float, y:Float) {
 		return {
 			x: x * mat.a + y * mat.b + mat.c,
 			y: x * mat.d + y * mat.e + mat.f
 		}
 	}
-	function transformTiled(matrix: Matrix3): Image {
+
+	function transformTiled(matrix:Matrix3):Image {
 		final a = matrix.a;
 		final b = matrix.b;
 		final c = matrix.c;
 		final d = matrix.d;
 		final e = matrix.e;
 		final f = matrix.f;
-		final tileBy: Int =  Math.ceil(Math.max(1 / Math.abs(a), 1 / Math.abs(e)));
+		final tileBy:Int = Math.ceil(Math.max(1 / Math.abs(a), 1 / Math.abs(e)));
 		final output = Image.filled(this.width, this.height, Color.white);
 		for (tile in 0...tileBy) {
-			for (y in 0...this.height){
+			for (y in 0...this.height) {
 				for (x in 0...this.width) {
-					
 					final p = applyToPoint(matrix, x + (this.width * tile), y + (this.height * tile));
 					if (p.x >= 0 && p.x < output.width && p.y >= 0 && p.y < output.height) {
 						var x2 = Math.floor(p.x), y2 = Math.floor(p.y);
@@ -191,6 +193,7 @@ class Image {
 		}
 		return output;
 	}
+
 	static function fromPng(png:String) {
 		var fin = sys.io.File.read(png);
 		return fromInputPng(fin);
@@ -211,17 +214,19 @@ class Image {
 		toOutputPng(bout);
 		return bout.getBytes();
 	}
-	static function fromJpegBytes(bytes: Bytes): Image {
+
+	static function fromJpegBytes(bytes:Bytes):Image {
 		final res = NanoJpeg.decode(bytes);
 		PngTools.reverseBytes(res.pixels);
 		return new Image(res.width, res.height, res.pixels);
 	}
+
 	private static function fromInputPng(input:haxe.io.Input) {
 		var pdata = new PngReader(input).read();
 		var header = PngTools.getHeader(pdata);
 		return new Image(header.width, header.height, PngTools.extract32(pdata));
 	}
-	
+
 	private function toOutputPng(output:haxe.io.Output) {
 		var pdata = PngTools.build32BGRA(width, height, data);
 		new PngWriter(output).write(pdata);
@@ -232,12 +237,14 @@ class Image {
 		var bytes = fetchBytes(url);
 		return fromPngBytes(bytes);
 	}
-	static function fromJpegUrl(url: String) {
+
+	static function fromJpegUrl(url:String) {
 		final bytes = fetchBytes(url);
 		return fromJpegBytes(bytes);
 	}
+
 	// ???
-	static function fromUrl(url: String) {
+	static function fromUrl(url:String) {
 		final bytes = fetchBytes(url);
 		if (bytes.length < 2)
 			throw "Not an image";
@@ -246,18 +253,17 @@ class Image {
 		}
 		return fromPngBytes(bytes);
 	}
-	private static function fetchBytes(url: String): Bytes {
+
+	private static function fetchBytes(url:String):Bytes {
 		final http = new haxe.Http(url);
 		var r = null;
-		http.onBytes = function (b) {
+		http.onBytes = function(b) {
 			r = b;
 		}
-		http.onError = function (e) {
+		http.onError = function(e) {
 			throw e;
 		}
 		http.request(false);
 		return r;
-
 	}
-
 }

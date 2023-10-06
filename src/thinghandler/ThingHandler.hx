@@ -1,5 +1,6 @@
 package thinghandler;
 
+import haxe.ds.Option;
 import thinghandler.TextureProperty.TexturePropertyMap;
 import bulby.assets.mat.Color;
 import bulby.assets.Image;
@@ -440,144 +441,150 @@ class ThingHandler {
 		for (part in thing.parts) {
 			if (part.materialType == InvisibleWhenDone || part.partInvisible)
 				continue;
-			if (FileSystem.exists("./res/BaseShapes/" + Std.string(part.baseType) + ".obj")) {
-				var mesh = Mesh.fromObj(File.getContent("./res/BaseShapes/" + Std.string(part.baseType) + ".obj"), false);
-				for (index => pos in part.changedVerticies) {
-					mesh.positions[index] = pos;
-					// We don't have to apply transformations because we do that later
-				}
-				mesh.optimize();
-				var matKey = '_${part.states[0].color.hex()}_${Std.string(part.materialType)}_${part.imageUrl == null ? "NoURL" : part.imageUrl}_${part.textureTypes[0]}_${part.textureTypes[1]}_';
-				if (matCache.exists(matKey)) {
-					mesh.material = matCache.get(matKey);
-				} else {
-					var color = part.states[0].color;
-					color.afloat = part.materialType.alpha();
-					matCache.set(matKey, new Material(matKey, color, 0, 0));
-					if (part.materialType == Unshaded) {
-						matCache.get(matKey).extensions.push(Unlit);
-					}
+			switch (getBaseMesh(part)) {
+				case Option.Some(mesh):
+					var matKey = '_${part.states[0].color.hex()}_${Std.string(part.materialType)}_${part.imageUrl == null ? "NoURL" : part.imageUrl}_${part.textureTypes[0]}_${part.textureTypes[1]}_';
+					if (matCache.exists(matKey)) {
+						mesh.material = matCache.get(matKey);
+					} else {
+						var color = part.states[0].color;
+						color.afloat = part.materialType.alpha();
+						matCache.set(matKey, new Material(matKey, color, 0, 0));
+						// Some material types are flat out impossible to render into Nodes. 
+						switch (part.materialType) {
+							case Unshaded:
+								matCache.get(matKey).extensions.push(Unlit);
+							case Inversion:
+							// ???
+							case Brightness:
+							// ???
+							default:
+						}
 
-					if (part.textureTypes[0] != None || part.textureTypes[1] != None) {
-						try {
-							var texture1: Image = null;
-							if (FileSystem.exists("./res/Textures/" + Std.string(part.textureTypes[0]) + ".png")) {
-								var texture = Image.fromPng("./res/Textures/" + Std.string(part.textureTypes[0]) + ".png");
-								var color = part.states[0].textureColors[0];
-								color.afloat = part.states[0].textureProperties[0].strength;
+						if (part.textureTypes[0] != None || part.textureTypes[1] != None) {
+							try {
+								var texture1:Image = null;
+								if (FileSystem.exists("./res/Textures/" + Std.string(part.textureTypes[0]) + ".png")) {
+									var texture = Image.fromPng("./res/Textures/" + Std.string(part.textureTypes[0]) + ".png");
+									var color = part.states[0].textureColors[0];
+									color.afloat = part.states[0].textureProperties[0].strength;
 
-								texture1 = texture.colortexture(color, textureAlphaCap(part.textureTypes[0]));
-								// if (Main.debug)
-									// I FEEL SO STUPID :sob: I WAS WRITING GOOD TEXTURE WHEN I WAS SUPPOSED TO BE WRITING THIS
-								//	matCache.get(matKey).texture.writePng("./output.png");
-							} else if (TextureTypes.isProcedural(part.textureTypes[0])) {
-								var texture = Image.procedural(2048, 2048, part.textureTypes[0], part.states[0].textureProperties[0].param1,
-									part.states[0].textureProperties[0].param2, part.states[0].textureProperties[0].param3);
-								if (texture != null) {
-									texture1 = texture.colortexture(part.states[0].textureColors[0], textureAlphaCap(part.textureTypes[0]));
+									texture1 = texture.colortexture(color, textureAlphaCap(part.textureTypes[0]));
+								} else if (TextureTypes.isProcedural(part.textureTypes[0])) {
+									var texture = Image.procedural(2048, 2048, part.textureTypes[0], part.states[0].textureProperties[0].param1,
+										part.states[0].textureProperties[0].param2, part.states[0].textureProperties[0].param3);
+									if (texture != null) {
+										texture1 = texture.colortexture(part.states[0].textureColors[0], textureAlphaCap(part.textureTypes[0]));
+									}
 								}
-							}
-							var texture2: Image = null;
-							if (FileSystem.exists(".res/Textures/" + Std.string(part.textureTypes[1]) + ".png")) {
-								var texture = Image.fromPng("./res/Textures/" + Std.string(part.textureTypes[1]) + ".png");
-								var color = part.states[0].textureColors[1];
-								color.afloat = part.states[0].textureProperties[1].strength;
+								var texture2:Image = null;
+								if (FileSystem.exists(".res/Textures/" + Std.string(part.textureTypes[1]) + ".png")) {
+									var texture = Image.fromPng("./res/Textures/" + Std.string(part.textureTypes[1]) + ".png");
+									var color = part.states[0].textureColors[1];
+									color.afloat = part.states[0].textureProperties[1].strength;
 
-								var goodTexture = texture.colortexture(color, textureAlphaCap(part.textureTypes[1]));
-								// Technically 1st being null and 2nd being not null is impossible but we'll check anyway
-								texture2 = goodTexture;
-							} else if (TextureTypes.isProcedural(part.textureTypes[1])) {
-								var texture = Image.procedural(2048, 2048, part.textureTypes[1], part.states[0].textureProperties[1].param1,
-									part.states[0].textureProperties[1].param2, part.states[0].textureProperties[1].param3);
-								// Check for null because right now not everything is implemented
-								if (texture != null) {
-									texture2 = texture.colortexture(part.states[0].textureColors[1], textureAlphaCap(part.textureTypes[1]));
-
+									texture2 = texture.colortexture(color, textureAlphaCap(part.textureTypes[1]));
+								} else if (TextureTypes.isProcedural(part.textureTypes[1])) {
+									var texture = Image.procedural(2048, 2048, part.textureTypes[1], part.states[0].textureProperties[1].param1,
+										part.states[0].textureProperties[1].param2, part.states[0].textureProperties[1].param3);
+									// Check for null because right now not everything is implemented
+									if (texture != null) {
+										texture2 = texture.colortexture(part.states[0].textureColors[1], textureAlphaCap(part.textureTypes[1]));
+									}
 								}
-							}
-							if (texture1 != null || texture2 != null) {
-								final colorTexture = Image.filled(2048, 2048, part.states[0].color);
-								var goodTex = colorTexture;
-								final res = applyAndMergeTexture(part.textureTypes[0], part.textureTypes[1], part.states[0].textureProperties[0],
+								if (texture1 != null || texture2 != null) {
+									final colorTexture = Image.filled(2048, 2048, part.states[0].color);
+									var goodTex = colorTexture;
+									final res = applyAndMergeTexture(part.textureTypes[0], part.textureTypes[1], part.states[0].textureProperties[0],
 										part.states[0].textureProperties[1], texture1, texture2);
-								matCache.get(matKey).texture = goodTex.blend(res);
-							
-							}
-						} catch (e:Dynamic) {}
-					}
+									matCache.get(matKey).diffuse = Color.white;
+									matCache.get(matKey).texture = goodTex.blend(res);
+								}
+							} catch (e:Dynamic) {}
+						}
 
-					// try {
 						if (part.imageUrl != null) {
 							final url = readImageUrl(part.imageUrl, part.imageType);
 							final img = Image.fromUrl(url);
 							var color = part.states[0].color;
-							if ((!part.isImagePasteScreen || part.states[0].color == Color.black) && !part.allowBlackImageBackgrounds) {
-								color = Color.white;
+							var backing = Color.black;
+							if ((part.isImagePasteScreen || part.states[0].color == Color.black) && !part.allowBlackImageBackgrounds) {
+								backing = Color.white;
 							}
 							final res = switch (part.materialType) {
 								case TransparentTexture | TransparentGlowTexture:
-									img;
+									img.times(color);
 								default:
-									Image.filled(img.width, img.height, color).blend(img);
+									Image.filled(img.width, img.height, backing).blend(img.times(color));
 							}
 							matCache.get(matKey).texture = res;
 						}
 
-					//} catch (e:Dynamic) {
-					//	throw e;
-					//	matCache.get(matKey).texture = null;
-					//}
-
-					mesh.material = matCache.get(matKey);
-				}
-
-				// TODO: this won't work with autocompleted parts that also reflect
-				if (part.autoContinuation != null && part.autoContinuation.count != 0) {
-					var otherPart = part.autoContinuation.fromPart;
-					// Just a guess, but I think from part means this part is the 2nd in sequence.
-					// So we calculate the different with this on lhs
-					var posDiff = part.states[0].position - otherPart.states[0].position;
-					var rotDiff = Quaternion.fromEuler(part.states[0].rotation) * Quaternion.fromEuler(otherPart.states[0].rotation).inverse();
-					var scaleDiff = part.states[0].scale - otherPart.states[0].scale;
-					// me when I'm lazy
-					var thisPos = part.states[0].position / 1;
-					var thisRot = Quaternion.fromEuler(part.states[0].rotation);
-					var thisScale = part.states[0].scale / 1;
-
-					for (_ in 0...part.autoContinuation.count) {
-						thisPos += posDiff;
-						thisRot *= rotDiff;
-						thisScale += scaleDiff;
-						var newMesh = mesh.copy();
-						newMesh.rotation = thisRot;
-						newMesh.translation = thisPos / 1;
-						newMesh.scale = thisScale.abs();
-						applyReflectionIfApplicable(node, part, newMesh);
-						newMesh.applyTransformations();
-						node.children.push(newMesh);
-						
+						mesh.material = matCache.get(matKey);
 					}
-				}
 
-				mesh.translation = part.states[0].position;
-				mesh.rotation = Quaternion.fromEuler(part.states[0].rotation);
-				mesh.scale = part.states[0].scale;
-				applyReflectionIfApplicable(node, part, mesh);
-				mesh.applyTransformations();
-				node.children.push(mesh);
+					if (part.autoContinuation != null && part.autoContinuation.count != 0) {
+						var otherPart = part.autoContinuation.fromPart;
+						// Just a guess, but I think from part means this part is the 2nd in sequence.
+						// So we calculate the different with this on lhs
+						var posDiff = part.states[0].position - otherPart.states[0].position;
+						var rotDiff = Quaternion.fromEuler(part.states[0].rotation) * Quaternion.fromEuler(otherPart.states[0].rotation).inverse();
+						var scaleDiff = part.states[0].scale - otherPart.states[0].scale;
+						// me when I'm lazy
+						var thisPos = part.states[0].position / 1;
+						var thisRot = Quaternion.fromEuler(part.states[0].rotation);
+						var thisScale = part.states[0].scale / 1;
+
+						for (_ in 0...part.autoContinuation.count) {
+							thisPos += posDiff;
+							thisRot *= rotDiff;
+							thisScale += scaleDiff;
+							var newMesh = mesh.copy();
+							newMesh.rotation = thisRot;
+							newMesh.translation = thisPos / 1;
+							newMesh.scale = thisScale.abs();
+							applyReflectionIfApplicable(node, part, newMesh);
+							newMesh.applyTransformations();
+							node.children.push(newMesh);
+						}
+					}
+
+					mesh.translation = part.states[0].position;
+					mesh.rotation = Quaternion.fromEuler(part.states[0].rotation);
+					mesh.scale = part.states[0].scale;
+					applyReflectionIfApplicable(node, part, mesh);
+					mesh.applyTransformations();
+					node.children.push(mesh);
+
+				default:
+					// nothing
 			}
 			i++;
 		}
 		return node;
 	}
-	public static function readImageUrl(url: String, imageType: ImageType): String {
+
+	static function getBaseMesh(part:ThingPart):Option<Mesh> {
+		if (FileSystem.exists("./res/" + Std.string(part.baseType) + ".obj")) {
+			final mesh = Mesh.fromObj(File.getContent("./res/BaseShapes/" + Std.string(part.baseType) + ".obj"), false);
+			for (index => pos in part.changedVerticies) {
+				mesh.positions[index] = pos;
+			}
+			mesh.optimize();
+			return Option.Some(mesh);
+		}
+		return Option.None;
+	}
+
+	public static function readImageUrl(url:String, imageType:ImageType):String {
 		if (url.contains("http"))
 			return url;
 		final base = (imageType == NotPng ? "http://" : "https://") + "steamuserimages-a.akamaihd.net/ugc/";
-		return base + url; 
-	}	
-	static function modulateTextureProperties(textureType: TextureTypes, props: TexturePropertyMap<Float>): TexturePropertyMap<Float>  {
-		final newProps: TexturePropertyMap<Float> = props.copy();
+		return base + url;
+	}
+
+	static function modulateTextureProperties(textureType:TextureTypes, props:TexturePropertyMap<Float>):TexturePropertyMap<Float> {
+		final newProps:TexturePropertyMap<Float> = props.copy();
 		final isAlgo = TextureTypes.isProcedural(textureType);
 		modulateStrength(newProps, textureType, isAlgo);
 		if (!TextureTypes.isAlphaOnly(textureType)) {
@@ -589,12 +596,13 @@ class ThingHandler {
 		}
 		return newProps;
 	}
-	static function applyAndMergeTexture(textureType1: TextureTypes, textureType2: TextureTypes, props1: Null<TexturePropertyMap<Float>>, 
-			props2: Null<TexturePropertyMap<Float>>, img1: Null<Image>, img2: Null<Image>): Image {
+
+	static function applyAndMergeTexture(textureType1:TextureTypes, textureType2:TextureTypes, props1:Null<TexturePropertyMap<Float>>,
+			props2:Null<TexturePropertyMap<Float>>, img1:Null<Image>, img2:Null<Image>):Image {
 		if (img1 == null && img2 == null)
 			throw "Both textures are null";
 		if (img1 == null && img2 != null)
-			return applyAndMergeTexture(textureType2,None, props2, null, img2, null);
+			return applyAndMergeTexture(textureType2, None, props2, null, img2, null);
 		// TODO: Sky
 		if (img2 == null) {
 			final props = modulateTextureProperties(textureType1, props1);
@@ -625,7 +633,8 @@ class ThingHandler {
 		final res2 = img2.transformTiled(t2 * r2 * s2);
 		return res1.blend(res2);
 	}
-	static function modulateStrength(props: TexturePropertyMap<Float>, textureType: TextureTypes, isAlgorithimTexture: Bool): Void {
+
+	static function modulateStrength(props:TexturePropertyMap<Float>, textureType:TextureTypes, isAlgorithimTexture:Bool):Void {
 		if (textureType != TextureTypes.SideGlow) {
 			var num = props.strength;
 			num = (num - 0.5) * 2;
@@ -641,7 +650,8 @@ class ThingHandler {
 			props.strength = num;
 		}
 	}
-	static function modulateScale(props: TexturePropertyMap<Float>, key: TextureProperty, isAlgorithimTexture: Bool): Void {
+
+	static function modulateScale(props:TexturePropertyMap<Float>, key:TextureProperty, isAlgorithimTexture:Bool):Void {
 		var num = props.get(key);
 		if (num > 0.5) {
 			num -= 0.5;
@@ -658,14 +668,18 @@ class ThingHandler {
 		}
 		props.set(key, num);
 	}
-	static function modulateOffset(props: TexturePropertyMap<Float>, key: TextureProperty, isAlgorithmTexture: Bool): Void {
+
+	static function modulateOffset(props:TexturePropertyMap<Float>, key:TextureProperty, isAlgorithmTexture:Bool):Void {
 		final num = props.get(key);
-		props.set(key, ((!isAlgorithmTexture) ? (num * 5) : ((num <= 0.4) ? ((0 - Math.abs(num - 0.4)) * 10) : ((!(num >= 0.6)) ? 0 : (Math.abs(num - 0.6) * 10)))));
+		props.set(key,
+			((!isAlgorithmTexture) ? (num * 5) : ((num <= 0.4) ? ((0 - Math.abs(num - 0.4)) * 10) : ((!(num >= 0.6)) ? 0 : (Math.abs(num - 0.6) * 10)))));
 	}
-	static function modulateRotation(props: TexturePropertyMap<Float>): Void {
+
+	static function modulateRotation(props:TexturePropertyMap<Float>):Void {
 		props.rotation = props.rotation * 360;
 	}
-	private static function applyReflectionIfApplicable(node: Node, part: ThingPart, mesh: Mesh): Void {
+
+	private static function applyReflectionIfApplicable(node:Node, part:ThingPart, mesh:Mesh):Void {
 		if (!part.reflectPartDepth && !part.reflectPartSideways && !part.reflectPartVertical)
 			return;
 		final rot = mesh.rotation;
@@ -696,7 +710,8 @@ class ThingHandler {
 			newMesh.applyTransformations();
 			node.children.push(newMesh);
 		}
-	} 
+	}
+
 	static function expandThingAttributeFromJson(thing:Thing, attributes:Array<Int>) {
 		if (attributes != null) {
 			for (attr in attributes) {

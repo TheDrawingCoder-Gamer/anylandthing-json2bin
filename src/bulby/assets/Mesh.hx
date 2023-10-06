@@ -28,13 +28,16 @@ class Mesh {
 		var newFaces = [for (tri in this.faces) DirectTri.fromTriAndMesh(tri, this)];
 
 		this.positions = [
-			for (index => item in optimizedPos) if (item != null && optimizedPos.indexOfVector3(item) == index) item
+			for (index => item in optimizedPos)
+				if (item != null && optimizedPos.indexOfVector3(item) == index) item
 		];
 		this.normals = [
-			for (index => item in optimizedNormals) if (optimizedNormals.indexOfVector3(item) == index) item
+			for (index => item in optimizedNormals)
+				if (optimizedNormals.indexOfVector3(item) == index) item
 		];
 		this.uvs = [
-			for (index => item in optimizedUvs) if (optimizedUvs.indexOfVector2(item) == index) item
+			for (index => item in optimizedUvs)
+				if (optimizedUvs.indexOfVector2(item) == index) item
 		];
 		applyTransformations();
 		faces = [for (tri in newFaces) tri.toTriForMesh(this)];
