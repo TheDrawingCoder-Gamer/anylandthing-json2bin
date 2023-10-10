@@ -364,4 +364,7 @@ class Tile {
 	public function dispose(): Void {
 		this.innerImg = null;
 	}
+	public function sub(x: Float, y: Float, w: Float, h: Float, dx = 0., dy = 0.): Tile {
+		return new Tile(innerImg, this.x + x, this.y + y, w, h, dx, dy);
+	}
 }

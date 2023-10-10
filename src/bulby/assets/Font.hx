@@ -2,6 +2,8 @@ package bulby.assets;
 
 import bulby.assets.Image;
 import sys.io.File;
+import haxe.io.Input;
+import sys.FileSystem;
 /**
   Taken from heaps
   **/
@@ -289,8 +291,7 @@ class Font {
 
 }
 
-import haxe.io.Input;
-
+@:access(bulby.assets.Font)
 class Reader {
 
 	var i : Input;
@@ -307,7 +308,7 @@ class Reader {
 
 		switch (i.readByte()) {
 			case 1:
-				font = new h2d.Font(i.readString(i.readUInt16()), i.readInt16());
+				font = new Font(i.readString(i.readUInt16()), i.readInt16());
 				font.tilePath = i.readString(i.readUInt16());
 				var tile = font.tile = resolveTile(font.tilePath);
 				font.lineHeight = i.readInt16();
@@ -316,7 +317,7 @@ class Reader {
 				var id : Int;
 				while ( ( id = i.readInt32() ) != 0 ) {
 					var t = tile.sub(i.readUInt16(), i.readUInt16(), i.readUInt16(), i.readUInt16(), i.readInt16(), i.readInt16());
-					var glyph = new h2d.Font.FontChar(t, i.readInt16());
+					var glyph = new Font.FontChar(t, i.readInt16());
 					font.glyphs.set(id, glyph);
 					if (id == defaultChar) font.defaultChar = glyph;
 
@@ -337,12 +338,13 @@ class Reader {
 	}
 	public static function parseFont(font: String): Font {
 		final fntFile = './res/Fonts/$font.fnt';
-		if (File.exists(fntFile)) {
+		if (FileSystem.exists(fntFile)) {
 			final bytes = File.getBytes(fntFile);
-			parse(bytes, name => {
+			return parse(bytes, name -> {
 				return Tile.fromImage(Image.fromPng("./res/Fonts/" + name));
 			});
 		}
+		return null;
 	}
 
 }
