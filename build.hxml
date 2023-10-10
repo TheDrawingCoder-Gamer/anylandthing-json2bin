@@ -1,7 +1,7 @@
 -cp src
 -main Main
--L format
--L hxNoise
+-cp libs/format
+-cp libs/hxNoise
 -D debugbubly
 --macro addGlobalMetadata("", "@:build(bulby.macro.Macro.publish())")
 --macro addGlobalMetadata("", "@:build(bulby.macro.Macro.staticClass())")

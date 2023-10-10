@@ -1,0 +1,6 @@
+[submodule "libs/format"]
+	path = libs/format
+	url = https://github.com/HaxeFoundation/format.git
+[submodule "libs/hxNoise"]
+	path = libs/hxNoise
+	url = https://github.com/whuop/hxNoise.git

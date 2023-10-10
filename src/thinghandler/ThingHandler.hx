@@ -5,6 +5,8 @@ import thinghandler.TextureProperty.TexturePropertyMap;
 import bulby.assets.mat.Color;
 import bulby.assets.Image;
 import bulby.assets.mat.Material;
+import bulby.assets.Font;
+import bulby.assets.FontParser;
 import bulby.BulbyMath;
 import bulby.assets.Node;
 import sys.FileSystem;
@@ -33,6 +35,10 @@ using thinghandler.BytesBufferTools;
 using Lambda;
 using StringTools;
 
+enum MeshKind {
+	NormalMesh(mesh: Mesh);
+	TextMesh(font: Font);
+}
 @:forward(length)
 abstract ChangedVerticies(Array<Dynamic>) from Array<Dynamic> to Array<Dynamic> {
 	var x(get, set):Float;
@@ -442,7 +448,7 @@ class ThingHandler {
 			if (part.materialType == InvisibleWhenDone || part.partInvisible)
 				continue;
 			switch (getBaseMesh(part)) {
-				case Option.Some(mesh):
+				case Option.Some(NormalMesh(mesh)):
 					var matKey = '_${part.states[0].color.hex()}_${Std.string(part.materialType)}_${part.imageUrl == null ? "NoURL" : part.imageUrl}_${part.textureTypes[0]}_${part.textureTypes[1]}_';
 					if (matCache.exists(matKey)) {
 						mesh.material = matCache.get(matKey);
@@ -555,6 +561,7 @@ class ThingHandler {
 					applyReflectionIfApplicable(node, part, mesh);
 					mesh.applyTransformations();
 					node.children.push(mesh);
+				case Option.Some(TextMesh(font)):
 
 				default:
 					// nothing
@@ -564,14 +571,18 @@ class ThingHandler {
 		return node;
 	}
 
-	static function getBaseMesh(part:ThingPart):Option<Mesh> {
+	static function getBaseMesh(part:ThingPart):Option<MeshKind> {
 		if (FileSystem.exists("./res/" + Std.string(part.baseType) + ".obj")) {
 			final mesh = Mesh.fromObj(File.getContent("./res/BaseShapes/" + Std.string(part.baseType) + ".obj"), false);
 			for (index => pos in part.changedVerticies) {
 				mesh.positions[index] = pos;
 			}
 			mesh.optimize();
-			return Option.Some(mesh);
+			return Option.Some(MeshKind.NormalMesh(mesh));
+		}
+		if (part.baseType.isText()) {
+			final font = FontParser.parseFont(Std.string(part.baseType));
+			return Option.Some(MeshKind.TextMesh(font));
 		}
 		return Option.None;
 	}

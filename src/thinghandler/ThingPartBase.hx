@@ -261,6 +261,10 @@ enum abstract ThingPartBase(UInt) from UInt to UInt {
 	var Dodecahedron;
 	var Icosidodecahedron;
 	var Octahedron;
+
+	public function isText(): Bool {
+		return this >= TextOrbitron && this <= TextViafont;
+	}
 }
 
 enum abstract PartTypeVertCount(UInt) from UInt to UInt {
