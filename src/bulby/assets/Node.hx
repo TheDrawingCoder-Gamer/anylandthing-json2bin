@@ -502,7 +502,7 @@ class Node {
 		// sys.io.File.saveContent("debug.json", haxe.Json.stringify(gltf));
 		jsonBuf.addString(Json.stringify(gltf));
 		while (jsonBuf.length % 4 != 0)
-			jsonBuf.addByte(0x02);
+			jsonBuf.addByte(0x20);
 		while (bytesChunkBuf.length % 4 != 0)
 			bytesChunkBuf.addByte(0x00);
 		final glbBuf = new BytesBuffer();
