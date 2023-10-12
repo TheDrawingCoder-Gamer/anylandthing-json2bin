@@ -1,5 +1,8 @@
 package;
 
+import bulby.assets.Text;
+import bulby.assets.FontParser;
+import bulby.assets.Font;
 import bulby.assets.mat.Color;
 import haxe.io.Bytes;
 import bulby.assets.gltf.schema.TGLTF;
@@ -83,12 +86,24 @@ function main() {
 	if (doGltf)
 		File.saveContent(output + ".gltf", Json.stringify(gltf));
 	println("Done!");
+	/*
 	if (debug) {
 		println("Combining two png images...");
 		var bottom = Image.fromPng("./bottom_layer_test.png");
 		var top = Image.fromPng("./top_layer_test.png");
 		var combined = bottom.blend(top);
 		combined.writePng(output + "_combined.png");
+		println("Done!");
+	}
+	*/
+	if (debug) {
+		println("Writing text...");
+		final font = FontParser.parseFont("18");
+		font.resizeTo(32);
+		final res = Text.write("Hi guys", Align.Left, font, 0);
+		res.img.writePng("fontimage.png");
+		// final res = font.getChar('A'.code);
+		// res.t.extract().writePng("fontimage.png");
 		println("Done!");
 	}
 }

@@ -1,5 +1,6 @@
 package thinghandler;
 
+import bulby.assets.Text;
 import haxe.ds.Option;
 import thinghandler.TextureProperty.TexturePropertyMap;
 import bulby.assets.mat.Color;
@@ -231,8 +232,9 @@ class ThingHandler {
 		for (jsonpart in data.p) {
 			// var baseIndex:Int = jsonpart.b != null ? cast jsonpart.b : 1;
 			var thingpart = new ThingPart();
-
+			
 			expandPartAttributeFromJson(thingpart, jsonpart.a);
+
 			if (jsonpart.n != null)
 				thingpart.givenName = jsonpart.n;
 			if (jsonpart.ac != null) {
@@ -243,7 +245,7 @@ class ThingHandler {
 				thingpart.baseType = jsonpart.b;
 			} else
 				thingpart.baseType = Cube;
-			if (thingpart.isText && jsonpart.e != null) {
+			if (jsonpart.e != null) {
 				thingpart.text = jsonpart.e;
 				if (jsonpart.lh != null)
 					thingpart.textLineHeight = jsonpart.lh;
@@ -444,6 +446,7 @@ class ThingHandler {
 		var node = new Node([]);
 		var matCache:Map<String, Material> = new Map<String, Material>();
 		var i = 0;
+		var tn = 0;
 		for (part in thing.parts) {
 			if (part.materialType == InvisibleWhenDone || part.partInvisible)
 				continue;
@@ -562,9 +565,47 @@ class ThingHandler {
 					mesh.applyTransformations();
 					node.children.push(mesh);
 				case Option.Some(TextMesh(font)):
-
+					if (part.text == null) {
+						trace("Text is null?");
+						continue;
+					}
+					// TODO: This isn't accurate. Font size isn't in pixels
+					font.resizeTo(65);
+					var align = Align.Left;
+					if (part.textAlignRight)
+						align = Align.Right;
+					if (part.textAlignCenter)
+						align = Align.Center;
+					final res = Text.write(part.text, align, font, part.textLineHeight);
+					
+					// Taken from https://learn.microsoft.com/en-us/windows/mixed-reality/develop/unity/text-in-unity
+					final dotsPerUnit = 2835;
+					final ratio = 12 / 65;
+					final fwidth = res.img.width * ratio;
+					final fheight = res.img.height * ratio;
+					final quad = Mesh.quad(fwidth, fheight);
+					final mat = new Material('text_${font.name}_${tn++}', part.states[0].color, 0, 0);
+					mat.texture = res.img;
+					quad.material = mat;
+					final scaleV = part.states[0].scale;
+					final scale = Matrix4.scale(scaleV.x, scaleV.y, scaleV.z);
+					var anchorTranslation = Matrix4.identity();
+					final tPos = part.states[0].position;
+					final translation = Matrix4.translation(tPos.x, tPos.y, tPos.z);
+					final rotation = Quaternion.fromEuler(part.states[0].rotation).matrix();
+					switch (align) {
+						case Align.Right: 
+							anchorTranslation = Matrix4.translation(-fwidth, 0, 0);
+						case Align.Center:
+							anchorTranslation = Matrix4.translation(-fwidth / 2, 0, 0);
+						default:
+							// : )
+					}
+					quad.specialTransform(translation * rotation * scale * anchorTranslation);
+					node.children.push(quad);
 				default:
 					// nothing
+					trace('Part $i is unrenderable');
 			}
 			i++;
 		}
@@ -572,12 +613,12 @@ class ThingHandler {
 	}
 
 	static function getBaseMesh(part:ThingPart):Option<MeshKind> {
-		if (FileSystem.exists("./res/" + Std.string(part.baseType) + ".obj")) {
-			final mesh = Mesh.fromObj(File.getContent("./res/BaseShapes/" + Std.string(part.baseType) + ".obj"), false);
+		final baseShape = './res/BaseShapes/${Std.string(part.baseType)}.obj';
+		if (FileSystem.exists(baseShape)) {
+			final mesh = Mesh.fromObj(File.getContent(baseShape), false);
 			for (index => pos in part.changedVerticies) {
 				mesh.positions[index] = pos;
 			}
-			mesh.optimize();
 			return Option.Some(MeshKind.NormalMesh(mesh));
 		}
 		if (part.baseType.isText()) {

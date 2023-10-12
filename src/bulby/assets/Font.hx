@@ -237,7 +237,7 @@ class Font {
 		var ratio = size / initSize;
 		for( c in glyphs ) {
 			c.width *= ratio;
-			c.t.scaleToSize(c.t.width * ratio, c.t.height * ratio);
+			c.t.resizeTo(c.t.width * ratio, c.t.height * ratio);
 			c.t.dx *= ratio;
 			c.t.dy *= ratio;
 			var k = @:privateAccess c.kerning;

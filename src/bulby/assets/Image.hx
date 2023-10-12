@@ -272,16 +272,15 @@ class Image {
 class Tile {
 	var innerImg: Image;
 
-	var u: Float;
-	var v: Float;
-	var u2: Float;
-	var v2: Float;
 
 	public var x(default, null): Float;
 	public var y(default, null): Float;
 	
 	public var width(default, null): Float;
 	public var height(default, null): Float;
+
+	public var twidth(default, null): Float;
+	public var theight(default, null): Float;
 
 	public var dx: Float;
 	public var dy: Float;
@@ -298,6 +297,11 @@ class Tile {
 	public var iheight(get, never): Int;
 	inline function get_iheight() return Math.ceil(height + y) - iy;
 
+	public var itwidth(get, never): Int;
+	inline function get_itwidth() return Math.ceil(twidth);
+
+	public var itheight(get, never): Int;
+	inline function get_itheight() return Math.ceil(theight);
 
 	function new(img: Image, x: Float, y: Float, w: Float, h: Float, dx: Float = 0, dy: Float = 0) {
 		this.innerImg = img;
@@ -305,22 +309,14 @@ class Tile {
 		this.y = y;
 		this.width = w;
 		this.height = h;
+		this.twidth = w;
+		this.theight = h;
 		this.dx = dx;
 		this.dy = dy;
 		if (img != null) setTexture(img);
 	}
 	function setTexture(img: Image) {
 		this.innerImg = img;
-		updateUV();
-	}
-	function updateUV() {
-		final img = this.innerImg;
-		if (img != null) {
-			this.u = x / img.width;
-			this.v = y / img.height;
-			this.u2 = (x + width) / img.width;
-			this.v2 = (y + height) / img.height;
-		}
 	}
 	public static function fromImage(img: Image): Tile {
 		return new Tile(img, 0, 0, img.width, img.height);
@@ -328,38 +324,50 @@ class Tile {
 	public function setPosition(x: Float, y: Float): Void {
 		this.x = x;
 		this.y = y;
-		updateUV();
 	}
 	public function setSize(w: Float, h: Float): Void {
 		this.width = w;
 		this.height = h;
-		updateUV();
+		this.twidth = w;
+		this.theight = h;
 	}
-	public function draw(on: Image): Void {
-		var rx = Math.floor(dx);
-		var ry = Math.floor(dy);
-		for (y in iy...iheight) {
-			final cy = ry++;
-			for (x in ix...iwidth) {
-				final cx = rx++;
-				final p1 = on.getPixel(cx, cy);
-				final p2 = this.innerImg.getPixel(x, y);
-				on.setPixel(cx, cy, Color.blend(p1, p2));
+	public function resizeTo(w: Float, h: Float): Void {
+		this.twidth = w;
+		this.theight = h;
+	}
+	public function extract(): Image {
+		final olddx = this.dx;
+		final olddy = this.dy;
+		this.dy = 0;
+		this.dx = 0;
+		final image = Image.filled(Math.floor(twidth), Math.floor(theight), 0x00000000);
+		draw(0, 0, image);
+		this.dx = olddx;
+		this.dy = olddy;
+		return image;
+	}
+	public function draw(tx: Float, ty: Float, on: Image): Void {
+		final rx = Math.floor(dx + tx);
+		final ry = Math.floor(dy + ty);
+		final wratio = width / twidth;
+		final hratio = height / theight;
+		for (y in 0...itheight) {
+			final sy = Math.floor(y * hratio) + this.iy;
+			final fy = y + ry;
+			for (x in 0...itwidth) {
+				final sx = Math.floor(x * wratio) + this.ix;
+				final fx = x + rx;
+				
+				final p1 = on.getPixel(fx, fy);
+				final p2 = this.innerImg.getPixel(sx, sy);
+				on.setPixel(fx, fy, Color.blend(p1, p2));
 			}
-		}	
+		}
 	}
 	public function clone(): Tile {
 		final t =new Tile(null, x, y, width, height, dx, dy);
 		t.innerImg = innerImg;
-		t.u = u;
-		t.v = v;
-		t.u2 = u2;
-		t.v2 = v2;
 		return t;
-	}
-	public function scaleToSize(w: Float, h: Float): Void {
-		this.width = w;
-		this.height = h;
 	}
 	public function dispose(): Void {
 		this.innerImg = null;

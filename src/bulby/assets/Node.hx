@@ -46,7 +46,7 @@ class Node {
 		}
 		mesh.normals = mesh.displayNormals;
 		mesh.positions = mesh.displayPositions;
-		mesh.optimize();
+		// mesh.optimize();
 		return mesh;
 	}
 
@@ -137,17 +137,17 @@ class Node {
 						metallicFactor: 0
 					},
 					// don't waste time on blending if it's opaque
-					alphaMode: compatMesh.material.diffuse.a == 255 ? OPAQUE : BLEND
+					alphaMode: (compatMesh.material.diffuse.a == 255  && compatMesh.material.texture == null)? OPAQUE : BLEND
 				};
 
 				if (compatMesh.material.texture != null) {
 					mat.pbrMetallicRoughness.baseColorTexture = {
 						index: t
 					};
-					mat.pbrMetallicRoughness.baseColorFactor = null;
+					mat.pbrMetallicRoughness.baseColorFactor = [1, 1, 1, 1];
 					var bytes = compatMesh.material.texture.getPngBytes();
 					gltf.images.push({
-						uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(bytes)
+						uri: "data:image/png;base64," + haxe.crypto.Base64.encode(bytes)
 					});
 					gltf.textures.push({
 						source: t++,
@@ -163,7 +163,7 @@ class Node {
 							mat.extensions.KHR_materials_clearcoat = {};
 							if (ccTex != null) {
 								gltf.images.push({
-									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(ccTex.getPngBytes())
+									uri: "data:image/png;base64," + haxe.crypto.Base64.encode(ccTex.getPngBytes())
 								});
 								gltf.textures.push({
 									source: t,
@@ -175,7 +175,7 @@ class Node {
 							}
 							if (ccRTex != null) {
 								gltf.images.push({
-									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(ccRTex.getPngBytes())
+									uri: "data:image/png;base64," + haxe.crypto.Base64.encode(ccRTex.getPngBytes())
 								});
 								gltf.textures.push({
 									source: t,
@@ -187,7 +187,7 @@ class Node {
 							}
 							if (ccNTex != null) {
 								gltf.images.push({
-									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(ccNTex.getPngBytes())
+									uri: "data:image/png;base64," + haxe.crypto.Base64.encode(ccNTex.getPngBytes())
 								});
 								gltf.textures.push({
 									source: t,
@@ -211,7 +211,7 @@ class Node {
 							mat.extensions.KHR_materials_sheen = {};
 							if (sheenColorTexture != null) {
 								gltf.images.push({
-									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(sheenColorTexture.getPngBytes())
+									uri: "data:image/png;base64," + haxe.crypto.Base64.encode(sheenColorTexture.getPngBytes())
 								});
 								gltf.textures.push({
 									source: t,
@@ -223,7 +223,7 @@ class Node {
 							}
 							if (sheenRoughnessTexture != null) {
 								gltf.images.push({
-									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(sheenRoughnessTexture.getPngBytes())
+									uri: "data:image/png;base64," + haxe.crypto.Base64.encode(sheenRoughnessTexture.getPngBytes())
 								});
 								gltf.textures.push({
 									source: t,
@@ -243,7 +243,7 @@ class Node {
 							mat.extensions.KHR_materials_specular = {};
 							if (specularTexture != null) {
 								gltf.images.push({
-									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(specularTexture.getPngBytes())
+									uri: "data:image/png;base64," + haxe.crypto.Base64.encode(specularTexture.getPngBytes())
 								});
 								gltf.textures.push({
 									source: t,
@@ -255,7 +255,7 @@ class Node {
 							}
 							if (specularColorTexture != null) {
 								gltf.images.push({
-									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(specularColorTexture.getPngBytes())
+									uri: "data:image/png;base64," + haxe.crypto.Base64.encode(specularColorTexture.getPngBytes())
 								});
 								gltf.textures.push({
 									source: t,
@@ -275,7 +275,7 @@ class Node {
 							mat.extensions.KHR_materials_transmission = {};
 							if (transmissionTexture != null) {
 								gltf.images.push({
-									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(transmissionTexture.getPngBytes())
+									uri: "data:image/png;base64," + haxe.crypto.Base64.encode(transmissionTexture.getPngBytes())
 								});
 								gltf.textures.push({
 									source: t,
@@ -292,7 +292,7 @@ class Node {
 							mat.extensions.KHR_materials_volume = {};
 							if (thicknessTexture != null) {
 								gltf.images.push({
-									uri: "data:application/octet-stream;base64," + haxe.crypto.Base64.encode(thicknessTexture.getPngBytes())
+									uri: "data:image/png;base64," + haxe.crypto.Base64.encode(thicknessTexture.getPngBytes())
 								});
 								gltf.textures.push({
 									source: t,
@@ -319,17 +319,17 @@ class Node {
 			var posView:TBufferView = {
 				buffer: 0,
 				byteLength: 0,
-				target: ELEMENT_ARRAY_BUFFER
+				target: ARRAY_BUFFER
 			};
 			var normView:TBufferView = {
 				buffer: 0,
 				byteLength: 0,
-				target: ELEMENT_ARRAY_BUFFER
+				target: ARRAY_BUFFER
 			};
 			var uvView:TBufferView = {
 				buffer: 0,
 				byteLength: 0,
-				target: ELEMENT_ARRAY_BUFFER
+				target: ARRAY_BUFFER
 			};
 			var curBufPos = buf.length;
 			var min:Vector3 = new Vector3(compatMesh.verticies[0].position.x, compatMesh.verticies[0].position.y, compatMesh.verticies[0].position.z);
@@ -356,9 +356,10 @@ class Node {
 			posView.byteOffset = curBufPos;
 			curBufPos = newBufPos;
 			for (vert in compatMesh.verticies) {
-				buf.addFloat(vert.normal.x);
-				buf.addFloat(vert.normal.y);
-				buf.addFloat(vert.normal.z);
+				final goodNormal = vert.normal.normalize();
+				buf.addFloat(goodNormal.x);
+				buf.addFloat(goodNormal.y);
+				buf.addFloat(goodNormal.z);
 			}
 			newBufPos = buf.length;
 			normView.byteLength = newBufPos - curBufPos;
@@ -384,7 +385,8 @@ class Node {
 			var indView:TBufferView = {
 				buffer: 0,
 				byteLength: newBufPos - curBufPos,
-				byteOffset: curBufPos
+				byteOffset: curBufPos,
+				target: ELEMENT_ARRAY_BUFFER
 			};
 
 			bufferViews.push(posView);

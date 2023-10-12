@@ -188,5 +188,5 @@ abstract Color(Int) {
 	}
 
 	public static var white:Color = 0xFFFFFFFF;
-	public static var black:Color = 0x000000FF;
+	public static var black:Color = 0xFF000000;
 }

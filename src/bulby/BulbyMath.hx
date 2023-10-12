@@ -553,9 +553,29 @@ abstract Quaternion(Vector4) {
 	public inline function inverse():Quaternion {
 		return cast conjugate().div(this.dot(this));
 	}
+	public inline function norm(): Float {
+		return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2) + Math.pow(this.z, 2) + Math.pow(this.w, 2));
+	}
 
 	@:op(A * B) public static inline function timesv(a:Quaternion, b:Vector4):Vector4 {
 		final good = a * (cast b : Quaternion) * a.conjugate();
 		return cast good;
+	}
+
+	public inline function matrix(): Matrix4 {
+		final s = norm();
+		final qi = this.x;
+		final qj = this.y;
+		final qk = this.z;
+		final qr = this.w;
+		function sq(f: Float): Float {
+			return Math.pow(f, 2);
+		}
+		return new Matrix4(1 - 2 * s * (sq(qj) + sq(qk)), 2 * s * (qi * qj - qk * qr)  , 2 * s * (qi * qk + qj * qr)  , 0,
+			    2 * s * (qi * qj + qk * qr)  , 1 - 2 * s * (sq(qi) + sq(qk)), 2 * s * (qj * qk - qi * qr)  , 0,
+			    2 * s * (qi * qk - qj * qr)  , 2 * s * (qj * qk + qi * qr)  , 1 - 2 * s * (sq(qi) + sq(qj)), 0,
+			    0                            , 0                            , 0                            , 1
+				
+				);
 	}
 }

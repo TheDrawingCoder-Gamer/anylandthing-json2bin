@@ -281,7 +281,7 @@ class FontParser {
 		if (FileSystem.exists(fntFile)) {
 			final bytes = File.getBytes(fntFile);
 			return FontParser.parse(bytes, fntFile, name -> {
-				return Tile.fromImage(Image.fromPng("./res/Fonts/" + name));
+				return Tile.fromImage(Image.fromPng(name));
 			});
 		}
 		return null;

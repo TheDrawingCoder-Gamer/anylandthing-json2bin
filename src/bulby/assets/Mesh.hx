@@ -9,7 +9,7 @@ import bulby.BulbyMath;
 using objhandler.ArrayTools;
 
 class Mesh {
-	public function new(positions:Array<Vector3>, normals:Array<Vector3>, uvs:Array<Vector2>, faces:Array<Tri>, dooptimize:Bool = true, ?material:Material) {
+	public function new(positions:Array<Vector3>, normals:Array<Vector3>, uvs:Array<Vector2>, faces:Array<Tri>, dooptimize:Bool = false, ?material:Material) {
 		this.positions = positions;
 		this.normals = normals;
 		this.uvs = uvs;
@@ -53,11 +53,12 @@ class Mesh {
 	}
 
 	public function applyTransformations() {
-		var positionsToEdit = [for (pos in positions) new Vector3(pos.x, pos.y, pos.z)];
-		var normalsToEdit = [for (normal in normals) new Vector3(normal.x, normal.y, normal.z)];
-		var mRot = this.rotation;
+		var mRot = this.rotation.matrix();
 		var mTrans = Matrix4.translation(this.translation.x, this.translation.y, this.translation.z);
 		var mScale = Matrix4.scale(this.scale.x, this.scale.y, this.scale.z);
+		/*
+		var positionsToEdit = [for (pos in positions) new Vector3(pos.x, pos.y, pos.z)];
+		var normalsToEdit = [for (normal in normals) new Vector3(normal.x, normal.y, normal.z)];
 		for (i in 0...positionsToEdit.length) {
 			var convertedPos = new Vector4(positionsToEdit[i].x, positionsToEdit[i].y, positionsToEdit[i].z, 1);
 			convertedPos = mTrans * (mRot * (mScale * convertedPos));
@@ -67,6 +68,25 @@ class Mesh {
 			var convertedNorm = new Vector4(normalsToEdit[i].x, normalsToEdit[i].y, normalsToEdit[i].z, 0);
 			convertedNorm = mTrans * (mRot * (mScale * convertedNorm));
 			normalsToEdit[i] = new Vector3(convertedNorm.x, convertedNorm.y, convertedNorm.z);
+		}
+		displayNormals = normalsToEdit;
+		displayPositions = positionsToEdit;
+		*/
+		specialTransform(mTrans * mRot * mScale);
+	}
+	
+	public function specialTransform(mat: Matrix4) {
+		var positionsToEdit = [for (pos in positions) new Vector3(pos.x, pos.y, pos.z)];
+		var normalsToEdit = [for (normal in normals) new Vector3(normal.x, normal.y, normal.z)];
+		for (i in 0 ...positionsToEdit.length) {
+			var convertedPos = new Vector4(positionsToEdit[i].x, positionsToEdit[i].y, positionsToEdit[i].z, 1);
+			convertedPos = mat * convertedPos;
+			positionsToEdit[i] = new Vector3(convertedPos.x, convertedPos.y, convertedPos.z);
+		}
+		for (i in 0 ...normalsToEdit.length) {
+			var convertedNorm = new Vector4(normalsToEdit[i].x, normalsToEdit[i].y, normalsToEdit[i].z, 0);
+			convertedNorm = mat * convertedNorm;
+			normalsToEdit[i] = new Vector3(convertedNorm.x, convertedNorm.y, convertedNorm.z).normalize();
 		}
 		displayNormals = normalsToEdit;
 		displayPositions = positionsToEdit;
@@ -83,7 +103,7 @@ class Mesh {
 	public var faces:Array<Tri>;
 	public var material:Material;
 
-	public static function fromObj(src:String, optimized:Bool = true) {
+	public static function fromObj(src:String, optimized:Bool = false) {
 		final position:EReg = ~/^v\s+([\d\.\+\-eE]+)\s+([\d\.\+\-eE]+)\s+([\d\.\+\-eE]+)/;
 		final normal:EReg = ~/^vn\s+([\d\.\+\-eE]+)\s+([\d\.\+\-eE]+)\s+([\d\.\+\-eE]+)/;
 		final uv:EReg = ~/^vt\s+([\d\.\+\-eE]+)\s+([\d\.\+\-eE]+)/;
@@ -131,5 +151,16 @@ class Mesh {
 			}
 		}
 		return new Mesh(positions, normals, uvs, faces, optimized);
+	}
+	public static function quad(w: Float, h: Float): Mesh {
+		final positions = [new Vector3(w, 0, 0), new Vector3(0, h, 0), new Vector3(0, 0, 0), new Vector3(w, h, 0)];
+		final uvs = [new Vector2(0, 1), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 0)];
+		final normals = [new Vector3(0, 0, -0.5).normalize()];
+
+		final faces = [new Tri(new VertRef(2, 0, 2), new VertRef(1, 0, 1), new VertRef(0, 0, 0)), new Tri(new VertRef(3, 0, 3), new VertRef(0, 0, 0), new VertRef(1, 0, 1))];
+
+		return new Mesh(positions, normals, uvs, faces);
+
+
 	}
 }
