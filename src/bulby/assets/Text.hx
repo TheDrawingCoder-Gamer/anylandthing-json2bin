@@ -9,48 +9,12 @@ enum Align {
 }
 class Text {
 	static function splitRawText( text : String, leftMargin = 0., afterData = 0., font : Font, ?sizes:Array<Float>, ?prevChar:Int = -1 ) {
-		var maxWidth = Math.POSITIVE_INFINITY;
-		var lines = [], restPos = 0;
 		var x = leftMargin;
 		for( i in 0...text.length ) {
 			var cc = text.charCodeAt(i);
 			var e = font.getChar(cc);
 			var newline = cc == '\n'.code;
 			var esize = e.width + e.getKerningOffset(prevChar);
-			var nc = text.charCodeAt(i+1);
-			if( font.charset.isBreakChar(cc) && (nc == null || !font.charset.isComplementChar(nc)) ) {
-				if( lines.length == 0 && leftMargin > 0 && x > maxWidth ) {
-					lines.push("");
-					if ( sizes != null ) sizes.push(leftMargin);
-					x -= leftMargin;
-				}
-				var size = x + esize; 
-				var k = i + 1, max = text.length;
-				var prevChar = prevChar;
-				var breakFound = false;
-				while( size <= maxWidth && k < max ) {
-					var cc = text.charCodeAt(k++);
-					if( font.charset.isSpace(cc) || cc == '\n'.code ) {
-						breakFound = true;
-						break;
-					}
-					var e = font.getChar(cc);
-					size += e.width + e.getKerningOffset(prevChar);
-					prevChar = cc;
-					var nc = text.charCodeAt(k+1);
-					if( font.charset.isBreakChar(cc) && (nc == null || !font.charset.isComplementChar(nc)) ) break;
-				}
-				if( size > maxWidth || (!breakFound && size + afterData > maxWidth) ) {
-					newline = true;
-					if( font.charset.isSpace(cc) ){
-						lines.push(text.substr(restPos, i - restPos));
-						e = null;
-					}else{
-						lines.push(text.substr(restPos, i + 1 - restPos));
-					}
-					restPos = i + 1;
-				}
-			}
 			if( e != null && cc != '\n'.code )
 				x += esize;
 			if( newline ) {
@@ -60,16 +24,7 @@ class Text {
 			} else
 				prevChar = cc;
 		}
-		if( restPos < text.length ) {
-			if( lines.length == 0 && leftMargin > 0 && x + afterData > maxWidth ) {
-				lines.push("");
-				if ( sizes != null ) sizes.push(leftMargin);
-				x -= leftMargin;
-			}
-			lines.push(text.substr(restPos, text.length - restPos));
-			if ( sizes != null ) sizes.push(x);
-		}
-		return lines.join("\n");
+		return text;
 	}
 	static public function write( text : String, align: Align, font: Font, lineSpacing: Float ) : { img: Image, lw: Float, nlines: Int} {
 		var x = 0., y = 0., xMax = 0., xMin = 0., yMin = 0., prevChar = -1, linei = 0;
@@ -102,7 +57,6 @@ class Text {
 				offs = e.getKerningOffset(prevChar);
 				esize = e.width + offs;
 			}
-			// if the next word goes past the max width, change it into a newline
 
 			if( cc == '\n'.code ) {
 				if( x > xMax ) xMax = x;

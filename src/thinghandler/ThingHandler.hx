@@ -601,6 +601,7 @@ class ThingHandler {
 						default:
 							// : )
 					}
+					anchorTranslation = Matrix4.translation(0, -fheight, 0) * anchorTranslation;
 					quad.specialTransform(translation * rotation * scale * anchorTranslation);
 					node.children.push(quad);
 				default:

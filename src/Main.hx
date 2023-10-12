@@ -100,7 +100,7 @@ function main() {
 		println("Writing text...");
 		final font = FontParser.parseFont("18");
 		font.resizeTo(32);
-		final res = Text.write("Hi guys", Align.Left, font, 0);
+		final res = Text.write("Hi guys", Align.Center, font, 0);
 		res.img.writePng("fontimage.png");
 		// final res = font.getChar('A'.code);
 		// res.t.extract().writePng("fontimage.png");
