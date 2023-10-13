@@ -85,11 +85,11 @@ enum abstract MaterialTypes(UInt) from UInt to UInt {
 	public inline function alpha() {
 		switch (this) {
 			case MaterialTypes.Transparent | MaterialTypes.TransparentGlossy | TransparentGlossyMetallic:
-				return 0.7;
-			case MaterialTypes.SlightyTransparent:
-				return 0.9;
-			case VeryTransparent | VeryTransparentGlossy:
 				return 0.5;
+			case MaterialTypes.SlightyTransparent:
+				return 0.82;
+			case VeryTransparent | VeryTransparentGlossy:
+				return 0.2;
 			default:
 				return 1;
 		}

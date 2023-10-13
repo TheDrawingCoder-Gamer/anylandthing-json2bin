@@ -458,18 +458,50 @@ class ThingHandler {
 					} else {
 						var color = part.states[0].color;
 						color.afloat = part.materialType.alpha();
-						matCache.set(matKey, new Material(matKey, color, 0, 0));
+						final mat = new Material(matKey, color, 0, 0);
 						// Some material types are flat out impossible to render into Nodes. 
 						switch (part.materialType) {
-							case Unshaded:
-								matCache.get(matKey).extensions.push(Unlit);
+							case Unshaded | TransparentGlowTexture:
+								mat.extensions.push(Unlit);
 							case Inversion:
 							// ???
 							case Brightness:
 							// ???
+							case Glow:
+								mat.emissive = color;
+							case Metallic:
+								mat.metalness = 0.75;
+								mat.roughness = 1 - 0.65;
+							case VeryMetallic:
+								mat.metalness = 1;
+								mat.roughness = 1 - 0.5;
+							case DarkMetallic:
+								mat.metalness = 1;
+								mat.roughness = 1 - 0.65;
+							case BrightMetallic:
+								mat.metalness = 0.85;
+								mat.roughness = 1 - 0.2;
+							case TransparentGlossy | VeryTransparentGlossy:
+								mat.metalness = 0;
+								mat.roughness = 1 - 0.75;
+							case TransparentGlossyMetallic:
+								mat.metalness = 0.5;
+								mat.roughness = 1 - 0.75;
+							case Plastic: 
+								mat.metalness = 0;
+								mat.roughness = 1 - 0.8;
+							case Unshiny:
+								mat.metalness = 0;
+								mat.roughness = 1 - 0;
+							case TransparentTexture:
+								mat.metalness = 0;
+								mat.roughness = 0.25;
+							case Particles | ParticlesBig:
+								// ???
 							default:
 						}
 
+						matCache.set(matKey, mat);
 						if (part.textureTypes[0] != None || part.textureTypes[1] != None) {
 							try {
 								var texture1:Image = null;
@@ -580,12 +612,21 @@ class ThingHandler {
 					
 					// Taken from https://learn.microsoft.com/en-us/windows/mixed-reality/develop/unity/text-in-unity
 					final dotsPerUnit = 2835;
+					// This ratio is to account for the size it's rendered at vs. actual size
 					final ratio = 12 / 65;
 					final fwidth = res.img.width * ratio;
 					final fheight = res.img.height * ratio;
 					final quad = Mesh.quad(fwidth, fheight);
 					final mat = new Material('text_${font.name}_${tn++}', part.states[0].color, 0, 0);
 					mat.texture = res.img;
+					switch (part.materialType) {
+						case Glow | Unshaded:
+							// Glow is similar to unshaded iirc
+							// For text it's basically full bright
+							mat.extensions.push(Unlit);
+						default: 
+							// : )
+					}
 					quad.material = mat;
 					final scaleV = part.states[0].scale;
 					final scale = Matrix4.scale(scaleV.x, scaleV.y, scaleV.z);

@@ -16,6 +16,7 @@ class Material {
 	public var diffuse:Color = Color.fromFloat(0.8, 0.8, 0.8);
 	public var metalness:Float = 0.0;
 	public var roughness:Float = 0;
+	public var emissive:Color = Color.black;
 	public var isUnshaded = false;
 	public var texture:Null<Image> = null;
 	public var normalTexture:Null<Image> = null;
@@ -33,10 +34,11 @@ class Material {
 	}
 
 	public function copy():Material {
-		var newDiffuse = new Color(diffuse.r, diffuse.g, diffuse.b);
 		var newImage = texture != null ? texture.copy() : null;
 		var newNormalImage = normalTexture != null ? normalTexture.copy() : null;
-		return new Material(name, newDiffuse, metalness, roughness, newImage, newNormalImage, extensions.copy());
+		final mat = new Material(name, diffuse, metalness, roughness, newImage, newNormalImage, extensions.copy());
+		mat.emissive = this.emissive;
+		return mat;
 	}
 	/*
 		public function toMtl():String {

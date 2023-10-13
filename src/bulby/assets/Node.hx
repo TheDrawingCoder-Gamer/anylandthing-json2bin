@@ -137,7 +137,8 @@ class Node {
 						metallicFactor: 0
 					},
 					// don't waste time on blending if it's opaque
-					alphaMode: (compatMesh.material.diffuse.a == 255  && compatMesh.material.texture == null)? OPAQUE : BLEND
+					alphaMode: (compatMesh.material.diffuse.a == 255  && compatMesh.material.texture == null)? OPAQUE : BLEND,
+					emissiveFactor: compatMesh.material.emissive.asVector4().asArray().slice(0, 3)
 				};
 
 				if (compatMesh.material.texture != null) {
