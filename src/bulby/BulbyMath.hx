@@ -156,10 +156,11 @@ abstract Vector3(Vector3Raw) from Vector3Raw to Vector3Raw {
 }
 
 abstract Vector3FromUnity(Vector3) to Vector3 {
-	public function new(x: Float, y: Float, z: Float) {
+	public function new(x:Float, y:Float, z:Float) {
 		this = new Vector3(x, y, z);
 	}
-	@:from static public function obj(x: Vector3Raw) {
+
+	@:from static public function obj(x:Vector3Raw) {
 		return new Vector3FromUnity(-x.x, x.y, x.z);
 	}
 }
@@ -492,10 +493,11 @@ abstract Quaternion(Vector4) {
 			w: w
 		};
 	}
-	
+
 	public function toXYZW() {
 		return [this.x, this.y, this.z, this.w];
 	}
+
 	// stolen from:
 	// https://www.mathworks.com/matlabcentral/fileexchange/6335-euler-angles-to-quaternion-conversion-for-six-basic-sequence-of-rotations
 	public static function fromEuler(euler:Vector3) {
@@ -565,7 +567,8 @@ abstract Quaternion(Vector4) {
 	public inline function inverse():Quaternion {
 		return cast conjugate().div(this.dot(this));
 	}
-	public inline function norm(): Float {
+
+	public inline function norm():Float {
 		return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2) + Math.pow(this.z, 2) + Math.pow(this.w, 2));
 	}
 
@@ -574,29 +577,31 @@ abstract Quaternion(Vector4) {
 		return cast good;
 	}
 
-	public inline function matrix(): Matrix4 {
+	public inline function matrix():Matrix4 {
 		final s = norm();
 		final qi = this.x;
 		final qj = this.y;
 		final qk = this.z;
 		final qr = this.w;
-		function sq(f: Float): Float {
+		function sq(f:Float):Float {
 			return Math.pow(f, 2);
 		}
-		return new Matrix4(1 - 2 * s * (sq(qj) + sq(qk)), 2 * s * (qi * qj - qk * qr)  , 2 * s * (qi * qk + qj * qr)  , 0,
-			    2 * s * (qi * qj + qk * qr)  , 1 - 2 * s * (sq(qi) + sq(qk)), 2 * s * (qj * qk - qi * qr)  , 0,
-			    2 * s * (qi * qk - qj * qr)  , 2 * s * (qj * qk + qi * qr)  , 1 - 2 * s * (sq(qi) + sq(qj)), 0,
-			    0                            , 0                            , 0                            , 1
-				
-				);
+		return new Matrix4(1
+			- 2 * s * (sq(qj) + sq(qk)), 2 * s * (qi * qj - qk * qr), 2 * s * (qi * qk + qj * qr), 0, 2 * s * (qi * qj + qk * qr),
+			1
+			- 2 * s * (sq(qi) + sq(qk)), 2 * s * (qj * qk - qi * qr), 0, 2 * s * (qi * qk - qj * qr), 2 * s * (qj * qk + qi * qr),
+			1
+			- 2 * s * (sq(qi) + sq(qj)), 0, 0, 0, 0, 1);
+
 	}
 }
 
 abstract QuaternionFromUnity(Quaternion) to Quaternion {
-	public function new (x: Float, y: Float, z: Float, w: Float) {
+	public function new(x:Float, y:Float, z:Float, w:Float) {
 		this = new Quaternion(x, y, z, w);
 	}
-	@:from static public function obj(x: Vector3Raw) {
+
+	@:from static public function obj(x:Vector3Raw) {
 		return cast Quaternion.fromUnityEuler(x);
 	}
 }

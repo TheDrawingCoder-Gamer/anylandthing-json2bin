@@ -57,33 +57,33 @@ class Mesh {
 		var mTrans = Matrix4.translation(this.translation.x, this.translation.y, this.translation.z);
 		var mScale = Matrix4.scale(this.scale.x, this.scale.y, this.scale.z);
 		/*
+			var positionsToEdit = [for (pos in positions) new Vector3(pos.x, pos.y, pos.z)];
+			var normalsToEdit = [for (normal in normals) new Vector3(normal.x, normal.y, normal.z)];
+			for (i in 0...positionsToEdit.length) {
+				var convertedPos = new Vector4(positionsToEdit[i].x, positionsToEdit[i].y, positionsToEdit[i].z, 1);
+				convertedPos = mTrans * (mRot * (mScale * convertedPos));
+				positionsToEdit[i] = new Vector3(convertedPos.x, convertedPos.y, convertedPos.z);
+			}
+			for (i in 0...normalsToEdit.length) {
+				var convertedNorm = new Vector4(normalsToEdit[i].x, normalsToEdit[i].y, normalsToEdit[i].z, 0);
+				convertedNorm = mTrans * (mRot * (mScale * convertedNorm));
+				normalsToEdit[i] = new Vector3(convertedNorm.x, convertedNorm.y, convertedNorm.z);
+			}
+			displayNormals = normalsToEdit;
+			displayPositions = positionsToEdit;
+		 */
+		specialTransform(mTrans * mRot * mScale);
+	}
+
+	public function specialTransform(mat:Matrix4) {
 		var positionsToEdit = [for (pos in positions) new Vector3(pos.x, pos.y, pos.z)];
 		var normalsToEdit = [for (normal in normals) new Vector3(normal.x, normal.y, normal.z)];
 		for (i in 0...positionsToEdit.length) {
 			var convertedPos = new Vector4(positionsToEdit[i].x, positionsToEdit[i].y, positionsToEdit[i].z, 1);
-			convertedPos = mTrans * (mRot * (mScale * convertedPos));
-			positionsToEdit[i] = new Vector3(convertedPos.x, convertedPos.y, convertedPos.z);
-		}
-		for (i in 0...normalsToEdit.length) {
-			var convertedNorm = new Vector4(normalsToEdit[i].x, normalsToEdit[i].y, normalsToEdit[i].z, 0);
-			convertedNorm = mTrans * (mRot * (mScale * convertedNorm));
-			normalsToEdit[i] = new Vector3(convertedNorm.x, convertedNorm.y, convertedNorm.z);
-		}
-		displayNormals = normalsToEdit;
-		displayPositions = positionsToEdit;
-		*/
-		specialTransform(mTrans * mRot * mScale);
-	}
-	
-	public function specialTransform(mat: Matrix4) {
-		var positionsToEdit = [for (pos in positions) new Vector3(pos.x, pos.y, pos.z)];
-		var normalsToEdit = [for (normal in normals) new Vector3(normal.x, normal.y, normal.z)];
-		for (i in 0 ...positionsToEdit.length) {
-			var convertedPos = new Vector4(positionsToEdit[i].x, positionsToEdit[i].y, positionsToEdit[i].z, 1);
 			convertedPos = mat * convertedPos;
 			positionsToEdit[i] = new Vector3(convertedPos.x, convertedPos.y, convertedPos.z);
 		}
-		for (i in 0 ...normalsToEdit.length) {
+		for (i in 0...normalsToEdit.length) {
 			var convertedNorm = new Vector4(normalsToEdit[i].x, normalsToEdit[i].y, normalsToEdit[i].z, 0);
 			convertedNorm = mat * convertedNorm;
 			normalsToEdit[i] = new Vector3(convertedNorm.x, convertedNorm.y, convertedNorm.z).normalize();
@@ -152,15 +152,22 @@ class Mesh {
 		}
 		return new Mesh(positions, normals, uvs, faces, optimized);
 	}
-	public static function quad(w: Float, h: Float): Mesh {
-		final positions = [new Vector3(w, 0, 0), new Vector3(0, h, 0), new Vector3(0, 0, 0), new Vector3(w, h, 0)];
+
+	public static function quad(w:Float, h:Float):Mesh {
+		final positions = [
+			new Vector3(w, 0, 0),
+			new Vector3(0, h, 0),
+			new Vector3(0, 0, 0),
+			new Vector3(w, h, 0)
+		];
 		final uvs = [new Vector2(0, 1), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 0)];
 		final normals = [new Vector3(0, 0, -0.5).normalize()];
 
-		final faces = [new Tri(new VertRef(2, 0, 2), new VertRef(1, 0, 1), new VertRef(0, 0, 0)), new Tri(new VertRef(3, 0, 3), new VertRef(0, 0, 0), new VertRef(1, 0, 1))];
+		final faces = [
+			new Tri(new VertRef(2, 0, 2), new VertRef(1, 0, 1), new VertRef(0, 0, 0)),
+			new Tri(new VertRef(3, 0, 3), new VertRef(0, 0, 0), new VertRef(1, 0, 1))
+		];
 
 		return new Mesh(positions, normals, uvs, faces);
-
-
 	}
 }

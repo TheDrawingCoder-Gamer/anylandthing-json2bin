@@ -37,9 +37,10 @@ using Lambda;
 using StringTools;
 
 enum MeshKind {
-	NormalMesh(mesh: Mesh);
-	TextMesh(font: Font);
+	NormalMesh(mesh:Mesh);
+	TextMesh(font:Font);
 }
+
 @:forward(length)
 abstract ChangedVerticies(Array<Dynamic>) from Array<Dynamic> to Array<Dynamic> {
 	var x(get, set):Float;
@@ -232,7 +233,7 @@ class ThingHandler {
 		for (jsonpart in data.p) {
 			// var baseIndex:Int = jsonpart.b != null ? cast jsonpart.b : 1;
 			var thingpart = new ThingPart();
-			
+
 			expandPartAttributeFromJson(thingpart, jsonpart.a);
 
 			if (jsonpart.n != null)
@@ -436,15 +437,17 @@ class ThingHandler {
 			}
 		}
 	}
-	public static function generateMeshFromThing(thing: Thing): Node {
+
+	public static function generateMeshFromThing(thing:Thing):Node {
 		return generateMeshFromThings(["this" => thing], "this");
 	}
+
 	/**
 	 * Generates an Obj File from a Thing. Returns Node, that contains all meshes
 	 * @param thing 
 	 * @return Node
 	 */
-	public static function generateMeshFromThings(things: Map<String, Thing>, main: String):Node {
+	public static function generateMeshFromThings(things:Map<String, Thing>, main:String):Node {
 		var node = new Node([]);
 		var matCache:Map<String, Material> = new Map<String, Material>();
 		var i = 0;
@@ -466,215 +469,213 @@ class ThingHandler {
 					}
 					// biconditional
 					if ((part.partInvisible && includedInfo.invertInvisible) || (!part.partInvisible && !includedInfo.invertInvisible)) {
-						// if part is visible...	
+						// if part is visible...
 						final rendered = generateMeshFromThing(incThing);
-						// OK so a subthing is like a child, with this part being the root. 
+						// OK so a subthing is like a child, with this part being the root.
 						rendered.translation = includedInfo.pos;
 						rendered.rotation = Quaternion.fromEuler(includedInfo.rot);
 						partNode.children.push(ANode(rendered));
 					}
-
-					
 				}
 			}
 			if (!(part.materialType == InvisibleWhenDone || part.partInvisible)) {
-			switch (getBaseMesh(part)) {
-				case Option.Some(NormalMesh(mesh)):
-					var matKey = '_${part.states[0].color.hex()}_${Std.string(part.materialType)}_${part.imageUrl == null ? "NoURL" : part.imageUrl}_${part.textureTypes[0]}_${part.textureTypes[1]}_';
-					if (matCache.exists(matKey)) {
-						mesh.material = matCache.get(matKey);
-					} else {
-						var color = part.states[0].color;
-						color.afloat = part.materialType.alpha();
-						final mat = new Material(matKey, color, 0, 0);
-						// Some material types are flat out impossible to render into Nodes. 
-						switch (part.materialType) {
-							case Unshaded | TransparentGlowTexture:
-								mat.extensions.push(Unlit);
-							case Inversion:
-							// ???
-							case Brightness:
-							// ???
-							case Glow:
-								mat.emissive = color;
-							case Metallic:
-								mat.metalness = 0.75;
-								mat.roughness = 1 - 0.65;
-							case VeryMetallic:
-								mat.metalness = 1;
-								mat.roughness = 1 - 0.5;
-							case DarkMetallic:
-								mat.metalness = 1;
-								mat.roughness = 1 - 0.65;
-							case BrightMetallic:
-								mat.metalness = 0.85;
-								mat.roughness = 1 - 0.2;
-							case TransparentGlossy | VeryTransparentGlossy:
-								mat.metalness = 0;
-								mat.roughness = 1 - 0.75;
-							case TransparentGlossyMetallic:
-								mat.metalness = 0.5;
-								mat.roughness = 1 - 0.75;
-							case Plastic: 
-								mat.metalness = 0;
-								mat.roughness = 1 - 0.8;
-							case Unshiny:
-								mat.metalness = 0;
-								mat.roughness = 1 - 0;
-							case TransparentTexture:
-								mat.metalness = 0;
-								mat.roughness = 0.25;
-							case Particles | ParticlesBig:
-								// ???
-							default:
-						}
-
-						matCache.set(matKey, mat);
-						if (part.textureTypes[0] != None || part.textureTypes[1] != None) {
-							try {
-								var texture1:Image = null;
-								if (FileSystem.exists("./res/Textures/" + Std.string(part.textureTypes[0]) + ".png")) {
-									var texture = Image.fromPng("./res/Textures/" + Std.string(part.textureTypes[0]) + ".png");
-									var color = part.states[0].textureColors[0];
-									color.afloat = part.states[0].textureProperties[0].strength;
-
-									texture1 = texture.colortexture(color, textureAlphaCap(part.textureTypes[0]));
-								} else if (TextureTypes.isProcedural(part.textureTypes[0])) {
-									var texture = Image.procedural(2048, 2048, part.textureTypes[0], part.states[0].textureProperties[0].param1,
-										part.states[0].textureProperties[0].param2, part.states[0].textureProperties[0].param3);
-									if (texture != null) {
-										texture1 = texture.colortexture(part.states[0].textureColors[0], textureAlphaCap(part.textureTypes[0]));
-									}
-								}
-								var texture2:Image = null;
-								if (FileSystem.exists(".res/Textures/" + Std.string(part.textureTypes[1]) + ".png")) {
-									var texture = Image.fromPng("./res/Textures/" + Std.string(part.textureTypes[1]) + ".png");
-									var color = part.states[0].textureColors[1];
-									color.afloat = part.states[0].textureProperties[1].strength;
-
-									texture2 = texture.colortexture(color, textureAlphaCap(part.textureTypes[1]));
-								} else if (TextureTypes.isProcedural(part.textureTypes[1])) {
-									var texture = Image.procedural(2048, 2048, part.textureTypes[1], part.states[0].textureProperties[1].param1,
-										part.states[0].textureProperties[1].param2, part.states[0].textureProperties[1].param3);
-									// Check for null because right now not everything is implemented
-									if (texture != null) {
-										texture2 = texture.colortexture(part.states[0].textureColors[1], textureAlphaCap(part.textureTypes[1]));
-									}
-								}
-								if (texture1 != null || texture2 != null) {
-									final colorTexture = Image.filled(2048, 2048, part.states[0].color);
-									var goodTex = colorTexture;
-									final res = applyAndMergeTexture(part.textureTypes[0], part.textureTypes[1], part.states[0].textureProperties[0],
-										part.states[0].textureProperties[1], texture1, texture2);
-									matCache.get(matKey).diffuse = Color.white;
-									matCache.get(matKey).texture = goodTex.blend(res);
-								}
-							} catch (e:Dynamic) {}
-						}
-						
-						if (part.imageUrl != null) {
-							final url = readImageUrl(part.imageUrl, part.imageType);
-							final img = Image.fromUrl(url);
+				switch (getBaseMesh(part)) {
+					case Option.Some(NormalMesh(mesh)):
+						var matKey = '_${part.states[0].color.hex()}_${Std.string(part.materialType)}_${part.imageUrl == null ? "NoURL" : part.imageUrl}_${part.textureTypes[0]}_${part.textureTypes[1]}_';
+						if (matCache.exists(matKey)) {
+							mesh.material = matCache.get(matKey);
+						} else {
 							var color = part.states[0].color;
-							var backing = Color.black;
-							if ((part.isImagePasteScreen || part.states[0].color == Color.black) && !part.allowBlackImageBackgrounds) {
-								backing = Color.white;
-							}
-							final res = switch (part.materialType) {
-								case TransparentTexture | TransparentGlowTexture:
-									img.times(color);
+							color.afloat = part.materialType.alpha();
+							final mat = new Material(matKey, color, 0, 0);
+							// Some material types are flat out impossible to render into Nodes.
+							switch (part.materialType) {
+								case Unshaded | TransparentGlowTexture:
+									mat.extensions.push(Unlit);
+								case Inversion:
+								// ???
+								case Brightness:
+								// ???
+								case Glow:
+									mat.emissive = color;
+								case Metallic:
+									mat.metalness = 0.75;
+									mat.roughness = 1 - 0.65;
+								case VeryMetallic:
+									mat.metalness = 1;
+									mat.roughness = 1 - 0.5;
+								case DarkMetallic:
+									mat.metalness = 1;
+									mat.roughness = 1 - 0.65;
+								case BrightMetallic:
+									mat.metalness = 0.85;
+									mat.roughness = 1 - 0.2;
+								case TransparentGlossy | VeryTransparentGlossy:
+									mat.metalness = 0;
+									mat.roughness = 1 - 0.75;
+								case TransparentGlossyMetallic:
+									mat.metalness = 0.5;
+									mat.roughness = 1 - 0.75;
+								case Plastic:
+									mat.metalness = 0;
+									mat.roughness = 1 - 0.8;
+								case Unshiny:
+									mat.metalness = 0;
+									mat.roughness = 1 - 0;
+								case TransparentTexture:
+									mat.metalness = 0;
+									mat.roughness = 0.25;
+								case Particles | ParticlesBig:
+								// ???
 								default:
-									Image.filled(img.width, img.height, backing).blend(img.times(color));
 							}
-							matCache.get(matKey).texture = res;
+
+							matCache.set(matKey, mat);
+							if (part.textureTypes[0] != None || part.textureTypes[1] != None) {
+								try {
+									var texture1:Image = null;
+									if (FileSystem.exists("./res/Textures/" + Std.string(part.textureTypes[0]) + ".png")) {
+										var texture = Image.fromPng("./res/Textures/" + Std.string(part.textureTypes[0]) + ".png");
+										var color = part.states[0].textureColors[0];
+										color.afloat = part.states[0].textureProperties[0].strength;
+
+										texture1 = texture.colortexture(color, textureAlphaCap(part.textureTypes[0]));
+									} else if (TextureTypes.isProcedural(part.textureTypes[0])) {
+										var texture = Image.procedural(2048, 2048, part.textureTypes[0], part.states[0].textureProperties[0].param1,
+											part.states[0].textureProperties[0].param2, part.states[0].textureProperties[0].param3);
+										if (texture != null) {
+											texture1 = texture.colortexture(part.states[0].textureColors[0], textureAlphaCap(part.textureTypes[0]));
+										}
+									}
+									var texture2:Image = null;
+									if (FileSystem.exists(".res/Textures/" + Std.string(part.textureTypes[1]) + ".png")) {
+										var texture = Image.fromPng("./res/Textures/" + Std.string(part.textureTypes[1]) + ".png");
+										var color = part.states[0].textureColors[1];
+										color.afloat = part.states[0].textureProperties[1].strength;
+
+										texture2 = texture.colortexture(color, textureAlphaCap(part.textureTypes[1]));
+									} else if (TextureTypes.isProcedural(part.textureTypes[1])) {
+										var texture = Image.procedural(2048, 2048, part.textureTypes[1], part.states[0].textureProperties[1].param1,
+											part.states[0].textureProperties[1].param2, part.states[0].textureProperties[1].param3);
+										// Check for null because right now not everything is implemented
+										if (texture != null) {
+											texture2 = texture.colortexture(part.states[0].textureColors[1], textureAlphaCap(part.textureTypes[1]));
+										}
+									}
+									if (texture1 != null || texture2 != null) {
+										final colorTexture = Image.filled(2048, 2048, part.states[0].color);
+										var goodTex = colorTexture;
+										final res = applyAndMergeTexture(part.textureTypes[0], part.textureTypes[1], part.states[0].textureProperties[0],
+											part.states[0].textureProperties[1], texture1, texture2);
+										matCache.get(matKey).diffuse = Color.white;
+										matCache.get(matKey).texture = goodTex.blend(res);
+									}
+								} catch (e:Dynamic) {}
+							}
+
+							if (part.imageUrl != null) {
+								final url = readImageUrl(part.imageUrl, part.imageType);
+								final img = Image.fromUrl(url);
+								var color = part.states[0].color;
+								var backing = Color.black;
+								if ((part.isImagePasteScreen || part.states[0].color == Color.black) && !part.allowBlackImageBackgrounds) {
+									backing = Color.white;
+								}
+								final res = switch (part.materialType) {
+									case TransparentTexture | TransparentGlowTexture:
+										img.times(color);
+									default:
+										Image.filled(img.width, img.height, backing).blend(img.times(color));
+								}
+								matCache.get(matKey).texture = res;
+							}
+
+							mesh.material = matCache.get(matKey);
 						}
 
-						mesh.material = matCache.get(matKey);
-					}
+						if (part.autoContinuation != null && part.autoContinuation.count != 0) {
+							var otherPart = part.autoContinuation.fromPart;
+							// Just a guess, but I think from part means this part is the 2nd in sequence.
+							// So we calculate the different with this on lhs
+							var posDiff = part.states[0].position - otherPart.states[0].position;
+							var rotDiff = Quaternion.fromEuler(part.states[0].rotation) * Quaternion.fromEuler(otherPart.states[0].rotation).inverse();
+							var scaleDiff = part.states[0].scale - otherPart.states[0].scale;
+							// me when I'm lazy
+							var thisPos = part.states[0].position / 1;
+							var thisRot = Quaternion.fromEuler(part.states[0].rotation);
+							var thisScale = part.states[0].scale / 1;
 
-					if (part.autoContinuation != null && part.autoContinuation.count != 0) {
-						var otherPart = part.autoContinuation.fromPart;
-						// Just a guess, but I think from part means this part is the 2nd in sequence.
-						// So we calculate the different with this on lhs
-						var posDiff = part.states[0].position - otherPart.states[0].position;
-						var rotDiff = Quaternion.fromEuler(part.states[0].rotation) * Quaternion.fromEuler(otherPart.states[0].rotation).inverse();
-						var scaleDiff = part.states[0].scale - otherPart.states[0].scale;
-						// me when I'm lazy
-						var thisPos = part.states[0].position / 1;
-						var thisRot = Quaternion.fromEuler(part.states[0].rotation);
-						var thisScale = part.states[0].scale / 1;
+							for (_ in 0...part.autoContinuation.count) {
+								var newMesh = mesh.copy();
+								newMesh.scale = thisScale.abs();
+								newMesh.applyTransformations();
+								final autoNode = new Node([AMesh(newMesh)]);
 
-						for (_ in 0...part.autoContinuation.count) {
-							var newMesh = mesh.copy();
-							newMesh.scale = thisScale.abs();
-							newMesh.applyTransformations();
-							final autoNode = new Node([AMesh(newMesh)]);
-
-							thisPos += posDiff;
-							thisRot *= rotDiff;
-							thisScale += scaleDiff;
-							autoNode.rotation = thisRot;
-							autoNode.translation = thisPos / 1;
-							newMesh.scale = thisScale.abs();
-							newMesh.applyTransformations();
-							applyReflectionIfApplicable(node, part, newMesh);
-							node.children.push(ANode(autoNode));
+								thisPos += posDiff;
+								thisRot *= rotDiff;
+								thisScale += scaleDiff;
+								autoNode.rotation = thisRot;
+								autoNode.translation = thisPos / 1;
+								newMesh.scale = thisScale.abs();
+								newMesh.applyTransformations();
+								applyReflectionIfApplicable(node, part, newMesh);
+								node.children.push(ANode(autoNode));
+							}
 						}
-					}
-					mesh.scale = part.states[0].scale;
-					mesh.applyTransformations();
-					applyReflectionIfApplicable(node, part, mesh);
-					partNode.children.push(AMesh(mesh));
-				case Option.Some(TextMesh(font)):
-					if (part.text == null) {
-						trace("Text is null?");
-						continue;
-					}
-					// TODO: This isn't accurate. Font size isn't in pixels
-					font.resizeTo(65);
-					var align = Align.Left;
-					if (part.textAlignRight)
-						align = Align.Right;
-					if (part.textAlignCenter)
-						align = Align.Center;
-					final res = Text.write(part.text, align, font, part.textLineHeight);
-					
-					// Taken from https://learn.microsoft.com/en-us/windows/mixed-reality/develop/unity/text-in-unity
-					final dotsPerUnit = 2835;
-					// This ratio is to account for the size it's rendered at vs. actual size
-					final ratio = 12 / 65;
-					final fwidth = res.img.width * ratio;
-					final fheight = res.img.height * ratio;
-					final quad = Mesh.quad(fwidth, fheight);
-					final mat = new Material('text_${font.name}_${tn++}', part.states[0].color, 0, 0);
-					mat.texture = res.img;
-					switch (part.materialType) {
-						case Glow | Unshaded:
-							// Glow is similar to unshaded iirc
-							// For text it's basically full bright
-							mat.extensions.push(Unlit);
-						default: 
-							// : )
-					}
-					quad.material = mat;
-					final scaleV = part.states[0].scale;
-					final scale = Matrix4.scale(scaleV.x, scaleV.y, scaleV.z);
-					var anchorTranslation = Matrix4.identity();
-					switch (align) {
-						case Align.Right: 
-							anchorTranslation = Matrix4.translation(-fwidth, 0, 0);
-						case Align.Center:
-							anchorTranslation = Matrix4.translation(-fwidth / 2, 0, 0);
-						default:
-							// : )
-					}
-					anchorTranslation = Matrix4.translation(0, -fheight, 0) * anchorTranslation;
-					quad.specialTransform(scale * anchorTranslation);
-					partNode.children.push(AMesh(quad));
-				default:
-					// nothing
-					trace('Part $i is unrenderable');
-			}
+						mesh.scale = part.states[0].scale;
+						mesh.applyTransformations();
+						applyReflectionIfApplicable(node, part, mesh);
+						partNode.children.push(AMesh(mesh));
+					case Option.Some(TextMesh(font)):
+						if (part.text == null) {
+							trace("Text is null?");
+							continue;
+						}
+						// TODO: This isn't accurate. Font size isn't in pixels
+						font.resizeTo(65);
+						var align = Align.Left;
+						if (part.textAlignRight)
+							align = Align.Right;
+						if (part.textAlignCenter)
+							align = Align.Center;
+						final res = Text.write(part.text, align, font, part.textLineHeight);
+
+						// Taken from https://learn.microsoft.com/en-us/windows/mixed-reality/develop/unity/text-in-unity
+						final dotsPerUnit = 2835;
+						// This ratio is to account for the size it's rendered at vs. actual size
+						final ratio = 12 / 65;
+						final fwidth = res.img.width * ratio;
+						final fheight = res.img.height * ratio;
+						final quad = Mesh.quad(fwidth, fheight);
+						final mat = new Material('text_${font.name}_${tn++}', part.states[0].color, 0, 0);
+						mat.texture = res.img;
+						switch (part.materialType) {
+							case Glow | Unshaded:
+								// Glow is similar to unshaded iirc
+								// For text it's basically full bright
+								mat.extensions.push(Unlit);
+							default:
+								// : )
+						}
+						quad.material = mat;
+						final scaleV = part.states[0].scale;
+						final scale = Matrix4.scale(scaleV.x, scaleV.y, scaleV.z);
+						var anchorTranslation = Matrix4.identity();
+						switch (align) {
+							case Align.Right:
+								anchorTranslation = Matrix4.translation(-fwidth, 0, 0);
+							case Align.Center:
+								anchorTranslation = Matrix4.translation(-fwidth / 2, 0, 0);
+							default:
+								// : )
+						}
+						anchorTranslation = Matrix4.translation(0, -fheight, 0) * anchorTranslation;
+						quad.specialTransform(scale * anchorTranslation);
+						partNode.children.push(AMesh(quad));
+					default:
+						// nothing
+						trace('Part $i is unrenderable');
+				}
 			}
 			if (partNode.children.length > 0) {
 				node.children.push(ANode(partNode));
@@ -802,21 +803,22 @@ class ThingHandler {
 	static function modulateRotation(props:TexturePropertyMap<Float>):Void {
 		props.rotation = props.rotation * 360;
 	}
+
 	private static function applyReflectionIfApplicable(node:Node, part:ThingPart, mesh:Mesh):Void {
 		if (!part.reflectPartDepth && !part.reflectPartSideways && !part.reflectPartVertical)
 			return;
 		final rot = Quaternion.fromEuler(part.states[0].rotation);
 		final pos = part.states[0].position;
-		function reflectPart(reflectQuat: Quaternion -> Quaternion, reflectTrans: Vector3 -> Vector3) {
+		function reflectPart(reflectQuat:Quaternion->Quaternion, reflectTrans:Vector3->Vector3) {
 			final partNode = new Node([AMesh(mesh)]);
 			final goodRot = reflectQuat(rot);
 			final goodPos = reflectTrans(pos);
 			partNode.rotation = goodRot;
 			partNode.translation = goodPos;
 			node.children.push(ANode(partNode));
-		}	
+		}
 		if (part.reflectPartDepth) {
-			reflectPart(rot -> new Quaternion(-rot.x, -rot.y, rot.z, rot.w), trans -> new Vector3(trans.x, trans.y, -trans.z)); 
+			reflectPart(rot -> new Quaternion(-rot.x, -rot.y, rot.z, rot.w), trans -> new Vector3(trans.x, trans.y, -trans.z));
 		}
 		if (part.reflectPartSideways) {
 			reflectPart(rot -> new Quaternion(rot.x, -rot.y, -rot.z, rot.w), trans -> new Vector3(-trans.x, trans.y, trans.z));

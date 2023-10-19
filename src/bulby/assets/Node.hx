@@ -10,78 +10,81 @@ import bulby.assets.Mesh;
 import bulby.assets.gltf.schema.*;
 
 enum Child {
-	ANode(node: Node);
-	AMesh(mesh: Mesh);
+	ANode(node:Node);
+	AMesh(mesh:Mesh);
 }
 
 typedef GLTFOffsets = {
-	image: Int,
-	buffer: Int,
-	mats: Int,
-	part: Int,
-	mesh: Int
+	image:Int,
+	buffer:Int,
+	mats:Int,
+	part:Int,
+	mesh:Int
 }
+
 class Node {
 	public var children:Array<Child>;
-	public var name: String = "thing";
-	public var translation: Vector3 = Vector3.empty();
+	public var name:String = "thing";
+	public var translation:Vector3 = Vector3.empty();
 	public var rotation = Quaternion.identity();
-	public var scale: Vector3 = new Vector3(1, 1, 1);
-	public function new(children: Array<Child>) {
+	public var scale:Vector3 = new Vector3(1, 1, 1);
+
+	public function new(children:Array<Child>) {
 		this.children = children;
 	}
+
 	/*
-	  * Adds an extra transform to this whole group. Note that this will prevent reassigning transforms to children without breaking stuff
-	  */ 
+	 * Adds an extra transform to this whole group. Note that this will prevent reassigning transforms to children without breaking stuff
+	 */
 	/*
-	@:access(bulby.assets.Mesh)
-	@:deprecated
-	public function applyTransform(transform:  Matrix4) {
-		for (child in children) {
-			switch (child) {
-				case AMesh(mesh):
-					mesh.positions = mesh.displayPositions;
-					mesh.normals = mesh.displayNormals;
-					mesh.specialTransform(transform);
-				case ANode(node):
-					node.applyTransform(transform);
-			}
-		}	
-	}
-	*/
+		@:access(bulby.assets.Mesh)
+		@:deprecated
+		public function applyTransform(transform:  Matrix4) {
+			for (child in children) {
+				switch (child) {
+					case AMesh(mesh):
+						mesh.positions = mesh.displayPositions;
+						mesh.normals = mesh.displayNormals;
+						mesh.specialTransform(transform);
+					case ANode(node):
+						node.applyTransform(transform);
+				}
+			}	
+		}
+	 */
 	/*
 	 * Returns a mesh that is a merge of all children. Note scaling does NOT reset and is taken into account.
 	 */
 	/*
-	public function mergeAllChildren() {
-		var mesh = new Mesh([], [], [], [], false);
-		var totalP = 0;
-		var totalU = 0;
-		var totalN = 0;
-		for (child in children) {
-			var cChild = Cloner.clone(child);
+		public function mergeAllChildren() {
+			var mesh = new Mesh([], [], [], [], false);
+			var totalP = 0;
+			var totalU = 0;
+			var totalN = 0;
+			for (child in children) {
+				var cChild = Cloner.clone(child);
 
-			for (face in cChild.faces) {
-				for (vert in face) {
-					vert.normal += totalN;
-					vert.position += totalP;
-					vert.uv += totalU;
+				for (face in cChild.faces) {
+					for (vert in face) {
+						vert.normal += totalN;
+						vert.position += totalP;
+						vert.uv += totalU;
+					}
 				}
+				totalP += cChild.positions.length;
+				totalU += cChild.uvs.length;
+				totalN += cChild.normals.length;
+				mesh.faces = mesh.faces.concat(cChild.faces);
+				mesh.displayNormals = mesh.normals.concat(cChild.displayNormals);
+				mesh.displayPositions = mesh.positions.concat(cChild.displayPositions);
+				mesh.uvs = mesh.uvs.concat(cChild.uvs);
 			}
-			totalP += cChild.positions.length;
-			totalU += cChild.uvs.length;
-			totalN += cChild.normals.length;
-			mesh.faces = mesh.faces.concat(cChild.faces);
-			mesh.displayNormals = mesh.normals.concat(cChild.displayNormals);
-			mesh.displayPositions = mesh.positions.concat(cChild.displayPositions);
-			mesh.uvs = mesh.uvs.concat(cChild.uvs);
+			mesh.normals = mesh.displayNormals;
+			mesh.positions = mesh.displayPositions;
+			// mesh.optimize();
+			return mesh;
 		}
-		mesh.normals = mesh.displayNormals;
-		mesh.positions = mesh.displayPositions;
-		// mesh.optimize();
-		return mesh;
-	}
-	*/
+	 */
 	/*
 		public function toObj() {
 			var file = "# Export of Bulby's Anyland converter \nmtllib output.mtl\ng ALThing\n";
@@ -127,9 +130,16 @@ class Node {
 	public static function filteri<A>(it:Array<A>, f:(item:A, index:Int) -> Bool) {
 		return [for (i in 0...Lambda.count(it, (_) -> true)) if (f(it[i], i)) it[i]];
 	}
-	public function getGLTFData(?offsets: GLTFOffsets): {gltf: TGLTF, images: Array<Image>, buffer: Bytes} {
+
+	public function getGLTFData(?offsets:GLTFOffsets):{gltf:TGLTF, images:Array<Image>, buffer:Bytes} {
 		if (offsets == null) {
-			offsets = {image: 0, mats: 0, buffer: 0, part: 0, mesh: 0};
+			offsets = {
+				image: 0,
+				mats: 0,
+				buffer: 0,
+				part: 0,
+				mesh: 0
+			};
 		}
 		var gltf:TGLTF = {
 			asset: {
@@ -149,13 +159,23 @@ class Node {
 			],
 			textures: [],
 			meshes: [],
-			nodes: [{name: name, children: [], scale: this.scale.toArray(), rotation: this.rotation.toXYZW(), translation: this.translation.toArray()}],
-			scenes: [{
-				name: "Scene",
-				nodes: [0]
-			}]
+			nodes: [
+				{
+					name: name,
+					children: [],
+					scale: this.scale.toArray(),
+					rotation: this.rotation.toXYZW(),
+					translation: this.translation.toArray()
+				}
+			],
+			scenes: [
+				{
+					name: "Scene",
+					nodes: [0]
+				}
+			]
 		};
-		final images: Array<Image> = [];
+		final images:Array<Image> = [];
 		var buf = new BytesBuffer();
 		var usedMats:Map<String, Int> = [];
 		var mats:Array<TMaterial> = [];
@@ -169,10 +189,16 @@ class Node {
 		var ms = offsets.mesh;
 		for (child in this.children) {
 			switch (child) {
-				case ANode(node): 
-					final data = node.getGLTFData({image: offsets.image + images.length, buffer: offsets.buffer + bufferViews.length, mats: offsets.mats + mats.length, part: p + 1, mesh: ms});
+				case ANode(node):
+					final data = node.getGLTFData({
+						image: offsets.image + images.length,
+						buffer: offsets.buffer + bufferViews.length,
+						mats: offsets.mats + mats.length,
+						part: p + 1,
+						mesh: ms
+					});
 					for (a in data.gltf.accessors) {
-						accessors.push(a);	
+						accessors.push(a);
 					}
 					for (view in data.gltf.bufferViews) {
 						if (view.byteOffset != null) {
@@ -186,7 +212,6 @@ class Node {
 					buf.addBytes(data.buffer, 0, data.buffer.length);
 					for (mesh in data.gltf.meshes) {
 						gltf.meshes.push(mesh);
-
 					}
 					final nodeLength = gltf.nodes.length;
 					for (n in 0...data.gltf.nodes.length) {
@@ -218,7 +243,7 @@ class Node {
 								metallicFactor: 0
 							},
 							// don't waste time on blending if it's opaque
-							alphaMode: (compatMesh.material.diffuse.a == 255  && compatMesh.material.texture == null)? OPAQUE : BLEND,
+							alphaMode: (compatMesh.material.diffuse.a == 255 && compatMesh.material.texture == null) ? OPAQUE : BLEND,
 							emissiveFactor: compatMesh.material.emissive.asVector4().asArray().slice(0, 3)
 						};
 
@@ -249,7 +274,7 @@ class Node {
 										mat.extensions.KHR_materials_clearcoat.clearcoatTexture = {
 											index: t++
 										};
-							 		}
+									}
 									if (ccRTex != null) {
 										images.push(ccRTex);
 										gltf.textures.push({
@@ -501,7 +526,6 @@ class Node {
 					gltf.nodes[0].children.push(p + 1);
 					p++;
 					ms++;
-					
 			}
 		}
 		gltf.accessors = accessors;
@@ -511,6 +535,7 @@ class Node {
 		gltf.scene = 0;
 		return {gltf: gltf, buffer: buf.getBytes(), images: images};
 	}
+
 	public function toGltf() {
 		final data = getGLTFData();
 		final gltf = data.gltf;
@@ -582,7 +607,6 @@ class GLTFMesh {
 	public var material:Material;
 	public var verticies:Array<Vertex>;
 	public var faces:Array<Array<Int>>;
-
 
 	public function new(material:Material, verticies:Array<Vertex>, faces:Array<Array<Int>>):Void {
 		this.material = material;

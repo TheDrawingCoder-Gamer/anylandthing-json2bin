@@ -262,7 +262,7 @@ enum abstract ThingPartBase(UInt) from UInt to UInt {
 	var Icosidodecahedron;
 	var Octahedron;
 
-	public function isText(): Bool {
+	public function isText():Bool {
 		return (this >= TextOrbitron && this <= TextViafont) || (this >= TextArialBold && this <= TextGillSans);
 	}
 }

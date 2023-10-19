@@ -270,40 +270,51 @@ class Image {
 
 @:allow(bulby.assets)
 class Tile {
-	var innerImg: Image;
+	var innerImg:Image;
 
+	public var x(default, null):Float;
+	public var y(default, null):Float;
 
-	public var x(default, null): Float;
-	public var y(default, null): Float;
-	
-	public var width(default, null): Float;
-	public var height(default, null): Float;
+	public var width(default, null):Float;
+	public var height(default, null):Float;
 
-	public var twidth(default, null): Float;
-	public var theight(default, null): Float;
+	public var twidth(default, null):Float;
+	public var theight(default, null):Float;
 
-	public var dx: Float;
-	public var dy: Float;
+	public var dx:Float;
+	public var dy:Float;
 
-	public var ix(get, never): Int;
-	inline function get_ix() return Math.floor(x);
+	public var ix(get, never):Int;
 
-	public var iy(get, never): Int;
-	inline function get_iy() return Math.floor(y);
+	inline function get_ix()
+		return Math.floor(x);
 
-	public var iwidth(get, never): Int;
-	inline function get_iwidth() return Math.ceil(width + x) - ix;
+	public var iy(get, never):Int;
 
-	public var iheight(get, never): Int;
-	inline function get_iheight() return Math.ceil(height + y) - iy;
+	inline function get_iy()
+		return Math.floor(y);
 
-	public var itwidth(get, never): Int;
-	inline function get_itwidth() return Math.ceil(twidth);
+	public var iwidth(get, never):Int;
 
-	public var itheight(get, never): Int;
-	inline function get_itheight() return Math.ceil(theight);
+	inline function get_iwidth()
+		return Math.ceil(width + x) - ix;
 
-	function new(img: Image, x: Float, y: Float, w: Float, h: Float, dx: Float = 0, dy: Float = 0) {
+	public var iheight(get, never):Int;
+
+	inline function get_iheight()
+		return Math.ceil(height + y) - iy;
+
+	public var itwidth(get, never):Int;
+
+	inline function get_itwidth()
+		return Math.ceil(twidth);
+
+	public var itheight(get, never):Int;
+
+	inline function get_itheight()
+		return Math.ceil(theight);
+
+	function new(img:Image, x:Float, y:Float, w:Float, h:Float, dx:Float = 0, dy:Float = 0) {
 		this.innerImg = img;
 		this.x = x;
 		this.y = y;
@@ -313,29 +324,36 @@ class Tile {
 		this.theight = h;
 		this.dx = dx;
 		this.dy = dy;
-		if (img != null) setTexture(img);
+		if (img != null)
+			setTexture(img);
 	}
-	function setTexture(img: Image) {
+
+	function setTexture(img:Image) {
 		this.innerImg = img;
 	}
-	public static function fromImage(img: Image): Tile {
+
+	public static function fromImage(img:Image):Tile {
 		return new Tile(img, 0, 0, img.width, img.height);
 	}
-	public function setPosition(x: Float, y: Float): Void {
+
+	public function setPosition(x:Float, y:Float):Void {
 		this.x = x;
 		this.y = y;
 	}
-	public function setSize(w: Float, h: Float): Void {
+
+	public function setSize(w:Float, h:Float):Void {
 		this.width = w;
 		this.height = h;
 		this.twidth = w;
 		this.theight = h;
 	}
-	public function resizeTo(w: Float, h: Float): Void {
+
+	public function resizeTo(w:Float, h:Float):Void {
 		this.twidth = w;
 		this.theight = h;
 	}
-	public function extract(): Image {
+
+	public function extract():Image {
 		final olddx = this.dx;
 		final olddy = this.dy;
 		this.dy = 0;
@@ -346,7 +364,8 @@ class Tile {
 		this.dy = olddy;
 		return image;
 	}
-	public function draw(tx: Float, ty: Float, on: Image): Void {
+
+	public function draw(tx:Float, ty:Float, on:Image):Void {
 		final rx = Math.floor(dx + tx);
 		final ry = Math.floor(dy + ty);
 		final wratio = width / twidth;
@@ -357,22 +376,25 @@ class Tile {
 			for (x in 0...itwidth) {
 				final sx = Math.floor(x * wratio) + this.ix;
 				final fx = x + rx;
-				
+
 				final p1 = on.getPixel(fx, fy);
 				final p2 = this.innerImg.getPixel(sx, sy);
 				on.setPixel(fx, fy, Color.blend(p1, p2));
 			}
 		}
 	}
-	public function clone(): Tile {
-		final t =new Tile(null, x, y, width, height, dx, dy);
+
+	public function clone():Tile {
+		final t = new Tile(null, x, y, width, height, dx, dy);
 		t.innerImg = innerImg;
 		return t;
 	}
-	public function dispose(): Void {
+
+	public function dispose():Void {
 		this.innerImg = null;
 	}
-	public function sub(x: Float, y: Float, w: Float, h: Float, dx = 0., dy = 0.): Tile {
+
+	public function sub(x:Float, y:Float, w:Float, h:Float, dx = 0., dy = 0.):Tile {
 		return new Tile(innerImg, this.x + x, this.y + y, w, h, dx, dy);
 	}
 }

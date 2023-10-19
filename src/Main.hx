@@ -11,6 +11,7 @@ import thinghandler.ThingHandler;
 import sys.io.File;
 import Sys.println as println;
 import thinghandler.Thing;
+
 using StringTools;
 
 var debug = false;
@@ -26,7 +27,7 @@ function main() {
 	var cdnArea = null;
 	var cdnAreaData = null;
 	var thingFolder = null;
-	var mainID: Null<String> = null;
+	var mainID:Null<String> = null;
 	var i = 0;
 	if (args.length < 2) {
 		println("Not enough args.");
@@ -44,7 +45,7 @@ function main() {
 		println("-id [name]: Required with inFolder. The main thing to be rendered.");
 		println("-debug: Output extra files/print more to commandline");
 		Sys.exit(1);
-	} 
+	}
 
 	while (i < args.length) {
 		final c = i++;
@@ -72,7 +73,7 @@ function main() {
 				mainID = args[i++];
 		}
 	}
-	var mesh: bulby.assets.Node = null;
+	var mesh:bulby.assets.Node = null;
 	if (thingFolder != null || input != null) {
 		println("Importing Thing...");
 		var things = new Map<String, Thing>();
@@ -101,14 +102,13 @@ function main() {
 			Sys.exit(1);
 		}
 		println("Importing Area...");
-		final areaCDN: CDNArea = Json.parse(File.getContent(cdnArea));
-		final areaDataCDN: CDNAreaData = Json.parse(File.getContent(cdnAreaData));
+		final areaCDN:CDNArea = Json.parse(File.getContent(cdnArea));
+		final areaDataCDN:CDNAreaData = Json.parse(File.getContent(cdnAreaData));
 		final area = Area.fromCDN(areaDataCDN, areaCDN);
 		println("Done!");
 		println("Generating a Mesh...");
 		mesh = area.generateMesh();
 		println("Done!");
-
 	}
 	if (mesh == null) {
 		// Is this an error state?
@@ -140,15 +140,15 @@ function main() {
 		File.saveContent(outGltf, Json.stringify(gltf));
 	println("Done!");
 	/*
-	if (debug) {
-		println("Combining two png images...");
-		var bottom = Image.fromPng("./bottom_layer_test.png");
-		var top = Image.fromPng("./top_layer_test.png");
-		var combined = bottom.blend(top);
-		combined.writePng(output + "_combined.png");
-		println("Done!");
-	}
-	*/
+		if (debug) {
+			println("Combining two png images...");
+			var bottom = Image.fromPng("./bottom_layer_test.png");
+			var top = Image.fromPng("./top_layer_test.png");
+			var combined = bottom.blend(top);
+			combined.writePng(output + "_combined.png");
+			println("Done!");
+		}
+	 */
 	if (debug) {
 		println("Writing text...");
 		final font = FontParser.parseFont("18");
