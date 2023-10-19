@@ -1,5 +1,8 @@
 package;
 
+import area.Area;
+import area.CDNArea;
+import sys.FileSystem;
 import bulby.assets.Text;
 import bulby.assets.FontParser;
 import haxe.io.Bytes;
@@ -7,20 +10,21 @@ import haxe.Json;
 import thinghandler.ThingHandler;
 import sys.io.File;
 import Sys.println as println;
-
+import thinghandler.Thing;
 using StringTools;
 
 var debug = false;
 
 function main() {
 	var args = Sys.args();
-	var input = "";
+	var input = null;
 	var outGlb = null;
 	var outGltf = null;
 	var doGltf = false;
 	var doGlb = false;
 	var exportedAreaFolder = null;
-	var cdnAreaFolder = null;
+	var cdnArea = null;
+	var cdnAreaData = null;
 	var thingFolder = null;
 	var mainID: Null<String> = null;
 	var i = 0;
@@ -34,7 +38,8 @@ function main() {
 		println("-gltf [file]: Generate gltf file");
 		println("-glb [file]: Generate glb file");
 		println("-areaExported [folder]: Import an area exported from anyland");
-		println("-areaCDN [folder]: Import an area dumped from the CDN");
+		println("-areaCDN [area]: Import an area dumped from the CDN; use -areaCDNData as well");
+		println("-areaCDNData [areadata]: Import an area dumped from the CDN.");
 		println("-inFolder [folder]: Import a thing that contains subthings");
 		println("-id [name]: Required with inFolder. The main thing to be rendered.");
 		println("-debug: Output extra files/print more to commandline");
@@ -58,23 +63,58 @@ function main() {
 				exportedAreaFolder = args[i++];
 				throw "Exported areas aren't implemented yet";
 			case "-areaCDN":
-				cdnAreaFolder = args[i++];
-				throw "CDN Areas aren't implemented yet";
+				cdnArea = args[i++];
+			case "-areaCDNData":
+				cdnAreaData = args[i++];
 			case "-inFolder":
 				thingFolder = args[i++];
-				throw "Things with subthings aren't implemented yet";
 			case "-id":
 				mainID = args[i++];
-				throw "Things with subthings aren't implemented yet";
 		}
 	}
-	println("Importing Thing...");
-	var thing = ThingHandler.importJson(File.getContent(input));
-	println("Done!");
-	// File.saveBytes("output.bin", ThingHandler.exportBytes(thing));
-	println("Generating a Mesh...");
-	var mesh = ThingHandler.generateMeshFromThing(thing);
-	println("Done!");
+	var mesh: bulby.assets.Node = null;
+	if (thingFolder != null || input != null) {
+		println("Importing Thing...");
+		var things = new Map<String, Thing>();
+		var name = "this";
+		if (thingFolder != null) {
+			for (file in FileSystem.readDirectory(thingFolder)) {
+				final path = thingFolder + '/' + file;
+				if (!FileSystem.isDirectory(path)) {
+					things.set(file, ThingHandler.importJson(File.getContent(path)));
+				}
+			}
+			if (mainID == null)
+				throw "Main ID is required for thing folders";
+			name = mainID;
+		} else if (input != null) {
+			things.set("this", ThingHandler.importJson(File.getContent(input)));
+		}
+		println("Done!");
+		println("Generating a Mesh...");
+		mesh = ThingHandler.generateMeshFromThings(things, name);
+		println("Done!");
+	}
+	if (cdnArea != null && cdnAreaData != null) {
+		if (mesh != null) {
+			println("Error, expected only 1 mode");
+			Sys.exit(1);
+		}
+		println("Importing Area...");
+		final areaCDN: CDNArea = Json.parse(File.getContent(cdnArea));
+		final areaDataCDN: CDNAreaData = Json.parse(File.getContent(cdnAreaData));
+		final area = Area.fromCDN(areaDataCDN, areaCDN);
+		println("Done!");
+		println("Generating a Mesh...");
+		mesh = area.generateMesh();
+		println("Done!");
+
+	}
+	if (mesh == null) {
+		// Is this an error state?
+		println("No mesh was generated. Exiting...");
+		Sys.exit(0);
+	}
 	// var export = mesh.toObj();
 
 	// imagine using obj file when you can just use gltf

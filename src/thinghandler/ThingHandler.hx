@@ -436,18 +436,46 @@ class ThingHandler {
 			}
 		}
 	}
-
+	public static function generateMeshFromThing(thing: Thing): Node {
+		return generateMeshFromThings(["this" => thing], "this");
+	}
 	/**
 	 * Generates an Obj File from a Thing. Returns Node, that contains all meshes
 	 * @param thing 
 	 * @return Node
 	 */
-	public static function generateMeshFromThing(thing:Thing):Node {
-		var node = new Node([]);
+	public static function generateMeshFromThings(things: Map<String, Thing>, main: String):Node {
+		var node = new Node(new Array<Child>());
 		var matCache:Map<String, Material> = new Map<String, Material>();
 		var i = 0;
 		var tn = 0;
+		final thing = things.get(main);
 		for (part in thing.parts) {
+			if (part.includedSubThings != null) {
+				for (includedInfo in part.includedSubThings) {
+					final incThing = things.get(includedInfo.thingId);
+					if (incThing == null) {
+						trace("Missing an included subthing!");
+						continue;
+					}
+					// biconditional
+					if ((part.partInvisible && includedInfo.invertInvisible) || (!part.partInvisible && !includedInfo.invertInvisible)) {
+						// if part is visible...	
+						final rendered = generateMeshFromThing(incThing);
+						final partPos = part.states[0].position;
+						final mTransPart = Matrix4.translation(partPos.x, partPos.y, partPos.z);
+						final mTrans = Matrix4.translation(includedInfo.pos.x, includedInfo.pos.y, includedInfo.pos.z);
+						final mRotPart = Quaternion.fromEuler(part.states[0].rotation).matrix();
+						final mRot = Quaternion.fromEuler(includedInfo.rot).matrix();
+						// OK so a subthing is like a child, with this part being the root. 
+						final mSelf = mTrans * mRot;
+						final mPart = mTransPart * mRotPart;
+						// This feels wrong. Oh well!
+						rendered.applyTransform(mPart * mSelf);
+					}
+					
+				}
+			}
 			if (part.materialType == InvisibleWhenDone || part.partInvisible)
 				continue;
 			switch (getBaseMesh(part)) {
@@ -543,7 +571,7 @@ class ThingHandler {
 								}
 							} catch (e:Dynamic) {}
 						}
-
+						
 						if (part.imageUrl != null) {
 							final url = readImageUrl(part.imageUrl, part.imageType);
 							final img = Image.fromUrl(url);
@@ -586,7 +614,7 @@ class ThingHandler {
 							newMesh.scale = thisScale.abs();
 							applyReflectionIfApplicable(node, part, newMesh);
 							newMesh.applyTransformations();
-							node.children.push(newMesh);
+							node.children.push(AMesh(newMesh));
 						}
 					}
 
@@ -595,7 +623,7 @@ class ThingHandler {
 					mesh.scale = part.states[0].scale;
 					applyReflectionIfApplicable(node, part, mesh);
 					mesh.applyTransformations();
-					node.children.push(mesh);
+					node.children.push(AMesh(mesh));
 				case Option.Some(TextMesh(font)):
 					if (part.text == null) {
 						trace("Text is null?");
@@ -644,11 +672,12 @@ class ThingHandler {
 					}
 					anchorTranslation = Matrix4.translation(0, -fheight, 0) * anchorTranslation;
 					quad.specialTransform(translation * rotation * scale * anchorTranslation);
-					node.children.push(quad);
+					node.children.push(AMesh(quad));
 				default:
 					// nothing
 					trace('Part $i is unrenderable');
 			}
+		
 			i++;
 		}
 		return node;
@@ -784,7 +813,7 @@ class ThingHandler {
 			newMesh.rotation = goodRot;
 			newMesh.translation.z = -newMesh.translation.z;
 			newMesh.applyTransformations();
-			node.children.push(newMesh);
+			node.children.push(AMesh(newMesh));
 		}
 		if (part.reflectPartSideways) {
 			final newMesh = mesh.copy();
@@ -793,7 +822,7 @@ class ThingHandler {
 			newMesh.rotation = goodRot;
 			newMesh.translation.x = -newMesh.translation.x;
 			newMesh.applyTransformations();
-			node.children.push(newMesh);
+			node.children.push(AMesh(newMesh));
 		}
 		if (part.reflectPartVertical) {
 			final newMesh = mesh.copy();
@@ -802,7 +831,7 @@ class ThingHandler {
 			newMesh.rotation = goodRot;
 			newMesh.translation.y = -newMesh.translation.y;
 			newMesh.applyTransformations();
-			node.children.push(newMesh);
+			node.children.push(AMesh(newMesh));
 		}
 	}
 

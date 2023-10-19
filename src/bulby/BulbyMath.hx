@@ -155,6 +155,15 @@ abstract Vector3(Vector3Raw) from Vector3Raw to Vector3Raw {
 	}
 }
 
+abstract Vector3FromUnity(Vector3) to Vector3 {
+	public function new(x: Float, y: Float, z: Float) {
+		this = new Vector3(x, y, z);
+	}
+	@:from static public function obj(x: Vector3Raw) {
+		return new Vector3FromUnity(-x.x, x.y, x.z);
+	}
+}
+
 private typedef Vector4Raw = {
 	var x:Float;
 	var y:Float;
@@ -577,5 +586,14 @@ abstract Quaternion(Vector4) {
 			    0                            , 0                            , 0                            , 1
 				
 				);
+	}
+}
+
+abstract QuaternionFromUnity(Quaternion) to Quaternion {
+	public function new (x: Float, y: Float, z: Float, w: Float) {
+		this = new Quaternion(x, y, z, w);
+	}
+	@:from static public function obj(x: Vector3Raw) {
+		return cast Quaternion.fromUnityEuler(x);
 	}
 }
