@@ -492,7 +492,10 @@ abstract Quaternion(Vector4) {
 			w: w
 		};
 	}
-
+	
+	public function toXYZW() {
+		return [this.x, this.y, this.z, this.w];
+	}
 	// stolen from:
 	// https://www.mathworks.com/matlabcentral/fileexchange/6335-euler-angles-to-quaternion-conversion-for-six-basic-sequence-of-rotations
 	public static function fromEuler(euler:Vector3) {

@@ -47,10 +47,9 @@ class Area {
 		final node = new Node([]);
 		for (plc in placements) {
 			final mesh = ThingHandler.generateMeshFromThings(things, plc.tid);
-			final mTrans = Matrix4.translation(plc.pos.x, plc.pos.y, plc.pos.z);
-			final mRot = plc.rot.matrix();
-			final mScale = Matrix4.scale(plc.scale, plc.scale, plc.scale);
-			mesh.applyTransform(mTrans * mRot * mScale);
+			mesh.translation += plc.pos;
+			mesh.scale += new Vector3(plc.scale, plc.scale, plc.scale);
+			mesh.rotation = plc.rot * mesh.rotation;
 			node.children.push(ANode(mesh));
 		}
 		return node;

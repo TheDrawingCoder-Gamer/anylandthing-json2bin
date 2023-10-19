@@ -445,12 +445,18 @@ class ThingHandler {
 	 * @return Node
 	 */
 	public static function generateMeshFromThings(things: Map<String, Thing>, main: String):Node {
-		var node = new Node(new Array<Child>());
+		var node = new Node([]);
 		var matCache:Map<String, Material> = new Map<String, Material>();
 		var i = 0;
 		var tn = 0;
 		final thing = things.get(main);
+		node.name = thing.givenName;
 		for (part in thing.parts) {
+			final partNode = new Node([]);
+			partNode.name = "thingpart" + i;
+			partNode.rotation = Quaternion.fromEuler(part.states[0].rotation);
+			partNode.translation = part.states[0].position;
+			// partNode.scale = part.states[0].scale;
 			if (part.includedSubThings != null) {
 				for (includedInfo in part.includedSubThings) {
 					final incThing = things.get(includedInfo.thingId);
@@ -462,22 +468,16 @@ class ThingHandler {
 					if ((part.partInvisible && includedInfo.invertInvisible) || (!part.partInvisible && !includedInfo.invertInvisible)) {
 						// if part is visible...	
 						final rendered = generateMeshFromThing(incThing);
-						final partPos = part.states[0].position;
-						final mTransPart = Matrix4.translation(partPos.x, partPos.y, partPos.z);
-						final mTrans = Matrix4.translation(includedInfo.pos.x, includedInfo.pos.y, includedInfo.pos.z);
-						final mRotPart = Quaternion.fromEuler(part.states[0].rotation).matrix();
-						final mRot = Quaternion.fromEuler(includedInfo.rot).matrix();
 						// OK so a subthing is like a child, with this part being the root. 
-						final mSelf = mTrans * mRot;
-						final mPart = mTransPart * mRotPart;
-						// This feels wrong. Oh well!
-						rendered.applyTransform(mPart * mSelf);
+						rendered.translation = includedInfo.pos;
+						rendered.rotation = Quaternion.fromEuler(includedInfo.rot);
+						partNode.children.push(ANode(rendered));
 					}
+
 					
 				}
 			}
-			if (part.materialType == InvisibleWhenDone || part.partInvisible)
-				continue;
+			if (!(part.materialType == InvisibleWhenDone || part.partInvisible)) {
 			switch (getBaseMesh(part)) {
 				case Option.Some(NormalMesh(mesh)):
 					var matKey = '_${part.states[0].color.hex()}_${Std.string(part.materialType)}_${part.imageUrl == null ? "NoURL" : part.imageUrl}_${part.textureTypes[0]}_${part.textureTypes[1]}_';
@@ -605,25 +605,26 @@ class ThingHandler {
 						var thisScale = part.states[0].scale / 1;
 
 						for (_ in 0...part.autoContinuation.count) {
+							var newMesh = mesh.copy();
+							newMesh.scale = thisScale.abs();
+							newMesh.applyTransformations();
+							final autoNode = new Node([AMesh(newMesh)]);
+
 							thisPos += posDiff;
 							thisRot *= rotDiff;
 							thisScale += scaleDiff;
-							var newMesh = mesh.copy();
-							newMesh.rotation = thisRot;
-							newMesh.translation = thisPos / 1;
+							autoNode.rotation = thisRot;
+							autoNode.translation = thisPos / 1;
 							newMesh.scale = thisScale.abs();
-							applyReflectionIfApplicable(node, part, newMesh);
 							newMesh.applyTransformations();
-							node.children.push(AMesh(newMesh));
+							applyReflectionIfApplicable(node, part, newMesh);
+							node.children.push(ANode(autoNode));
 						}
 					}
-
-					mesh.translation = part.states[0].position;
-					mesh.rotation = Quaternion.fromEuler(part.states[0].rotation);
 					mesh.scale = part.states[0].scale;
-					applyReflectionIfApplicable(node, part, mesh);
 					mesh.applyTransformations();
-					node.children.push(AMesh(mesh));
+					applyReflectionIfApplicable(node, part, mesh);
+					partNode.children.push(AMesh(mesh));
 				case Option.Some(TextMesh(font)):
 					if (part.text == null) {
 						trace("Text is null?");
@@ -659,9 +660,6 @@ class ThingHandler {
 					final scaleV = part.states[0].scale;
 					final scale = Matrix4.scale(scaleV.x, scaleV.y, scaleV.z);
 					var anchorTranslation = Matrix4.identity();
-					final tPos = part.states[0].position;
-					final translation = Matrix4.translation(tPos.x, tPos.y, tPos.z);
-					final rotation = Quaternion.fromEuler(part.states[0].rotation).matrix();
 					switch (align) {
 						case Align.Right: 
 							anchorTranslation = Matrix4.translation(-fwidth, 0, 0);
@@ -671,13 +669,16 @@ class ThingHandler {
 							// : )
 					}
 					anchorTranslation = Matrix4.translation(0, -fheight, 0) * anchorTranslation;
-					quad.specialTransform(translation * rotation * scale * anchorTranslation);
-					node.children.push(AMesh(quad));
+					quad.specialTransform(scale * anchorTranslation);
+					partNode.children.push(AMesh(quad));
 				default:
 					// nothing
 					trace('Part $i is unrenderable');
 			}
-		
+			}
+			if (partNode.children.length > 0) {
+				node.children.push(ANode(partNode));
+			}
 			i++;
 		}
 		return node;
@@ -801,37 +802,27 @@ class ThingHandler {
 	static function modulateRotation(props:TexturePropertyMap<Float>):Void {
 		props.rotation = props.rotation * 360;
 	}
-
 	private static function applyReflectionIfApplicable(node:Node, part:ThingPart, mesh:Mesh):Void {
 		if (!part.reflectPartDepth && !part.reflectPartSideways && !part.reflectPartVertical)
 			return;
-		final rot = mesh.rotation;
+		final rot = Quaternion.fromEuler(part.states[0].rotation);
+		final pos = part.states[0].position;
+		function reflectPart(reflectQuat: Quaternion -> Quaternion, reflectTrans: Vector3 -> Vector3) {
+			final partNode = new Node([AMesh(mesh)]);
+			final goodRot = reflectQuat(rot);
+			final goodPos = reflectTrans(pos);
+			partNode.rotation = goodRot;
+			partNode.translation = goodPos;
+			node.children.push(ANode(partNode));
+		}	
 		if (part.reflectPartDepth) {
-			final newMesh = mesh.copy();
-			// Reflect across XY Plane
-			final goodRot = new Quaternion(-rot.x, -rot.y, rot.z, rot.w);
-			newMesh.rotation = goodRot;
-			newMesh.translation.z = -newMesh.translation.z;
-			newMesh.applyTransformations();
-			node.children.push(AMesh(newMesh));
+			reflectPart(rot -> new Quaternion(-rot.x, -rot.y, rot.z, rot.w), trans -> new Vector3(trans.x, trans.y, -trans.z)); 
 		}
 		if (part.reflectPartSideways) {
-			final newMesh = mesh.copy();
-			// Reflect across YZ Plane
-			final goodRot = new Quaternion(rot.x, -rot.y, -rot.z, rot.w);
-			newMesh.rotation = goodRot;
-			newMesh.translation.x = -newMesh.translation.x;
-			newMesh.applyTransformations();
-			node.children.push(AMesh(newMesh));
+			reflectPart(rot -> new Quaternion(rot.x, -rot.y, -rot.z, rot.w), trans -> new Vector3(-trans.x, trans.y, trans.z));
 		}
 		if (part.reflectPartVertical) {
-			final newMesh = mesh.copy();
-			// Reflect across XZ Plane
-			final goodRot = new Quaternion(-rot.x, rot.y, -rot.z, rot.w);
-			newMesh.rotation = goodRot;
-			newMesh.translation.y = -newMesh.translation.y;
-			newMesh.applyTransformations();
-			node.children.push(AMesh(newMesh));
+			reflectPart(rot -> new Quaternion(-rot.x, rot.y, -rot.z, rot.w), trans -> new Vector3(trans.x, -trans.y, trans.z));
 		}
 	}
 

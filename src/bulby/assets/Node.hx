@@ -24,13 +24,18 @@ typedef GLTFOffsets = {
 class Node {
 	public var children:Array<Child>;
 	public var name: String = "thing";
+	public var translation: Vector3 = Vector3.empty();
+	public var rotation = Quaternion.identity();
+	public var scale: Vector3 = new Vector3(1, 1, 1);
 	public function new(children: Array<Child>) {
 		this.children = children;
 	}
-	/**
+	/*
 	  * Adds an extra transform to this whole group. Note that this will prevent reassigning transforms to children without breaking stuff
 	  */ 
+	/*
 	@:access(bulby.assets.Mesh)
+	@:deprecated
 	public function applyTransform(transform:  Matrix4) {
 		for (child in children) {
 			switch (child) {
@@ -43,7 +48,8 @@ class Node {
 			}
 		}	
 	}
-	/**
+	*/
+	/*
 	 * Returns a mesh that is a merge of all children. Note scaling does NOT reset and is taken into account.
 	 */
 	/*
@@ -143,7 +149,7 @@ class Node {
 			],
 			textures: [],
 			meshes: [],
-			nodes: [{name: name, children: []}],
+			nodes: [{name: name, children: [], scale: this.scale.toArray(), rotation: this.rotation.toXYZW(), translation: this.translation.toArray()}],
 			scenes: [{
 				name: "Scene",
 				nodes: [0]
@@ -164,7 +170,7 @@ class Node {
 		for (child in this.children) {
 			switch (child) {
 				case ANode(node): 
-					final data = node.getGLTFData({image: images.length, buffer: bufferViews.length, mats: mats.length, part: p + 1, mesh: ms});
+					final data = node.getGLTFData({image: offsets.image + images.length, buffer: offsets.buffer + bufferViews.length, mats: offsets.mats + mats.length, part: p + 1, mesh: ms});
 					for (a in data.gltf.accessors) {
 						accessors.push(a);	
 					}
@@ -195,7 +201,8 @@ class Node {
 						mats.push(mat);
 					}
 					ms += data.gltf.meshes.length;
-					gltf.nodes[0].children.push(nodeLength);
+					// ???
+					gltf.nodes[0].children.push(offsets.part + nodeLength);
 					for (image in data.images) {
 						images.push(image);
 					}
@@ -500,31 +507,7 @@ class Node {
 		gltf.accessors = accessors;
 		gltf.bufferViews = bufferViews;
 		gltf.materials = mats;
-		/*
-		if (seperate) {
-			var root = gltf.meshes.length;
-			var i = 0;
-			for (prim in primitives) {
-				gltf.meshes.push({name: "output" + (root + i++), primitives: [prim]});
-			}
-			for (n in root...i) { 
-				gltf.nodes.push({name: name + "_part" + n, mesh: n});
 
-			}
-
-		} else {
-			gltf.meshes.push(
-				{
-					name: "output",
-					primitives: primitives
-				}
-				);
-			for (mesh in 0...gltf.meshes.length) {
-				gltf.nodes.push({name: name + "_mesh" + mesh, mesh: mesh});
-			}
-
-		}
-		*/
 		gltf.scene = 0;
 		return {gltf: gltf, buffer: buf.getBytes(), images: images};
 	}
@@ -599,6 +582,7 @@ class GLTFMesh {
 	public var material:Material;
 	public var verticies:Array<Vertex>;
 	public var faces:Array<Array<Int>>;
+
 
 	public function new(material:Material, verticies:Array<Vertex>, faces:Array<Array<Int>>):Void {
 		this.material = material;
