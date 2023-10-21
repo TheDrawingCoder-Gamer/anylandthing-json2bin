@@ -211,7 +211,7 @@ typedef PlacedSubthingJson = {
 }
 
 class ThingHandler {
-	public static function importJson(json:String, keepPartsSeperate:Bool = false, isForPlacement:Bool = false) {
+	public static function importJson(json:String) {
 		var data:AnylandThingJson = Json.parse(json);
 		var thing = new Thing();
 		thing.givenName = data.n != null ? data.n : Thing.defaultName;
@@ -616,7 +616,7 @@ class ThingHandler {
 								thisScale += scaleDiff;
 								autoNode.rotation = thisRot;
 								autoNode.translation = thisPos / 1;
-								newMesh.scale = thisScale.abs();
+								newMesh.scale = thisScale;
 								newMesh.applyTransformations();
 								applyReflectionIfApplicable(node, part, newMesh);
 								node.children.push(ANode(autoNode));
@@ -631,6 +631,10 @@ class ThingHandler {
 							trace("Text is null?");
 							continue;
 						}
+						if (font == null) {
+							trace('Font is null (base type ${part.baseType})');
+							continue;
+						}
 						// TODO: This isn't accurate. Font size isn't in pixels
 						font.resizeTo(65);
 						var align = Align.Left;
@@ -643,7 +647,7 @@ class ThingHandler {
 						// Taken from https://learn.microsoft.com/en-us/windows/mixed-reality/develop/unity/text-in-unity
 						final dotsPerUnit = 2835;
 						// This ratio is to account for the size it's rendered at vs. actual size
-						final ratio = 12 / 65;
+						final ratio = 6 / 65;
 						final fwidth = res.img.width * ratio;
 						final fheight = res.img.height * ratio;
 						final quad = Mesh.quad(fwidth, fheight);
@@ -663,11 +667,11 @@ class ThingHandler {
 						var anchorTranslation = Matrix4.identity();
 						switch (align) {
 							case Align.Right:
-								anchorTranslation = Matrix4.translation(-fwidth, 0, 0);
+								// anchorTranslation = Matrix4.translation(-fwidth, 0, 0);
 							case Align.Center:
 								anchorTranslation = Matrix4.translation(-fwidth / 2, 0, 0);
-							default:
-								// : )
+							case Align.Left:
+								anchorTranslation = Matrix4.translation(-fwidth, 0, 0);
 						}
 						anchorTranslation = Matrix4.translation(0, -fheight, 0) * anchorTranslation;
 						quad.specialTransform(scale * anchorTranslation);

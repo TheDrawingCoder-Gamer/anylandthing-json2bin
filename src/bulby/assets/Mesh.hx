@@ -83,10 +83,9 @@ class Mesh {
 			convertedPos = mat * convertedPos;
 			positionsToEdit[i] = new Vector3(convertedPos.x, convertedPos.y, convertedPos.z);
 		}
+		final normMat = mat.mat3().inverse().transpose();
 		for (i in 0...normalsToEdit.length) {
-			var convertedNorm = new Vector4(normalsToEdit[i].x, normalsToEdit[i].y, normalsToEdit[i].z, 0);
-			convertedNorm = mat * convertedNorm;
-			normalsToEdit[i] = new Vector3(convertedNorm.x, convertedNorm.y, convertedNorm.z).normalize();
+			normalsToEdit[i] = normMat * normalsToEdit[i];
 		}
 		displayNormals = normalsToEdit;
 		displayPositions = positionsToEdit;

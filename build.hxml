@@ -5,4 +5,5 @@
 -D debugbubly
 --macro addGlobalMetadata("", "@:build(bulby.macro.Macro.publish())")
 --macro addGlobalMetadata("", "@:build(bulby.macro.Macro.staticClass())")
+--macro addGlobalMetadata("", "@:build(bulby.macro.Macro.buildForwardFields())")
 --jvm run.jar

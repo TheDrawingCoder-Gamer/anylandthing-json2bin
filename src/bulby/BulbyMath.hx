@@ -305,6 +305,10 @@ abstract Matrix4(MatrixRaw) from MatrixRaw to MatrixRaw {
 		return new Matrix4(a.a * b, a.b * b, a.c * b, a.d * b, a.e * b, a.f * b, a.g * b, a.h * b, a.i * b, a.j * b, a.k * b, a.l * b, a.m * b, a.n * b,
 			a.o * b, a.p * b);
 	}
+	
+	@:op(A / B) static inline function divf(a: Matrix4, b: Float) {
+		return a * (1 / b);
+	}
 
 	@:commutative
 	@:op(A + B)
@@ -344,7 +348,15 @@ abstract Matrix4(MatrixRaw) from MatrixRaw to MatrixRaw {
 			inline a2.dot(b4), inline a3.dot(b1), inline a3.dot(b2), inline a3.dot(b3), inline
 			a3.dot(b4), inline a4.dot(b1), inline a4.dot(b2), inline a4.dot(b3), inline a4.dot(b4));
 	}
-
+	/**
+	  * Extract a matrix with only the scale portion of this matrix
+	*/
+	public function extractScaleMat(): Matrix4 {
+		return new Matrix4(this.a, 0, 0, 0, 0, this.f, 0, 0, 0, 0, this.k, 0, 0, 0, 0, 1);	
+	}
+	public function extractScale(): Vector3 {
+		return new Vector3(this.a, this.f, this.k);
+	}
 	public function new(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) {
 		this = {
 			a: a,
@@ -388,6 +400,16 @@ abstract Matrix4(MatrixRaw) from MatrixRaw to MatrixRaw {
 			+ b.p);
 	}
 
+	/**
+	  * Drop the translation part of this matrix and return a mat3.
+	  */
+	public function mat3() {
+		return new Matrix3(
+			m11, m12, m13,
+			m21, m22, m23,
+			m31, m32, m33
+				);
+	}
 	public static inline function identity() {
 		return new Matrix4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
 	}
@@ -425,6 +447,40 @@ abstract Matrix4(MatrixRaw) from MatrixRaw to MatrixRaw {
 	public static inline function scale(x:Float, y:Float, z:Float) {
 		return new Matrix4(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1);
 	}
+
+	@:forwardfield(a)
+	public var m11: Float;
+	@:forwardfield(b)
+	public var m12: Float;
+	@:forwardfield(c)
+	public var m13: Float;
+	@:forwardfield(d)
+	public var m14: Float;
+	@:forwardfield(e)
+	public var m21: Float;
+	@:forwardfield(f)
+	public var m22: Float;
+	@:forwardfield(g)
+	public var m23: Float;
+	@:forwardfield(h)
+	public var m24: Float;
+	@:forwardfield(i)
+	public var m31: Float;
+	@:forwardfield(j)
+	public var m32: Float;
+	@:forwardfield(k)
+	public var m33: Float;
+	@:forwardfield(l)
+	public var m34: Float;
+	@:forwardfield(m)
+	public var m41: Float;
+	@:forwardfield(n)
+	public var m42: Float;
+	@:forwardfield(o)
+	public var m43: Float;
+	@:forwardfield(p)
+	public var m44: Float;
+
 }
 
 @:forward
@@ -445,6 +501,12 @@ abstract Matrix3(Matrix3Raw) from Matrix3Raw to Matrix3Raw {
 		var resMat = new Matrix3(a.a * b.x, a.b * b.y, a.c * b.z, a.d * b.x, a.e * b.y, a.f * b.z, a.g * b.x, a.h * b.y, a.i * b.z);
 		var retVector = new Vector3(resMat.a + resMat.b + resMat.c, resMat.d + resMat.e + resMat.f, resMat.g + resMat.h + resMat.i);
 		return retVector;
+	}
+	@:op(A * B) @:commutative inline static function timesf(a: Matrix3, b: Float) {
+		return new Matrix3(a.a * b, a.b * b, a.c * b, a.d * b, a.e * b, a.f * b, a.g * b, a.h * b, a.i * b);
+	}
+	@:op(A / B) inline static function divf(a: Matrix3, b: Float) {
+		return a * (1 / b);
 	}
 
 	public function new(a, b, c, d, e, f, g, h, i) {
@@ -481,6 +543,48 @@ abstract Matrix3(Matrix3Raw) from Matrix3Raw to Matrix3Raw {
 	public static inline function rotateDegrees(angle:Float) {
 		return rotate(angle * (Math.PI / 180));
 	}
+
+	public function inverse() {
+		final detA =
+			m11 * m22 * m33
+			+ m12 * m23 * m31
+			+ m13 * m21 * m32
+			- m13 * m22 * m31
+			- m11 * m23 * m32
+			- m12 * m21 * m33;
+		if (detA == 0)
+			return null;
+		final mat =
+			new Matrix3(m22 * m33 - m23 * m32, m13 * m32 - m12 * m33, m12 * m23 - m13 * m22,
+				    m23 * m31 - m21 * m33, m11 * m33 - m13 * m31, m13 * m21 - m11 * m23,
+				    m21 * m32 - m22 * m31, m12 * m31 - m11 * m32, m11 * m22 - m12 * m21);
+		return mat / detA;
+	}
+	public inline function transpose() {
+		return new Matrix3(
+				m11, m21, m31,
+				m12, m22, m32,
+				m13, m23, m33
+				);
+	}
+	@:forwardfield(a)
+	public var m11: Float;
+	@:forwardfield(b)
+	public var m12: Float;
+	@:forwardfield(c)
+	public var m13: Float;
+	@:forwardfield(d)
+	public var m21: Float;
+	@:forwardfield(e)
+	public var m22: Float;
+	@:forwardfield(f)
+	public var m23: Float;
+	@:forwardfield(g)
+	public var m31: Float;
+	@:forwardfield(h)
+	public var m32: Float;
+	@:forwardfield(i)
+	public var m33: Float;
 }
 
 @:forward

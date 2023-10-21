@@ -373,10 +373,17 @@ class Tile {
 		for (y in 0...itheight) {
 			final sy = Math.floor(y * hratio) + this.iy;
 			final fy = y + ry;
+			if (fy < 0 || fy >= on.height)
+				continue;
+			if (sy < 0 || sy >= this.innerImg.height)
+				continue;
 			for (x in 0...itwidth) {
 				final sx = Math.floor(x * wratio) + this.ix;
 				final fx = x + rx;
-
+				if (fx < 0 || fx >= on.width)
+					continue;
+				if (sx < 0 || sx >= this.innerImg.width)
+					continue;
 				final p1 = on.getPixel(fx, fy);
 				final p2 = this.innerImg.getPixel(sx, sy);
 				on.setPixel(fx, fy, Color.blend(p1, p2));
